@@ -1,4 +1,5 @@
-// pages/index.tsx
+"use client";
+
 import { fetchMenu } from "../lib/api";
 import { useEffect, useState } from "react";
 
