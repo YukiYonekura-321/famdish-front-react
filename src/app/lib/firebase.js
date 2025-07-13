@@ -1,3 +1,4 @@
+"use client";
 
 // Firebaseアプリを初期化するための関数 initializeApp をインポート
 import { initializeApp } from "firebase/app";
