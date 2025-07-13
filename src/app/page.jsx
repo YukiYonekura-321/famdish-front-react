@@ -1,13 +1,22 @@
 "use client";
 
-import { fetchMenu } from "../lib/api";
+import { fetchMenu } from "./lib/api";
 import { useEffect, useState } from "react";
 
 export default function HomePage() {
   const [menu, setMenu] = useState(null);
 
   useEffect(() => {
-    fetchMenu().then(setMenu);
+    const loadMenu = async () => {
+      try {
+        const data = await fetchMenu();
+        setMenu(data);
+      } catch (error) {
+        console.error("メニューの取得に失敗しました:", error);
+      }
+    };
+
+    loadMenu();
   }, []);
 
   return (

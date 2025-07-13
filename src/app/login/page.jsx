@@ -1,9 +1,11 @@
+"use client";
+
 // Firebaseの認証機能から、Googleログインに必要な機能をインポート
 // GoogleAuthProvider: Googleログイン用のプロバイダー。
 // signInWithPopup: ポップアップ画面でログイン処理を行う関数。
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 // lib/firebase.ts で初期化した Firebase 認証オブジェクト auth をインポート。これを使ってログイン処理を実行
-import { auth } from "../../lib/firebase";
+import { auth } from "../lib/firebase";
 
 // GoogleAuthProvider() を使って Googleログイン用のプロバイダーを作成。
 // signInWithPopup(auth, provider) で、ポップアップを表示してログインを実行。
@@ -18,3 +20,5 @@ const login = async () => {
 export default function LoginPage() {
   return <button onClick={login}>Googleでログイン</button>;
 }
+
+
