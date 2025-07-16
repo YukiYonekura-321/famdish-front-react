@@ -16,7 +16,6 @@
 //   return res.data;
 // };
 
-
 import axios from "axios";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -47,4 +46,3 @@ export const fetchMenu = async () => {
     });
   });
 };
-
