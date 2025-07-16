@@ -1,30 +1,41 @@
 "use client";
 
-import { fetchMenu } from "./lib/api";
-import { useEffect, useState } from "react";
+// Firebaseの認証機能から、Googleログインに必要な機能をインポート
+// GoogleAuthProvider: Googleログイン用のプロバイダー。
+// signInWithPopup: ポップアップ画面でログイン処理を行う関数。
+import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+// lib/firebase.ts で初期化した Firebase 認証オブジェクト auth をインポート。これを使ってログイン処理を実行
+import { auth } from "./lib/firebase";
+import { Header } from "../components/header";
+import { Footer } from "../components/footer";
 
-export default function HomePage() {
-  const [menu, setMenu] = useState(null);
+// GoogleAuthProvider() を使って Googleログイン用のプロバイダーを作成。
+// signInWithPopup(auth, provider) で、ポップアップを表示してログインを実行。
+// await を使って、ログインが完了するまで待機。
+const login = async () => {
+  const provider = new GoogleAuthProvider();
+  await signInWithRedirect(auth, provider);
+};
 
-  useEffect(() => {
-    const loadMenu = async () => {
-      try {
-        const data = await fetchMenu();
-        setMenu(data);
-      } catch (error) {
-        console.error("メニューの取得に失敗しました:", error);
-      }
-    };
-
-    loadMenu();
-  }, []);
-
+// LoginPage というReactコンポーネントを定義
+// ボタンを表示して、クリックすると login 関数が呼ばれ、Googleログイン開始
+export default function LoginPage() {
   return (
     <div>
-      <h1>今日の献立</h1>
-      {/*<pre>：menu の中身を整形して表示（JSON形式）。*/}
-      {/* menu : 変換したいオブジェクト, null: 特定のキーだけを変換したいときに使う（ここでは null → すべてのキーを対象） 2 : インデントのスペース数*/}
-      <pre>{JSON.stringify(menu, null, 2)}</pre>
+      <Header />
+
+      <div className="flex justify-center mt-4">
+        <h1 className="text-2xl font-bold">食卓で家族は繋がる</h1>
+        <button
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={login}
+        >
+          Googleでログイン
+        </button>
+      </div>
+
+      <Footer />
     </div>
   );
+  // return <button onClick={login}>Googleでログイン</button>;
 }
