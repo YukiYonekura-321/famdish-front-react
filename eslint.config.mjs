@@ -1,9 +1,7 @@
-
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
-import tsParser from "@typescript-eslint/parser";  // ✅ 直接import！
-
+import tsParser from "@typescript-eslint/parser"; // ✅ 直接import！
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,7 +15,7 @@ const eslintConfig = [
   {
     // ✅ ここで対象ファイルを明示！
     files: ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
-    
+
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -37,9 +35,12 @@ const eslintConfig = [
     rules: {
       semi: ["error", "always"],
       quotes: ["error", "double"],
+      // "no-console": ["warn", { allow: ["warn", "error"] }],
+      //indent: ["error", 2],
       "no-unused-vars": "warn",
-      "react/react-in-jsx-scope": "off"  // Next.js では不要なので
-    }
+      camelcase: "warn",
+      "react/react-in-jsx-scope": "off", // Next.js では不要なので
+    },
   },
 ];
 
