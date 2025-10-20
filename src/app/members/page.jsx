@@ -1,0 +1,149 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { auth } from "../lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { AuthHeader } from "../../components/auth_header";
+import { useRouter } from "next/navigation";
+
+export default function MemberForm() {
+  const [name, setName] = useState("");
+  const [likes, setLikes] = useState([""]);
+  const [dislikes, setDislikes] = useState([""]);
+  const [message, setMessage] = useState("");
+  const [usertoken, setUsertoken] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const token = await user.getIdToken();
+        setUsertoken(token);
+      } else {
+        setUsertoken("");
+      }
+    });
+
+    return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!usertoken) {
+      setMessage("ログインしてください");
+      return;
+    }
+
+    // likes/dislikes をnested attributes 形式に変換
+    try {
+      const res = await axios.post(
+        "http://localhost:3001/api/members",
+        {
+          member: {
+            name,
+            likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
+            dislikes_attributes: dislikes
+              .filter((d) => d)
+              .map((d) => ({ name: d })),
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${usertoken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json", // ← これを必ず追加！
+          },
+        },
+      );
+      setMessage(`作成成功ID: ${res.data.id}, 名前: ${res.data.name}
+        好きなもの: ${res.data.likes.map((l) => l.name).join(", ")}
+        嫌いなもの: ${res.data.dislikes.map((d) => d.name).join(", ")}`);
+      router.push("/members/index");
+    } catch (error) {
+      if (error.response) {
+        const errors = error.response.data.errors || [
+          error.response.data.error,
+        ];
+        // Railsの422エラーや401エラーなどのレスポンスがある場合
+        setMessage(`エラー: ${errors.join(", ")}`);
+      } else {
+        setMessage("通信エラーが発生しました");
+      }
+    }
+  };
+
+  return (
+    <div>
+      <AuthHeader />
+      <div className="relative w-full min-h-screen p-8 flex flex-col items-center justify-center space-y-16">
+        <h1 className="font-bold text-xl">メンバー登録</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+          <div className="flex gap-8">
+            <label className="font-bold">名前</label>
+            <input
+              type="text"
+              placeholder="名前"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="border border-gray-300 px-3 py-2 active:border-gray-800"
+            />
+          </div>
+
+          <div className="flex gap-8">
+            <label className="font-bold">好きなもの</label>
+            {likes.map((like, idx) => (
+              <input
+                key={idx}
+                value={like}
+                onChange={(e) => {
+                  const newLikes = [...likes];
+                  newLikes[idx] = e.target.value;
+                  setLikes(newLikes);
+                }}
+                className="border border-gray-300 px-3 py-2 active:border-gray-800"
+              />
+            ))}
+            <button
+              type="button"
+              className="px-6 py-2 text-white inline-block opacity-80 rounded bg-blue-500 shadow-[0_7px_#1a7940] active:shadow-none active:relative active:top-[7px] hover:opacity-100"
+              onClick={() => setLikes([...likes, ""])}
+            >
+              +追加
+            </button>
+          </div>
+          <div className="flex gap-8">
+            <label className="font-bold">嫌いなもの</label>
+            {dislikes.map((dislike, idx) => (
+              <input
+                key={idx}
+                value={dislike}
+                onChange={(e) => {
+                  const newDislikes = [...dislikes];
+                  newDislikes[idx] = e.target.value;
+                  setDislikes(newDislikes);
+                }}
+                className="border border-gray-300 px-3 py-2 active:border-gray-800"
+              />
+            ))}
+            <button
+              type="button"
+              className="px-6 py-2 text-white inline-block opacity-80 rounded bg-blue-500 shadow-[0_7px_#1a7940] active:shadow-none active:relative active:top-[7px] hover:opacity-100"
+              onClick={() => setDislikes([...dislikes, ""])}
+            >
+              +追加
+            </button>
+          </div>
+          <button
+            type="submit"
+            className="px-6 py-2 text-white inline-block opacity-80 rounded bg-blue-500 shadow-[0_7px_#1a7940] active:shadow-none active:relative active:top-[7px] hover:opacity-100"
+          >
+            登録
+          </button>
+        </form>
+        {message && <p>{message}</p>}
+      </div>
+    </div>
+  );
+}
