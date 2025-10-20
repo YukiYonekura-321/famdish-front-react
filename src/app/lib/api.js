@@ -31,11 +31,13 @@ export const fetchMenu = async () => {
       }
 
       try {
-        const token = await user.getIdToken(true); // `true`で強制再取得（キャッシュ無視）
+        const token = await user.getIdToken(); // 引数の`true`を消すと解決
         console.log("取得したトークン:", token); // ← ここで確認
         const res = await axios.get("http://localhost:3001/api/menus", {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json", // ← これを必ず追加！
           },
         });
         resolve(res.data);
