@@ -73,7 +73,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-black/50"></div>
         <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex-col items-center justify-center text-center space-y-8">
           <h1 className="text-4xl font-bold text-white drop-shadow-lg">
-            食卓で家族は繋がる
+            食卓で家族は繋がる!!!
           </h1>
 
           <button
