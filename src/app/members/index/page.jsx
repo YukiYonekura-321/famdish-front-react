@@ -9,7 +9,7 @@ import { AuthHeader } from "@/components/auth_header";
 
 export default function MemberForm() {
   const [usertoken, setUsertoken] = useState("");
-  const [member, setMember] = useState([""]);
+  const [member, setMember] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -44,33 +44,50 @@ export default function MemberForm() {
   }, [usertoken]); // ← 依存配列に usertoken を入れるのがポイント
 
   return (
-    <div className="p-6 justify-center items-center flex flex-col">
+    <div className="gra-page p-18 flex flex-col items-center">
       <AuthHeader />
-      <h1 className="text-6xl font-bold text-gray-400 text-center">
-        メンバー情報
-      </h1>
-      {member.map((m, idx) => (
-        <div
-          key={`member-${idx}-${m.id}`}
-          className="p-4 w-1/2 border flex flex-col border-gray-300 hover:shadow-lg rounded-lg"
-        >
-          <ul className="list-none">
+      <h1 className="text-4xl gra-title">メンバー情報</h1>
+
+      <div className="w-full flex flex-col gap-6 items-center mt-6">
+        {member.map((m, idx) => (
+          <div
+            key={`member-${idx}-${m.id}`}
+            className="gra-card w-11/12 sm:w-1/2 flex flex-col"
+          >
             <Link href={`/members/${m.id}`}>
-              <li className="text-2xl font-semibold">{m.name}</li>
+              <div className="text-2xl font-semibold mb-2">{m.name}</div>
             </Link>
-          </ul>
-          <ul className="list-none">
-            <li className="font-bold">好きなもの</li>
-            {m.likes?.map((like) => (
-              <li key={`likes-${m.id}-${like.id}`}>{like.name}</li>
-            ))}
-            <li className="font-bold">嫌いなもの</li>
-            {m.dislikes?.map((dislike) => (
-              <li key={`dislikes-${m.id}-${dislike.id}`}>{dislike.name}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
+
+            <div className="mt-2">
+              <div className="font-bold mb-1">好きなもの</div>
+              <div className="flex flex-wrap gap-2">
+                {m.likes?.map((like) => (
+                  <div
+                    key={`likes-${m.id}-${like.id}`}
+                    className="gra-list-item"
+                  >
+                    {like.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-3">
+              <div className="font-bold mb-1">嫌いなもの</div>
+              <div className="flex flex-wrap gap-2">
+                {m.dislikes?.map((dislike) => (
+                  <div
+                    key={`dislikes-${m.id}-${dislike.id}`}
+                    className="gra-list-item"
+                  >
+                    {dislike.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
       {/* <pre>{JSON.stringify(member, null, 2)}</pre> */}
     </div>
   );

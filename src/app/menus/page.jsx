@@ -97,7 +97,7 @@ export default function MenuCreate() {
 
   return (
     <div className="w-full min-h-screen p-8 flex flex-col items-center justify-center space-y-16">
-      <AuthHeader />
+      <AuthHeader className="z-10" />
 
       <h1 className="text-4xl">食べたいものをリクエストしよう！</h1>
       <form

@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --gra-paper: #fffaf0;
+  --gra-ink: #1f2937;
+  --gra-accent: #ffb86b;
 }
 
 @theme inline {
@@ -23,4 +26,91 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- グラレコ風スタイル --- */
+.gra-page {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.02) 0px,
+      rgba(0, 0, 0, 0.02) 1px,
+      transparent 1px,
+      transparent 40px
+    ),
+    var(--gra-paper);
+  padding: 2rem;
+}
+
+.gra-title {
+  font-family:
+    "Segoe Print", "Comic Sans MS", "Chalkboard SE", "游ゴシック体", cursive;
+  font-size: 2rem;
+  color: var(--gra-ink);
+  text-align: center;
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.gra-card {
+  background: white;
+  border: 3px solid var(--gra-ink);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.07);
+}
+
+.gra-input {
+  font-family: "Segoe Print", "Comic Sans MS", cursive;
+  border: 2px dashed var(--gra-ink);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(250, 250, 250, 0.95)
+  );
+}
+
+.gra-btn {
+  background: var(--gra-accent);
+  color: var(--gra-ink);
+  font-weight: 700;
+  border: 3px solid var(--gra-ink);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.06);
+}
+
+.gra-list-item {
+  border: 2px solid var(--gra-ink);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(250, 250, 250, 0.98)
+  );
+}
+
+.small-note {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .gra-title {
+    font-size: 1.4rem;
+  }
+  .gra-card {
+    padding: 0.75rem;
+  }
 }
