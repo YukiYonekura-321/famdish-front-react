@@ -87,56 +87,48 @@ export default function MemberForm({ params }) {
   }
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center">
+    <div className="gra-page min-h-screen p-8 flex flex-col items-center">
       <AuthHeader />
-      <h1 className="absolute top-1/5 text-6xl font-bold text-gray-400 text-center mb-4">
-        {member.name} さん
-      </h1>
-      <ul className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 list-none border-white-400ml-4">
-        <div className="border border-gray-400 p-4">
-          <li className="font-bold text-2xl">好きなもの</li>
-          {member.likes?.map((like) => (
-            <li key={`like-${like.id}`} className="text-lg">
-              {like.name}
-            </li>
-          ))}
+
+      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+        <h1 className="gra-title font-bold text-6xl">{member.name} さん</h1>
+
+        <div className="gra-card w-full max-w-3xl mt-6">
+          <div className="mb-4">
+            <div className="font-bold text-lg">好きなもの</div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {member.likes?.map((like) => (
+                <div key={`like-${like.id}`} className="gra-list-item">
+                  {like.name}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <div className="font-bold text-lg">嫌いなもの</div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {member.dislikes?.map((dislike) => (
+                <div key={`dislike-${dislike.id}`} className="gra-list-item">
+                  {dislike.name}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-4 mt-6">
+            <button onClick={handleEdit} className="gra-btn">
+              編集
+            </button>
+            <button onClick={handleDelete} className="gra-btn">
+              削除
+            </button>
+            <button onClick={handleBackIndex} className="gra-btn">
+              メンバー一覧に戻る
+            </button>
+          </div>
         </div>
-        <div className="border border-gray-400 p-4">
-          <li className="font-bold text-2xl">嫌いなもの</li>
-          {member.dislikes?.map((dislike) => (
-            <li key={`dislike-${dislike.id}`} className="text-lg">
-              {dislike.name}
-            </li>
-          ))}
-        </div>
-
-        <div className="mt-6 flex gap-32">
-          <button
-            onClick={handleEdit}
-            className="px-4 py-2 bg-blue-500 text-white rounded-2xl shadow-2xl hover:bg-blue-600"
-          >
-            編集
-          </button>
-
-          <button
-            onClick={handleDelete}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
-          >
-            削除
-          </button>
-        </div>
-
-        <button
-          onClick={handleBackIndex}
-          className="m-4 items-center px-4 py-2 bg-orange-400 text-white rounded-lg shadow hover:bg-orange-600"
-        >
-          メンバー一覧に戻る
-        </button>
-      </ul>
-
-      {/* <Link href={`members/${memberId}/edit`}>編集</Link>
-
-      <Link href={`members/${memberId}/delete`}>削除</Link> */}
+      </div>
     </div>
   );
 }

@@ -46,9 +46,10 @@ export default function MemberForm() {
   return (
     <div className="gra-page p-18 flex flex-col items-center">
       <AuthHeader />
-      <h1 className="text-4xl gra-title">メンバー情報</h1>
 
-      <div className="w-full flex flex-col gap-6 items-center mt-6">
+      <div className="w-full flex flex-col gap-6 items-center mt-12">
+        <h1 className="text-6xl font-bold gra-title">メンバー情報</h1>
+
         {member.map((m, idx) => (
           <div
             key={`member-${idx}-${m.id}`}

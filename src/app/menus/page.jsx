@@ -5,7 +5,6 @@ import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { AuthHeader } from "../../components/auth_header";
-import { Footer } from "../../components/footer";
 import { useRouter } from "next/navigation";
 
 export default function MenuCreate() {
@@ -96,19 +95,21 @@ export default function MenuCreate() {
   };
 
   return (
-    <div className="w-full min-h-screen p-8 flex flex-col items-center justify-center space-y-16">
+    <div className="gra-page w-full min-h-screen p-8 flex flex-col items-center justify-center space-y-8">
       <AuthHeader className="z-10" />
 
-      <h1 className="text-4xl">食べたいものをリクエストしよう！</h1>
+      <h1 className="gra-title">食べたいものをリクエストしよう！</h1>
+
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col items-center space-y-8"
+        className="gra-card w-full max-w-xl flex flex-col items-center space-y-6"
       >
-        <label className="font-bold text-lg">リクエスト内容</label>
+        <label className="font-bold text-2xl">リクエスト内容</label>
+
         <select
           value={menu}
           onChange={(e) => setMenu(e.target.value)}
-          className="border"
+          className="gra-input w-full"
         >
           <option value="">選択してください</option>
           {likes.map((like) => (
@@ -118,25 +119,21 @@ export default function MenuCreate() {
           ))}
         </select>
 
-        <p className="font-bold text-lg">
+        <p className="font-bold text-lg small-note">
           または、テキストでリクエスト内容を入力してください。
         </p>
         <input
           type="text"
           value={menu}
           onChange={(e) => setMenu(e.target.value)}
-          className="border w-full"
+          className="gra-input w-full"
         />
-        <button
-          type="submit"
-          className="px-6 py-2 w-40 mx-auto text-white inline-block opacity-80 rounded bg-blue-500 shadow-[0_7px_#1a7940] active:shadow-none hover:opacity-100"
-        >
+        <button type="submit" className="gra-btn w-40 mx-auto">
           送信
         </button>
       </form>
-      {message && <p>{message}</p>}
 
-      <Footer />
+      {message && <p className="mt-4 small-note">{message}</p>}
     </div>
   );
 }

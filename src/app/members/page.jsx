@@ -78,7 +78,7 @@ export default function MemberForm() {
     <div className="gra-page min-h-screen">
       <AuthHeader />
       <div className="relative w-full min-h-screen p-8 flex flex-col items-center justify-center">
-        <h1 className="gra-title">メンバー登録</h1>
+        <h1 className="gra-title text-2xl font-bold">メンバー登録</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-16">
           <div className="gra-card space-y-4">
             <p className="small-note">新しいメンバーを登録します。</p>

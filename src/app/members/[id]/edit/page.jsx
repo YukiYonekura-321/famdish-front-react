@@ -6,7 +6,6 @@ import { auth } from "../../../lib/firebase"; // パスはプロジェクト構�
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { AuthHeader } from "@/components/auth_header";
-import { Footer } from "@/components/footer";
 
 export default function MemberEdit({ params }) {
   const resolvedParams = use(params);
@@ -129,127 +128,101 @@ export default function MemberEdit({ params }) {
   }
 
   return (
-    <div>
+    <div className="gra-page min-h-screen p-8 flex flex-col items-center">
       <AuthHeader />
-      <h1 className="text-2xl font-bold mb-4">{initialName} さんの編集</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-bold mb-1">名前</label>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-xl absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
+      >
+        <h1 className="gra-title text-6xl font-bold">
+          {initialName} さんの編集
+        </h1>
+
+        <div className="gra-card mb-4">
+          <label className="block text-2xl font-bold mb-1">名前</label>
           <input
             type="text"
             name="name"
             value={member.name || ""}
             onChange={handleChangeName}
-            className="border rounded px-3 py-2 w-full"
+            className="gra-input w-full"
           />
         </div>
 
-        <div>
-          <label className="block font-bold mb-1">好きなもの</label>
-          {likes?.map((like, idx) => (
-            <input
-              key={idx}
-              value={like.name}
-              onChange={(e) => {
-                const newLikes = [...likes];
-                const value = e.target.value;
-                if (value === "") {
-                  // 空なら削除
-                  newLikes.splice(idx, 1);
-                } else {
-                  newLikes[idx] = { ...like, name: e.target.value };
-                }
-                setLikes(newLikes);
-              }}
-              // readOnly
-              className="border rounded px-3 py-2 w-full"
-            />
-          ))}
+        <div className="gra-card mb-4 flex flex-col sm:flex-row gap-6">
+          <div className="flex-1">
+            <label className="block text-2xl font-bold mb-1">好きなもの</label>
+            {likes?.map((like, idx) => (
+              <input
+                key={idx}
+                value={like.name}
+                onChange={(e) => {
+                  const newLikes = [...likes];
+                  const value = e.target.value;
+                  if (value === "") {
+                    newLikes.splice(idx, 1);
+                  } else {
+                    newLikes[idx] = { ...like, name: value };
+                  }
+                  setLikes(newLikes);
+                }}
+                className="gra-input mb-2 w-full"
+              />
+            ))}
+
+            <button
+              type="button"
+              className="gra-btn mt-2"
+              onClick={() => setLikes([...likes, { name: "" }])}
+            >
+              +追加
+            </button>
+          </div>
+
+          <div className="flex-1">
+            <label className="block text-2xl font-bold mb-1">嫌いなもの</label>
+            {dislikes?.map((dislike, idx) => (
+              <input
+                key={idx}
+                value={dislike.name}
+                onChange={(e) => {
+                  const newDislikes = [...dislikes];
+                  const value = e.target.value;
+                  if (value === "") {
+                    newDislikes.splice(idx, 1);
+                  } else {
+                    newDislikes[idx] = { ...dislike, name: value };
+                  }
+                  setDislikes(newDislikes);
+                }}
+                className="gra-input mb-2 w-full"
+              />
+            ))}
+
+            <button
+              type="button"
+              className="gra-btn mt-2"
+              onClick={() => setDislikes([...dislikes, { name: "" }])}
+            >
+              +追加
+            </button>
+          </div>
         </div>
-
-        <button
-          type="button"
-          className="px-6 py-2 text-white inline-block opacity-80 rounded bg-blue-500 shadow-[0_7px_#1a7940] active:shadow-none active:relative active:top-[7px] hover:opacity-100"
-          onClick={() => setLikes([...likes, { name: "" }])}
-        >
-          +追加
-        </button>
-
-        {/* <div>
-          <label className="block font-bold mb-1">好きなもの</label>
-          <input
-            type="text"
-            name="likes"
-            value={member.likes?.map((l) => l.name).join(", ") || ""}
-            onChange={(e) => handleChangeArray("likes", e)}
-            // readOnly
-            className="border rounded px-3 py-2 w-full"
-          />
-        </div> */}
-
-        <div>
-          <label className="block font-bold mb-1">嫌いなもの</label>
-          {dislikes?.map((dislike, idx) => (
-            <input
-              key={idx}
-              value={dislike.name}
-              onChange={(e) => {
-                const newDislikes = [...dislikes];
-                const value = e.target.value;
-                if (value === "") {
-                  // 空なら削除
-                  newDislikes.splice(idx, 1);
-                } else {
-                  newDislikes[idx] = { ...dislike, name: e.target.value };
-                }
-                setDislikes(newDislikes);
-              }}
-              // readOnly
-              className="border rounded px-3 py-2 w-full"
-            />
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className="px-6 py-2 text-white inline-block opacity-80 rounded bg-blue-500 shadow-[0_7px_#1a7940] active:shadow-none active:relative active:top-[7px] hover:opacity-100"
-          onClick={() => setDislikes([...dislikes, { name: "" }])}
-        >
-          +追加
-        </button>
-
-        {/* <div>
-          <label className="block font-bold mb-1">嫌いなもの</label>
-          <input
-            type="text"
-            name="dislikes"
-            value={member.dislikes?.map((d) => d.name).join(", ") || ""}
-            onChange={(e) => handleChangeArray("dislikes", e)}
-            // readOnly
-            className="border rounded px-3 py-2 w-full"
-          />
-        </div> */}
-
-        {/* likes / dislikes 編集欄も追加可能 */}
 
         <div className="flex gap-4">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600"
-          >
+          <button type="submit" className="gra-btn">
             保存
           </button>
           <button
             type="button"
             onClick={() => router.push(`/members/${memberId}`)}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600"
+            className="gra-btn"
           >
             キャンセル
           </button>
         </div>
       </form>
-      <Footer />
     </div>
   );
 }

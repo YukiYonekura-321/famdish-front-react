@@ -5,8 +5,7 @@ import axios from "axios";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
-// import { AuthHeader } from "@/components/auth_header";
-// import { Footer } from "@/components/footer";
+import { AuthHeader } from "@/components/auth_header";
 
 export default function MenuShow({ params }) {
   const resolvedParams = use(params);
@@ -77,37 +76,37 @@ export default function MenuShow({ params }) {
     }
   };
 
+  // 一覧へ戻る
+  const handleBackIndex = () => {
+    router.push("/menus/index");
+  };
+
   if (!menu) {
     return <div>読み込み中...</div>;
   }
 
   return (
-    <div className="w-full min-h-screen p-8 flex flex-col items-center justify-center space-y-16">
-      {/* <AuthHeader /> */}
-      <h1 className="text-6xl font-bold text-gray-400 text-center">
-        メニュー詳細
-      </h1>
-      {/* <pre>{JSON.stringify(menu, null, 2)}</pre> */}
-      <div className="w-80 mx-auto p-4 border border-gray-300 hover:shadow-lg rounded-lg">
-        {menu.menu}
-      </div>
+    <div className="gra-page w-full min-h-screen p-8 flex flex-col items-center">
+      <AuthHeader />
 
-      <div className="mt-6 flex gap-32">
-        <button
-          onClick={handleEdit}
-          className="px-4 py-2 bg-blue-500 text-white rounded-2xl shadow-2xl hover:bg-blue-600"
-        >
-          編集
-        </button>
+      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+        <h1 className="gra-title text-2xl font-bold">メニュー詳細</h1>
+        <div className="gra-card w-full max-w-xl mt-6">
+          <div className="gra-list-item text-center text-xl">{menu.menu}</div>
 
-        <button
-          onClick={handleDelete}
-          className="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600"
-        >
-          削除
-        </button>
+          <div className="flex gap-4 mt-6 justify-center">
+            <button onClick={handleEdit} className="gra-btn">
+              編集
+            </button>
+            <button onClick={handleDelete} className="gra-btn">
+              削除
+            </button>
+            <button onClick={handleBackIndex} className="gra-btn">
+              一覧へ戻る
+            </button>
+          </div>
+        </div>
       </div>
-      {/* <Footer /> */}
     </div>
   );
 }

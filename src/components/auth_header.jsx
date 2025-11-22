@@ -9,7 +9,7 @@ export function AuthHeader() {
       <ul className="flex space-x-8">
         <Link
           className="text-white block leading-16 px-4 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500"
-          href="/about"
+          href="/members"
         >
           メンバー登録
         </Link>
@@ -23,7 +23,7 @@ export function AuthHeader() {
 
         <Link
           className="text-white block leading-16 px-4 bg-gray-600/50 mr-8 hover:bg-gray-500/50 transition duration-500"
-          href="#"
+          href="/about"
         >
           ログアウト
         </Link>
