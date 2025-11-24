@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 export default function MemberForm() {
   const [name, setName] = useState("");
+  const [familyname, setFamilyName] = useState(""); // 家族名を追加
   const [likes, setLikes] = useState([""]);
   const [dislikes, setDislikes] = useState([""]);
   const [message, setMessage] = useState("");
@@ -48,6 +49,9 @@ export default function MemberForm() {
               .filter((d) => d)
               .map((d) => ({ name: d })),
           },
+          family: {
+            name: familyname || "Default Family",
+          },
         },
         {
           headers: {
@@ -83,14 +87,27 @@ export default function MemberForm() {
           <div className="gra-card space-y-4">
             <p className="small-note">新しいメンバーを登録します。</p>
             <div className="flex gap-8 items-center">
-              <label className="font-bold">名前</label>
-              <input
-                type="text"
-                placeholder="全半角英数字で入力"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="gra-input w-72"
-              />
+              <div className="flex flex-col">
+                <label className="font-bold">名前</label>
+                <input
+                  type="text"
+                  placeholder="全半角英数字で入力"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="gra-input w-72"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="font-bold">家族名</label>
+                <input
+                  type="text"
+                  placeholder="家族の名前（例：鈴木家）"
+                  value={familyname}
+                  onChange={(e) => setFamilyName(e.target.value)}
+                  className="gra-input w-72"
+                />
+              </div>
             </div>
           </div>
 
