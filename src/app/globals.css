@@ -46,7 +46,12 @@ body {
   font-family:
     "Segoe Print", "Comic Sans MS", "Chalkboard SE", "游ゴシック体", cursive;
   font-size: 2rem;
-  color: var(--gra-ink);
+  color: #0f172a; /* より濃い色にして視認性を向上 */
+  font-weight: 800; /* 太くする */
+  -webkit-font-smoothing: antialiased;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.04);
   text-align: center;
   margin-bottom: 1rem;
   letter-spacing: 0.5px;
