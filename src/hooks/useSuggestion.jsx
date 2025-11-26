@@ -37,7 +37,6 @@ export function useSuggestion() {
         Authorization: `Bearer ${usertoken}`,
       },
       body: JSON.stringify({
-        family_id: 1,
         requests,
         constraints: { maxTime: 30 },
       }),
