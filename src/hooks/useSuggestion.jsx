@@ -22,7 +22,7 @@ export function useSuggestion() {
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
   }, []);
 
-  const fetchSuggestions = async (requests) => {
+  const fetchSuggestions = async (requests, suggestionId) => {
     if (!usertoken) {
       alert("ログインしてください");
       return;
@@ -38,7 +38,7 @@ export function useSuggestion() {
       },
       body: JSON.stringify({
         requests,
-        constraints: { maxTime: 30 },
+        sgId: suggestionId || null, // suggestionIdがない場合はnullを渡す
       }),
     });
 
@@ -49,7 +49,7 @@ export function useSuggestion() {
     }
 
     const data = await res.json();
-    setSuggestions(data.suggestions);
+    setSuggestions(data);
     setLoading(false);
   };
 

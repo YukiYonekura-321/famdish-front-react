@@ -1,7 +1,7 @@
-export default function SuggestionCard({ suggestion, index, onOk, onRetry }) {
+export default function SuggestionCard({ suggestion, onOk, onRetry, onNg }) {
   return (
     <div className="border rounded-lg p-4 shadow-sm bg-white">
-      <h2 className="text-lg font-bold mb-2">🍽️ 献立案 {index + 1}</h2>
+      <h2 className="text-lg font-bold mb-2">🍽️ 献立案</h2>
 
       <p>
         <strong>タイトル：</strong>
@@ -32,6 +32,13 @@ export default function SuggestionCard({ suggestion, index, onOk, onRetry }) {
           onClick={onRetry}
         >
           🔄 別案
+        </button>
+
+        <button
+          className="bg-red-500 text-white px-3 py-1 rounded"
+          onClick={onNg}
+        >
+          👎NG理由をお聞かせください(理由を記載することで、提案の精度が上がります。)
         </button>
       </div>
     </div>
