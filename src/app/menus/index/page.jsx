@@ -5,11 +5,17 @@ import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSuggestion } from "@/hooks/useSuggestion";
+import { useFeedback } from "@/hooks/useFeedback";
+import SuggestionCard from "@/components/SuggestionCard";
 import { AuthHeader } from "@/components/auth_header";
+import React from "react";
 
 export default function MenuIndex() {
   const [menu, setMenu] = useState([]);
   const [usertoken, setUsertoken] = useState("");
+  const { loading, suggestions, fetchSuggestions } = useSuggestion();
+  const { saveFeedback } = useFeedback();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -57,13 +63,55 @@ export default function MenuIndex() {
 
         <div className="w-full flex flex-col items-center gap-4 mt-6">
           {menu.map((m) => (
-            <Link key={m.id} href={`/menus/${m.id}`}>
-              <div className="gra-card w-11/12 sm:w-80 cursor-pointer">
-                <div>{m.menu}</div>
-              </div>
-            </Link>
+            <React.Fragment key={m.id}>
+              <Link href={`/menus/${m.id}`}>
+                <div className="gra-card w-11/12 sm:w-80 cursor-pointer">
+                  <div>{m.menu}</div>
+                </div>
+              </Link>
+              <button
+                className="gra-btn mt-2"
+                onClick={() => {
+                  fetchSuggestions(m.menu);
+                }}
+              >
+                提案を取得する
+              </button>
+            </React.Fragment>
           ))}
         </div>
+
+        {loading && <p className="text-sm text-gray-600">提案を生成中です…</p>}
+        {/* 提案カード一覧 */}
+
+        {suggestions && (
+          <div className="mt-4 grid gap-4">
+            <SuggestionCard
+              suggestion={suggestions.suggest_field}
+              onOk={async () => {
+                await saveFeedback(suggestions.id, "ok", "");
+                alert("採用しました");
+              }}
+              onRetry={async () => {
+                await saveFeedback(suggestions.id, "alt", "");
+                alert("別案を要求しました");
+                fetchSuggestions(
+                  suggestions.suggest_field.requests,
+                  suggestions.id,
+                );
+              }}
+              onNg={async () => {
+                const reason = prompt("NG 理由を入力してください（任意）:");
+                await saveFeedback(suggestions.id, "ng", reason || "");
+                alert("NG理由を送信しました");
+                fetchSuggestions(
+                  suggestions.suggest_field.requests,
+                  suggestions.id,
+                );
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
