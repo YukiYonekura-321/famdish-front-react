@@ -4,12 +4,12 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
-# Next.js SSRの場合
-RUN npm run build
+# # Next.js SSRの場合
+# RUN npm run build
 
 EXPOSE 3000
 
