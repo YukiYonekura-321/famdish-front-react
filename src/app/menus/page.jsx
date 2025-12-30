@@ -35,7 +35,7 @@ export default function MenuCreate() {
     // likes一覧取得
     const fetchLikes = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/likes", {
+        const res = await axios.get("/api/likes", {
           headers: {
             Authorization: `Bearer ${usertoken}`,
             Accept: "application/json",
@@ -64,7 +64,7 @@ export default function MenuCreate() {
 
     try {
       const res = await axios.post(
-        "http://localhost:3001/api/menus",
+        "/api/menus",
         {
           menu: {
             menu: menu, // menuは選択したlikeのidやname

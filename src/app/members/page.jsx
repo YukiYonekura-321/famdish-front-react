@@ -40,7 +40,7 @@ export default function MemberForm() {
     // likes/dislikes をnested attributes 形式に変換
     try {
       const res = await axios.post(
-        "http://localhost:3001/api/members",
+        "/api/members",
         {
           member: {
             name,

@@ -30,20 +30,17 @@ export function useFeedback() {
       return;
     }
 
-    const res = await fetch(
-      `http://localhost:3001/api/suggestions/${suggestionId}/feedback`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${usertoken}`,
-        },
-        body: JSON.stringify({
-          chosenOption,
-          feedbackNote,
-        }),
+    const res = await fetch(`/api/suggestions/${suggestionId}/feedback`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${usertoken}`,
       },
-    );
+      body: JSON.stringify({
+        chosenOption,
+        feedbackNote,
+      }),
+    });
 
     if (!res.ok) {
       alert("データの保存に失敗しました");

@@ -30,7 +30,7 @@ export function useSuggestion() {
 
     setLoading(true);
 
-    const res = await fetch("http://localhost:3001/api/suggestions", {
+    const res = await fetch("/api/suggestions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

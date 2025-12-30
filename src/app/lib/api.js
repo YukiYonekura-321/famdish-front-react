@@ -33,7 +33,7 @@ export const fetchMenu = async () => {
       try {
         const token = await user.getIdToken(); // 引数の`true`を消すと解決
         console.log("取得したトークン:", token); // ← ここで確認
-        const res = await axios.get("http://localhost:3001/api/menus", {
+        const res = await axios.get("/api/menus", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

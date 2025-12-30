@@ -30,7 +30,7 @@ export default function MemberForm() {
 
     const loadMember = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/members", {
+        const res = await axios.get("/api/members", {
           headers: { Authorization: `Bearer ${usertoken}` },
         });
         console.log(res.data);

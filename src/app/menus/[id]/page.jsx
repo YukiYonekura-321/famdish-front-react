@@ -37,12 +37,9 @@ export default function MenuShow({ params }) {
 
     const loadMenu = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3001/api/menus/${menuId}`,
-          {
-            headers: { Authorization: `Bearer ${usertoken}` },
-          },
-        );
+        const res = await axios.get(`/api/menus/${menuId}`, {
+          headers: { Authorization: `Bearer ${usertoken}` },
+        });
         console.log(res.data);
         setMenu(res.data);
       } catch (error) {
@@ -65,7 +62,7 @@ export default function MenuShow({ params }) {
     if (!confirm("本当に削除しますか？")) return;
 
     try {
-      await axios.delete(`http://localhost:3001/api/menus/${menuId}`, {
+      await axios.delete(`/api/menus/${menuId}`, {
         headers: { Authorization: `Bearer ${usertoken}` },
       });
       alert("削除しました");

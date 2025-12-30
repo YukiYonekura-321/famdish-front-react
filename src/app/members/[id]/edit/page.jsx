@@ -44,12 +44,9 @@ export default function MemberEdit({ params }) {
 
     const loadMember = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3001/api/members/${memberId}`,
-          {
-            headers: { Authorization: `Bearer ${usertoken}` },
-          },
-        );
+        const res = await axios.get(`/api/members/${memberId}`, {
+          headers: { Authorization: `Bearer ${usertoken}` },
+        });
         console.log(res.data.likes);
         setMember(res.data);
         setLikes(res.data.likes);
@@ -95,7 +92,7 @@ export default function MemberEdit({ params }) {
 
     try {
       await axios.put(
-        `http://localhost:3001/api/members/${memberId}`,
+        `/api/members/${memberId}`,
         {
           member: {
             name: member.name,

@@ -36,7 +36,7 @@ export default function MenuIndex() {
 
     const loadMenu = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/menus", {
+        const res = await axios.get("/api/menus", {
           headers: {
             Authorization: `Bearer ${usertoken}`,
             Accept: "application/json",

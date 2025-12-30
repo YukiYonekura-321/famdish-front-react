@@ -39,12 +39,9 @@ export default function MemberForm({ params }) {
 
     const loadMember = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3001/api/members/${memberId}`,
-          {
-            headers: { Authorization: `Bearer ${usertoken}` },
-          },
-        );
+        const res = await axios.get(`/api/members/${memberId}`, {
+          headers: { Authorization: `Bearer ${usertoken}` },
+        });
         console.log(res.data);
         setMember(res.data);
       } catch (error) {
@@ -67,7 +64,7 @@ export default function MemberForm({ params }) {
     if (!confirm("本当に削除しますか？")) return;
 
     try {
-      await axios.delete(`http://localhost:3001/api/members/${memberId}`, {
+      await axios.delete(`/api/members/${memberId}`, {
         headers: { Authorization: `Bearer ${usertoken}` },
       });
       alert("削除しました");

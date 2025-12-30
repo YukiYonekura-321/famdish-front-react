@@ -41,12 +41,9 @@ export default function MenuEdit({ params }) {
 
     const loadMenu = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3001/api/menus/${menuId}`,
-          {
-            headers: { Authorization: `Bearer ${usertoken}` },
-          },
-        );
+        const res = await axios.get(`/api/menus/${menuId}`, {
+          headers: { Authorization: `Bearer ${usertoken}` },
+        });
         setMenu(res.data);
       } catch (error) {
         console.error("メニューの取得に失敗しました:", error);
@@ -61,7 +58,7 @@ export default function MenuEdit({ params }) {
 
     try {
       await axios.put(
-        `http://localhost:3001/api/menus/${menuId}`,
+        `/api/menus/${menuId}`,
         { menu: { menu: menu.menu } },
         {
           headers: { Authorization: `Bearer ${usertoken}` },
