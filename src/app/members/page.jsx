@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { AuthHeader } from "../../components/auth_header";
@@ -13,17 +13,22 @@ export default function MemberForm() {
   const [likes, setLikes] = useState([""]);
   const [dislikes, setDislikes] = useState([""]);
   const [message, setMessage] = useState("");
-  const [usertoken, setUsertoken] = useState("");
+  // const [usertoken, setUsertoken] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const token = await user.getIdToken();
-        setUsertoken(token);
-      } else {
-        setUsertoken("");
-      }
+      // if (user) {
+      //   const token = await user.getIdToken();
+      //   setUsertoken(token);
+      // } else {
+      //   setUsertoken("");
+      // }
+      setCurrentUser(user);
+      console.log(auth.currentUser);
+      setAuthLoading(false);
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
@@ -32,35 +37,35 @@ export default function MemberForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!usertoken) {
+    if (authLoading) {
+      setMessage("認証状態を確認中です");
+      return;
+    }
+
+    if (!currentUser) {
       setMessage("ログインしてください");
       return;
     }
 
+    // if (!usertoken) {
+    //   setMessage("ログインしてください");
+    //   return;
+    // }
+
     // likes/dislikes をnested attributes 形式に変換
     try {
-      const res = await axios.post(
-        "/api/members",
-        {
-          member: {
-            name,
-            likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
-            dislikes_attributes: dislikes
-              .filter((d) => d)
-              .map((d) => ({ name: d })),
-          },
-          family: {
-            name: familyname || "Default Family",
-          },
+      const res = await apiClient.post("/api/members", {
+        member: {
+          name,
+          likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
+          dislikes_attributes: dislikes
+            .filter((d) => d)
+            .map((d) => ({ name: d })),
         },
-        {
-          headers: {
-            Authorization: `Bearer ${usertoken}`,
-            "Content-Type": "application/json",
-            Accept: "application/json", // ← これを必ず追加！
-          },
+        family: {
+          name: familyname || "Default Family",
         },
-      );
+      });
       setMessage(`作成成功ID: ${res.data.id}, 名前: ${res.data.name}
         好きなもの: ${res.data.likes.map((l) => l.name).join(", ")}
         嫌いなもの: ${res.data.dislikes.map((d) => d.name).join(", ")}`);

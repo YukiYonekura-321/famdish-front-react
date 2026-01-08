@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import axios from "axios";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -39,9 +39,7 @@ export default function MemberForm({ params }) {
 
     const loadMember = async () => {
       try {
-        const res = await axios.get(`/api/members/${memberId}`, {
-          headers: { Authorization: `Bearer ${usertoken}` },
-        });
+        const res = await apiClient.get(`/api/members/${memberId}`);
         console.log(res.data);
         setMember(res.data);
       } catch (error) {
@@ -64,9 +62,7 @@ export default function MemberForm({ params }) {
     if (!confirm("本当に削除しますか？")) return;
 
     try {
-      await axios.delete(`/api/members/${memberId}`, {
-        headers: { Authorization: `Bearer ${usertoken}` },
-      });
+      await apiClient.delete(`/api/members/${memberId}`);
       alert("削除しました");
       router.push("/members/index"); // 一覧に戻る
     } catch (error) {

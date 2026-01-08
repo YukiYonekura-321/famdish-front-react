@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
@@ -30,9 +30,7 @@ export default function MemberForm() {
 
     const loadMember = async () => {
       try {
-        const res = await axios.get("/api/members", {
-          headers: { Authorization: `Bearer ${usertoken}` },
-        });
+        const res = await apiClient.get("/api/members");
         console.log(res.data);
         setMember(res.data);
       } catch (error) {

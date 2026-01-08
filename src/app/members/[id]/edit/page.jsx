@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import axios from "axios";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "../../../lib/firebase"; // パスはプロジェクト構成に合わせて調整
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -44,9 +44,7 @@ export default function MemberEdit({ params }) {
 
     const loadMember = async () => {
       try {
-        const res = await axios.get(`/api/members/${memberId}`, {
-          headers: { Authorization: `Bearer ${usertoken}` },
-        });
+        const res = await apiClient.get(`/api/members/${memberId}`);
         console.log(res.data.likes);
         setMember(res.data);
         setLikes(res.data.likes);
@@ -91,27 +89,21 @@ export default function MemberEdit({ params }) {
     });
 
     try {
-      await axios.put(
-        `/api/members/${memberId}`,
-        {
-          member: {
-            name: member.name,
-            likes_attributes:
-              likes.map((like) => ({
-                id: like.id,
-                name: like.name,
-              })) || [],
-            dislikes_attributes:
-              dislikes.map((dislike) => ({
-                id: dislike.id,
-                name: dislike.name,
-              })) || [],
-          },
+      await apiClient.put(`/api/members/${memberId}`, {
+        member: {
+          name: member.name,
+          likes_attributes:
+            likes.map((like) => ({
+              id: like.id,
+              name: like.name,
+            })) || [],
+          dislikes_attributes:
+            dislikes.map((dislike) => ({
+              id: dislike.id,
+              name: dislike.name,
+            })) || [],
         },
-        {
-          headers: { Authorization: `Bearer ${usertoken}` },
-        },
-      );
+      });
       alert("更新しました");
       router.push(`/members/${memberId}`); // 詳細画面へ戻る
     } catch (error) {

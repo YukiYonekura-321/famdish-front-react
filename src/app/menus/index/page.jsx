@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -36,12 +36,7 @@ export default function MenuIndex() {
 
     const loadMenu = async () => {
       try {
-        const res = await axios.get("/api/menus", {
-          headers: {
-            Authorization: `Bearer ${usertoken}`,
-            Accept: "application/json",
-          },
-        });
+        const res = await apiClient.get("/api/menus");
         console.log(res.data);
         setMenu(res.data);
       } catch (error) {
@@ -58,7 +53,7 @@ export default function MenuIndex() {
 
       <div className="w-full flex flex-col items-center gap-6 mt-12">
         <h1 className="text-2xl font-bold gra-title">
-          リクエストされたメニュー一覧
+          リクエストされたメニュー(一覧)
         </h1>
 
         <div className="w-full flex flex-col items-center gap-4 mt-6">

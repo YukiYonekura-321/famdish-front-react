@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -35,12 +35,7 @@ export default function MenuCreate() {
     // likes一覧取得
     const fetchLikes = async () => {
       try {
-        const res = await axios.get("/api/likes", {
-          headers: {
-            Authorization: `Bearer ${usertoken}`,
-            Accept: "application/json",
-          },
-        });
+        const res = await apiClient.get("/api/likes");
         setLikes(res.data || []);
       } catch (e) {
         setLikes([]);
@@ -63,21 +58,11 @@ export default function MenuCreate() {
     }
 
     try {
-      const res = await axios.post(
-        "/api/menus",
-        {
-          menu: {
-            menu: menu, // menuは選択したlikeのidやname
-          },
+      const res = await apiClient.post("/api/menus", {
+        menu: {
+          menu: menu, // menuは選択したlikeのidやname
         },
-        {
-          headers: {
-            Authorization: `Bearer ${usertoken}`,
-            "Content-Type": "application/json",
-            Accept: "application/json", // ← これを必ず追加！
-          },
-        },
-      );
+      });
       setMessage(`リクエスト成功ID: ${res.data.id}, 名前: ${res.data.menu}`);
       // フォーム送信後に入力欄を空にするための処理
       setMenu("");

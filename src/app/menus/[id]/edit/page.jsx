@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import axios from "axios";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "../../../lib/firebase"; // パスはプロジェクト構成に合わせて調整
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -41,9 +41,7 @@ export default function MenuEdit({ params }) {
 
     const loadMenu = async () => {
       try {
-        const res = await axios.get(`/api/menus/${menuId}`, {
-          headers: { Authorization: `Bearer ${usertoken}` },
-        });
+        const res = await apiClient.get(`/api/menus/${menuId}`);
         setMenu(res.data);
       } catch (error) {
         console.error("メニューの取得に失敗しました:", error);
@@ -57,13 +55,9 @@ export default function MenuEdit({ params }) {
     e.preventDefault();
 
     try {
-      await axios.put(
-        `/api/menus/${menuId}`,
-        { menu: { menu: menu.menu } },
-        {
-          headers: { Authorization: `Bearer ${usertoken}` },
-        },
-      );
+      await apiClient.put(`/api/menus/${menuId}`, {
+        menu: { menu: menu.menu },
+      });
       router.push("/menus/index"); // 更新後に詳細ページへ遷移
     } catch (error) {
       console.error("メニューの更新に失敗しました:", error);

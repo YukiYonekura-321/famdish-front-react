@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import axios from "axios";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -37,9 +37,7 @@ export default function MenuShow({ params }) {
 
     const loadMenu = async () => {
       try {
-        const res = await axios.get(`/api/menus/${menuId}`, {
-          headers: { Authorization: `Bearer ${usertoken}` },
-        });
+        const res = await apiClient.get(`/api/menus/${menuId}`);
         console.log(res.data);
         setMenu(res.data);
       } catch (error) {
@@ -62,9 +60,7 @@ export default function MenuShow({ params }) {
     if (!confirm("本当に削除しますか？")) return;
 
     try {
-      await axios.delete(`/api/menus/${menuId}`, {
-        headers: { Authorization: `Bearer ${usertoken}` },
-      });
+      await apiClient.delete(`/api/menus/${menuId}`);
       alert("削除しました");
       router.push("/menus/index");
     } catch (error) {
