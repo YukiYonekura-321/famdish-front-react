@@ -30,17 +30,25 @@ export function useFeedback() {
       return;
     }
 
-    const res = await fetch(`/api/suggestions/${suggestionId}/feedback`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${usertoken}`,
+    const base =
+      process.env.NODE_ENV === "production"
+        ? "" // 本番 → 相対パス
+        : process.env.NEXT_PUBLIC_API_URL; // 開発 → http://localhost:3001
+
+    const res = await fetch(
+      `${base}/api/suggestions/${suggestionId}/feedback`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${usertoken}`,
+        },
+        body: JSON.stringify({
+          chosenOption,
+          feedbackNote,
+        }),
       },
-      body: JSON.stringify({
-        chosenOption,
-        feedbackNote,
-      }),
-    });
+    );
 
     if (!res.ok) {
       alert("データの保存に失敗しました");
