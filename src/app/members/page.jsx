@@ -13,22 +13,21 @@ export default function MemberForm() {
   const [likes, setLikes] = useState([""]);
   const [dislikes, setDislikes] = useState([""]);
   const [message, setMessage] = useState("");
-  // const [usertoken, setUsertoken] = useState("");
-  const [currentUser, setCurrentUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [usertoken, setUsertoken] = useState("");
   const router = useRouter();
 
   useEffect(() => {
+    console.log(auth);
+    onAuthStateChanged(auth, (user) => console.log("onAuthStateChanged", user));
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      // if (user) {
-      //   const token = await user.getIdToken();
-      //   setUsertoken(token);
-      // } else {
-      //   setUsertoken("");
-      // }
-      setCurrentUser(user);
-      console.log(auth.currentUser);
-      setAuthLoading(false);
+      if (user) {
+        console.log(user);
+        const token = await user.getIdToken();
+        setUsertoken(token);
+      } else {
+        console.log(user);
+        setUsertoken("");
+      }
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
@@ -37,20 +36,10 @@ export default function MemberForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (authLoading) {
-      setMessage("認証状態を確認中です");
-      return;
-    }
-
-    if (!currentUser) {
+    if (!usertoken) {
       setMessage("ログインしてください");
       return;
     }
-
-    // if (!usertoken) {
-    //   setMessage("ログインしてください");
-    //   return;
-    // }
 
     // likes/dislikes をnested attributes 形式に変換
     try {
