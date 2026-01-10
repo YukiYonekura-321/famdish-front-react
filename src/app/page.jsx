@@ -8,6 +8,9 @@ import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { auth } from "./lib/firebase";
 import { Header } from "../components/header";
 import { useEffect, useState } from "react";
+import { getRedirectResult } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
 
 // GoogleAuthProvider() を使って Googleログイン用のプロバイダーを作成。
 // signInWithPopup(auth, provider) で、ポップアップを表示してログインを実行。
@@ -24,6 +27,7 @@ const bgImages = [
 ];
 
 export default function LoginPage() {
+  const router = useRouter();
   const [bgIndex, setBgIndex] = useState(0);
 
   useEffect(() => {
@@ -33,6 +37,39 @@ export default function LoginPage() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // redirect 結果の取得
+    getRedirectResult(auth)
+      .then((result) => {
+        console.log("getRedirectResult ->", result);
+        if (result?.user) {
+          console.log("✅ Redirect login success:", result.user);
+          // ログイン成功 → ページ遷移
+          router.replace("/members"); // 遷移先を適宜変更
+        } else {
+          console.log("ℹ️ No redirect result");
+        }
+      })
+      .catch((err) => console.error("❌ Redirect error", err));
+    const unsub = onAuthStateChanged(auth, (u) =>
+      console.log("onAuthStateChanged ->", u),
+    );
+    console.log("auth redirectUser:", auth.redirectUser);
+    console.log(
+      "localStorage redirect key:",
+      localStorage.getItem(
+        "firebase:redirectUser:AIzaSyAmSNvwCiw2fNXzH_yRzbxmb3bNpnHmeJQ:[DEFAULT]",
+      ),
+    );
+    console.log(
+      "localStorage auth key:",
+      localStorage.getItem(
+        "firebase:authUser:AIzaSyAmSNvwCiw2fNXzH_yRzbxmb3bNpnHmeJQ:[DEFAULT]",
+      ),
+    );
+    return () => unsub();
+  }, [router]);
 
   return (
     <div>
