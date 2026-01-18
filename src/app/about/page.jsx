@@ -8,7 +8,7 @@ export default function AboutPage() {
       <Header />
 
       <div className="min-h-screen flex flex-col justify-center items-center bg-cyan-400">
-        <h1 className="text-white text-6xl font-bold tracking-widest drop-shadow-lg">
+        <h1 className="text-white text-3xl md:text-6xl font-bold tracking-widest drop-shadow-lg">
           FamDishとは
         </h1>
 
