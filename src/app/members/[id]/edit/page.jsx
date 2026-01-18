@@ -122,7 +122,7 @@ export default function MemberEdit({ params }) {
 
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-xl absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
+        className="w-full max-w-xs sm:max-w-md md:max-w-xl absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 px-4"
       >
         <h1 className="gra-title text-6xl font-bold">
           {initialName} さんの編集
