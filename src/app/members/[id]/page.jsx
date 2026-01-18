@@ -109,7 +109,7 @@ export default function MemberForm({ params }) {
             </div>
           </div>
 
-          <div className="flex gap-4 mt-6">
+          <div className="flex flex-col md:flex-row gap-4 mt-6">
             <button onClick={handleEdit} className="gra-btn">
               編集
             </button>
