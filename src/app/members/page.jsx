@@ -80,26 +80,26 @@ export default function MemberForm() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-16">
           <div className="gra-card space-y-4">
             <p className="small-note">新しいメンバーを登録します。</p>
-            <div className="flex gap-8 items-center">
-              <div className="flex flex-col">
+            <div className="flex flex-col md:flex-row gap-8 items-center">
+              <div className="flex flex-col w-full md:w-auto">
                 <label className="font-bold">名前</label>
                 <input
                   type="text"
                   placeholder="全半角英数字で入力"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="gra-input w-72"
+                  className="gra-input w-full md:w-72"
                 />
               </div>
 
-              <div className="flex flex-col">
+              <div className="flex flex-col w-full md:w-auto">
                 <label className="font-bold">家族名</label>
                 <input
                   type="text"
                   placeholder="家族の名前（例：鈴木家）"
                   value={familyname}
                   onChange={(e) => setFamilyName(e.target.value)}
-                  className="gra-input w-72"
+                  className="gra-input w-full md:w-72"
                 />
               </div>
             </div>
@@ -109,8 +109,8 @@ export default function MemberForm() {
             <p className="small-note">
               好きなものと嫌いなものを入力してください。
             </p>
-            <div className="flex gap-8 items-start">
-              <div className="flex flex-col">
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="flex flex-col w-full md:w-auto">
                 <label className="font-bold">好きなもの</label>
                 {likes.map((like, idx) => (
                   <input
@@ -122,7 +122,7 @@ export default function MemberForm() {
                       newLikes[idx] = e.target.value;
                       setLikes(newLikes);
                     }}
-                    className="gra-input mb-2 w-64"
+                    className="gra-input mb-2 w-full md:w-64"
                   />
                 ))}
                 <button
@@ -134,7 +134,7 @@ export default function MemberForm() {
                 </button>
               </div>
 
-              <div className="flex flex-col">
+              <div className="flex flex-col w-full md:w-auto">
                 <label className="font-bold">嫌いなもの</label>
                 {dislikes.map((dislike, idx) => (
                   <input
@@ -146,7 +146,7 @@ export default function MemberForm() {
                       newDislikes[idx] = e.target.value;
                       setDislikes(newDislikes);
                     }}
-                    className="gra-input mb-2 w-64"
+                    className="gra-input mb-2 w-full md:w-64"
                   />
                 ))}
                 <button
