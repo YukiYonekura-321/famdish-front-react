@@ -1,14 +1,17 @@
 import { useState } from "react";
-import Link from "next/link";
 
-export default function HamburgerButton() {
+export default function HamburgerButton({ onToggle, className = "" }) {
   const [open, setOpen] = useState(false);
 
   return (
     <div>
       <button
-        className="md:hidden flex flex-col justify-center items-center w-8 h-8 relative z-30"
-        onClick={() => setOpen(!open)}
+        className={`md:hidden flex flex-col justify-center items-center w-8 h-8 relative z-30 ${className}`}
+        onClick={() => {
+          const newOpen = !open;
+          setOpen(newOpen);
+          if (typeof onToggle === "function") onToggle(newOpen);
+        }}
         aria-label="Menu"
       >
         <div className="space-y-2">
@@ -26,32 +29,6 @@ export default function HamburgerButton() {
           />
         </div>
       </button>
-
-      {/* モバイルメニュー */}
-      {open && (
-        <nav className="md:hidden absolute top-full right-0 left-0 z-20 bg-zinc-900/90 backdrop-blur-sm">
-          <ul className="flex flex-col space-y-4 p-4">
-            <li>
-              <Link
-                href="/about"
-                className="text-white"
-                onClick={() => setOpen(false)}
-              >
-                FamDishとは
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/members"
-                className="text-white"
-                onClick={() => setOpen(false)}
-              >
-                新規登録
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      )}
     </div>
   );
 }
