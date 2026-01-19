@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import HamburgerButton from "./HamburgerButton";
+import MobileMenuItems from "./MobileMenuItems";
+import { useState } from "react";
 
 export function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="flex justify-between items-center h-16 fixed top-0 left-0 w-full z-10 backdrop-blur bg-zinc-800/50">
       <Link className="p-4 text-white text-[32px] mr-16" href="/">
@@ -28,7 +31,17 @@ export function Header() {
       </nav>
 
       {/* ハンバーガーボタン（スマホのみ） */}
-      <HamburgerButton />
+      <div className="md:hidden">
+        <HamburgerButton onToggle={(open) => setMenuOpen(open)} />
+        {/* モバイルメニュー */}
+        {menuOpen && (
+          <nav className="absolute top-full right-0 left-0 z-20 bg-zinc-900/90 backdrop-blur-sm">
+            <ul className="flex flex-col space-y-4 p-4">
+              <MobileMenuItems onClick={() => setMenuOpen(false)} />
+            </ul>
+          </nav>
+        )}
+      </div>
     </header>
   );
 }
