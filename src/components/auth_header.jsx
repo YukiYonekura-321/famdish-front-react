@@ -4,9 +4,13 @@ import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { auth } from "@/app/lib/firebase";
+import { useState } from "react";
+import HamburgerButton from "./HamburgerButton";
+import MobileAuthMenuItems from "./MobileAuthMenuItems";
 
 export function AuthHeader() {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const logout = async () => {
     try {
@@ -18,11 +22,11 @@ export function AuthHeader() {
   };
 
   return (
-    <header className="flex justify-between items-center h-16 fixed top-0 left-0 w-full bg-zinc-800/50">
+    <header className="flex justify-between items-center h-16 fixed top-0 left-0 w-full z-10 backdrop-blur bg-zinc-800/50">
       <Link className="p-4 text-white text-[32px] mr-16" href="/">
         FamDish
       </Link>
-      <ul className="flex space-x-8">
+      <nav className="hidden md:flex space-x-8">
         <Link
           className="text-white block leading-16 px-4 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500"
           href="/members"
@@ -43,7 +47,20 @@ export function AuthHeader() {
         >
           ログアウト
         </button>
-      </ul>
+      </nav>
+
+      {/* ハンバーガーボタン（スマホのみ） */}
+      <div className="md:hidden">
+        <HamburgerButton onToggle={(open) => setMenuOpen(open)} />
+        {/* モバイルメニュー */}
+        {menuOpen && (
+          <nav className="absolute top-full right-0 left-0 z-20 bg-zinc-900/90 backdrop-blur-sm">
+            <ul className="flex flex-col space-y-4 p-4">
+              <MobileAuthMenuItems onClick={() => setMenuOpen(false)} />
+            </ul>
+          </nav>
+        )}
+      </div>
     </header>
   );
 }
