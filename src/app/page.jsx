@@ -33,6 +33,7 @@ export default function LootPage() {
     const runEmailLikSignIn = async () => {
       if (isSignInWithEmailLink(auth, window.location.href)) {
         await handleEmailSignIn();
+        router.push("/");
       }
     };
 
