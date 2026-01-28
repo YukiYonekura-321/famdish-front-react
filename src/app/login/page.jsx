@@ -8,6 +8,7 @@ import {
   signInWithPopup,
   //   getRedirectResult,
   //   onAuthStateChanged,
+  getAdditionalUserInfo,
 } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
@@ -20,11 +21,19 @@ export default function LoginPage() {
   const redirectTomyPageWhenLoginSuccess = async (provider) => {
     try {
       const result = await signInWithPopup(auth, provider);
+      const additional = getAdditionalUserInfo(result); // 正規の取得方法
+      console.log("additionalUserInfo:", additional);
+      const isNewUser = additional?.isNewUser;
+      if (isNewUser) {
+        // 新規登録ユーザーはプロフィールステップへ
+        router.replace("/profile/step1");
+      } else {
+        // 既存ユーザーはメニュー一覧へ
+        router.replace("/menus");
+      }
       // メールが確認されていない場合はメール登録画面に遷移する
       if (!result.user.emailVerified) {
         router.replace("/register-email");
-      } else {
-        router.replace("/");
       }
     } catch (error) {
       console.log(error);
