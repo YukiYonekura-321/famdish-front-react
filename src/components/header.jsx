@@ -16,17 +16,24 @@ export function Header() {
       {/* PCナビ */}
       <nav className="hidden md:flex space-x-8">
         <Link
-          className="text-white text-xl sm:text-2xl md:text-3xl block leading-16 px-4 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500"
-          href="/about"
+          className="text-white block leading-16 px-4 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500"
+          href="/"
         >
-          FamDishとは
+          ホーム
         </Link>
 
         <Link
           className="text-white block leading-16 px-4 bg-gray-600/50 mr-8 hover:bg-gray-500/50 transition duration-500"
-          href="/members"
+          href="/login"
         >
           新規登録
+        </Link>
+
+        <Link
+          className="text-white block leading-16 px-4 bg-gray-600/50 mr-8 hover:bg-gray-500/50 transition duration-500"
+          href="/login"
+        >
+          ログイン
         </Link>
       </nav>
 

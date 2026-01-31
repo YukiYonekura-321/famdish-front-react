@@ -15,7 +15,7 @@ export function AuthHeader() {
   const logout = async () => {
     try {
       await signOut(auth);
-      router.replace("/");
+      router.replace("/login");
     } catch (err) {
       console.error("❌ Logout failed", err);
     }
@@ -47,6 +47,54 @@ export function AuthHeader() {
         >
           ログアウト
         </button>
+
+        <div className="relative group">
+          <Link
+            href="/mypage"
+            className="text-white block leading-16 px-4 bg-gray-600/50 mr-8 hover:bg-gray-500/50 transition duration-300"
+          >
+            マイページ設定
+          </Link>
+
+          {/* プルダウンメニュー */}
+          <div
+            className="
+              absolute right-0 mt-0 w-56
+              hidden group-hover:block
+              bg-zinc-800/95 backdrop-blur
+              shadow-lg rounded-md
+              py-2
+            "
+          >
+            <Link
+              href="/mypage/social"
+              className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+            >
+              ソーシャルアカウント連携状態
+            </Link>
+
+            <Link
+              href="/mypage/email"
+              className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+            >
+              通知先メールアドレス変更
+            </Link>
+
+            <button
+              onClick={logout}
+              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+            >
+              ログアウト
+            </button>
+
+            <Link
+              href="/mypage/withdraw"
+              className="block px-4 py-2 text-sm text-red-400 hover:bg-zinc-700 transition"
+            >
+              退会
+            </Link>
+          </div>
+        </div>
       </nav>
 
       {/* ハンバーガーボタン（スマホのみ） */}
