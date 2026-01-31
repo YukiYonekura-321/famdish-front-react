@@ -2,11 +2,18 @@ import axios from "axios";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
+// 決定する baseURL を先に計算
+const baseURL =
+  process.env.NODE_ENV === "production"
+    ? process.env.VERCEL
+      ? // Vercelにデプロイした場合、HerokuのURL指定
+        process.env.NEXT_PUBLIC_API_URL
+      : // AWSにデプロイした場合、同じドメインだから、URLを空にする。
+        ""
+    : process.env.NEXT_PUBLIC_API_URL;
+
 export const apiClient = axios.create({
-  baseURL:
-    process.env.NODE_ENV === "production"
-      ? "" // 本番 → 相対パス
-      : process.env.NEXT_PUBLIC_API_URL, // 開発 → http://localhost:3001
+  baseURL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
