@@ -9,7 +9,7 @@ export default function MobileAuthMenuItems({ onClick }) {
   const logout = async () => {
     try {
       await signOut(auth);
-      router.replace("/");
+      router.replace("/login");
     } catch (err) {
       console.error("❌ Logout failed", err);
     }
