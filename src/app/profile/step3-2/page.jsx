@@ -34,29 +34,6 @@ export default function ProfileStep3DisLike() {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    // 既に選択済みがあればAPIから取得して復元
-    let unsub;
-    try {
-      unsub = onAuthStateChanged(auth, async (user) => {
-        if (!user) return;
-        try {
-          const res = await apiClient.get("/api/members");
-          const members = res.data || [];
-          const email = user.email;
-          const member = members.find((m) => m.email === email) || members[0];
-          const dislikes = member?.dislikes?.map((l) => l.name) || [];
-          setSelected(dislikes);
-        } catch (err) {
-          console.error("既存選択の取得に失敗しました:", err);
-        }
-      });
-    } catch (e) {
-      console.error(e);
-    }
-    return () => unsub && unsub();
-  }, []);
-
   const toggle = (opt) => {
     setSelected((prev) => {
       const exists = prev.includes(opt);
