@@ -32,7 +32,7 @@ export function useSuggestion() {
 
     const base =
       process.env.NODE_ENV === "production"
-        ? "" // 本番 → 相対パス
+        ? process.env.NEXT_PUBLIC_API_URL // 本番 → 相対パス
         : process.env.NEXT_PUBLIC_API_URL; // 開発 → http://localhost:3001
 
     const res = await fetch(`${base}/api/suggestions`, {
