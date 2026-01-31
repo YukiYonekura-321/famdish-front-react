@@ -19,7 +19,7 @@ export default function RecoveryPage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        router.replace("/");
+        router.replace("/menus");
       } else {
         return;
       }
@@ -34,7 +34,7 @@ export default function RecoveryPage() {
 
     // 例: https://yourdomain.com/ に飛ばす
     const actionCodeSettings = {
-      url: `${window.location.origin}`,
+      url: `${window.location.origin}/menus`,
       handleCodeInApp: true, // ログインURL送信の場合はTrue
     };
 
