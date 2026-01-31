@@ -5,13 +5,28 @@ import { useRouter } from "next/navigation";
 
 export default function ProfileStep1() {
   const [displayName, setDisplayName] = useState("");
+  const [message, setMessage] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 保存処理（API 呼び出し等）をここに追加
-    // 今回は入力後にマイページへ遷移させる
-    router.push("/profile/step1-2");
+
+    try {
+      // 一時保存して次のページへ（最終ページでまとめて送信する）
+      sessionStorage.setItem("profile_display_name", displayName);
+      setMessage(`保存しました: ${displayName}`);
+      router.push("/profile/step1-2");
+    } catch (error) {
+      if (error.response) {
+        const errors = error.response.data.errors || [
+          error.response.data.error,
+        ];
+        // Railsの422エラーや401エラーなどのレスポンスがある場合
+        setMessage(`エラー: ${errors.join(", ")}`);
+      } else {
+        setMessage("通信エラーが発生しました");
+      }
+    }
   };
 
   return (
@@ -47,6 +62,8 @@ export default function ProfileStep1() {
             </button>
           </div>
         </form>
+
+        {message && <p className="mt-4 small-note">{message}</p>}
       </div>
     </div>
   );

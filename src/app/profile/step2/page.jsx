@@ -4,13 +4,32 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ProfileStep2() {
+  const [message, setMessage] = useState("");
   const [familyName, setFamilyName] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: 保存処理（API 呼び出し等）をここに追加
-    router.push("/profile/step3");
+
+    try {
+      // 一時保存して次のページへ（最終ページでまとめて送信する）
+      sessionStorage.setItem(
+        "profile_family_name",
+        familyName || "Default Family",
+      );
+      setMessage(`保存しました: ${familyName}`);
+      router.push("/profile/step3");
+    } catch (error) {
+      if (error.response) {
+        const errors = error.response.data.errors || [
+          error.response.data.error,
+        ];
+        // Railsの422エラーや401エラーなどのレスポンスがある場合
+        setMessage(`エラー: ${errors.join(", ")}`);
+      } else {
+        setMessage("通信エラーが発生しました");
+      }
+    }
   };
 
   return (
@@ -34,7 +53,7 @@ export default function ProfileStep2() {
             <button
               type="button"
               className="mr-auto px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-              onClick={() => router.push("/profile/step1-1")}
+              onClick={() => router.push("/profile/step1-2")}
             >
               戻る
             </button>
@@ -46,6 +65,7 @@ export default function ProfileStep2() {
             </button>
           </div>
         </form>
+        {message && <p className="mt-4 small-note">{message}</p>}
       </div>
     </div>
   );
