@@ -2,7 +2,6 @@
 
 import {
   onAuthStateChanged,
-  isSignInWithEmailLink,
   signOut,
   verifyBeforeUpdateEmail,
   reauthenticateWithPopup,
@@ -10,7 +9,6 @@ import {
 import { useEffect, useState } from "react";
 import { getProvider } from "@/app/lib/provider-utils";
 import { auth } from "@/app/lib/firebase";
-import { handleEmailSignIn } from "@/app/lib/email-signin";
 import { AuthHeader } from "@/components/auth_header";
 import { ProviderLinkTable } from "@/components/ProviderLinkTable";
 import { useRouter } from "next/navigation";
@@ -25,14 +23,6 @@ export default function MyPage() {
   const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
-    const runEmailLikSignIn = async () => {
-      if (isSignInWithEmailLink(auth, window.location.href)) {
-        await handleEmailSignIn();
-      }
-    };
-
-    runEmailLikSignIn();
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setauthUser(user);
