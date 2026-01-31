@@ -2,10 +2,11 @@
 
 import { apiClient } from "@/app/lib/api";
 import { auth } from "../lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, isSignInWithEmailLink } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { AuthHeader } from "../../components/auth_header";
 import { useRouter } from "next/navigation";
+import { handleEmailSignIn } from "@/app/lib/email-signin";
 
 export default function MenuCreate() {
   const [menu, setMenu] = useState("");
@@ -15,6 +16,14 @@ export default function MenuCreate() {
   const router = useRouter();
 
   useEffect(() => {
+    const runEmailLikSignIn = async () => {
+      if (isSignInWithEmailLink(auth, window.location.href)) {
+        await handleEmailSignIn();
+      }
+    };
+
+    runEmailLikSignIn();
+
     // 認証状態監視
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
