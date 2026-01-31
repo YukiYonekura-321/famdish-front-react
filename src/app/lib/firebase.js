@@ -12,8 +12,9 @@ const firebaseConfig = {
   apiKey: "AIzaSyAmSNvwCiw2fNXzH_yRzbxmb3bNpnHmeJQ",
   authDomain:
     process.env.NODE_ENV === "production"
-      ? "app.famdish.jp" // 本番ドメイン
-      : process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ||
+      ? process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN // 本番ドメイン
+      : // ? "app.famdish.jp" // 本番ドメイン
+        process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ||
         "famdish-6f806.firebaseapp.com", // 開発ドメイン（envがあれば優先）
   projectId: "famdish-6f806",
   storageBucket: "famdish-6f806.firebasestorage.app",
