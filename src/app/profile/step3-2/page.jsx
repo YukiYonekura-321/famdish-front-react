@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/app/lib/api";
+import { auth } from "@/app/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 const OPTIONS = [
   "にんじん",
@@ -28,15 +31,30 @@ const OPTIONS = [
 
 export default function ProfileStep3DisLike() {
   const [selected, setSelected] = useState([]);
+  const [message, setMessage] = useState("");
   const router = useRouter();
 
   useEffect(() => {
+    // 既に選択済みがあればAPIから取得して復元
+    let unsub;
     try {
-      const raw = sessionStorage.getItem("profile_dislikes");
-      if (raw) setSelected(JSON.parse(raw));
-    } catch {
-      // ignore
+      unsub = onAuthStateChanged(auth, async (user) => {
+        if (!user) return;
+        try {
+          const res = await apiClient.get("/api/members");
+          const members = res.data || [];
+          const email = user.email;
+          const member = members.find((m) => m.email === email) || members[0];
+          const dislikes = member?.dislikes?.map((l) => l.name) || [];
+          setSelected(dislikes);
+        } catch (err) {
+          console.error("既存選択の取得に失敗しました:", err);
+        }
+      });
+    } catch (e) {
+      console.error(e);
     }
+    return () => unsub && unsub();
   }, []);
 
   const toggle = (opt) => {
@@ -46,11 +64,44 @@ export default function ProfileStep3DisLike() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // 保存: 簡易に sessionStorage に保存（必要なら API 呼び出しに置換）
-    sessionStorage.setItem("profile_dislikes", JSON.stringify(selected));
-    router.push("/menus");
+    // 最終送信: 各ステップで保存した sessionStorage をまとめて送る
+    const displayName = sessionStorage.getItem("profile_display_name") || "";
+    const familyName =
+      sessionStorage.getItem("profile_family_name") || "Default Family";
+    const likes = JSON.parse(sessionStorage.getItem("profile_likes") || "[]");
+    const dislikes = selected;
+
+    try {
+      const res = await apiClient.post("/api/members", {
+        member: {
+          name: displayName,
+          likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
+          dislikes_attributes: dislikes
+            .filter((d) => d)
+            .map((d) => ({ name: d })),
+        },
+        family: {
+          name: familyName || "Default Family",
+        },
+      });
+      setMessage(`作成成功ID: ${res.data.id}`);
+      // 送信後は一時データをクリア
+      sessionStorage.removeItem("profile_display_name");
+      sessionStorage.removeItem("profile_family_name");
+      sessionStorage.removeItem("profile_likes");
+      router.push("/menus");
+    } catch (error) {
+      if (error.response) {
+        const errors = error.response.data.errors || [
+          error.response.data.error,
+        ];
+        setMessage(`エラー: ${errors.join(", ")}`);
+      } else {
+        setMessage("通信エラーが発生しました");
+      }
+    }
   };
 
   return (
@@ -100,6 +151,7 @@ export default function ProfileStep3DisLike() {
             </div>
           </div>
         </form>
+        {message && <p className="mt-4 small-note">{message}</p>}
       </div>
     </div>
   );

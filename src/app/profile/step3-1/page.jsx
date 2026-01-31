@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/app/lib/api";
+import { auth } from "@/app/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 const OPTIONS = [
   "寿司",
@@ -31,13 +34,26 @@ export default function ProfileStep3Like() {
   const router = useRouter();
 
   useEffect(() => {
-    // 既に選択済みがあれば復元
+    // 既に選択済みがあればAPIから取得して復元
+    let unsub;
     try {
-      const raw = sessionStorage.getItem("profile_likes");
-      if (raw) setSelected(JSON.parse(raw));
-    } catch {
-      // ignore
+      unsub = onAuthStateChanged(auth, async (user) => {
+        if (!user) return;
+        try {
+          const res = await apiClient.get("/api/members");
+          const members = res.data || [];
+          const email = user.email;
+          const member = members.find((m) => m.email === email) || members[0];
+          const likes = member?.likes?.map((l) => l.name) || [];
+          setSelected(likes);
+        } catch (err) {
+          console.error("既存選択の取得に失敗しました:", err);
+        }
+      });
+    } catch (e) {
+      console.error(e);
     }
+    return () => unsub && unsub();
   }, []);
 
   const toggle = (opt) => {
@@ -47,7 +63,7 @@ export default function ProfileStep3Like() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // 保存: 簡易に sessionStorage に保存（必要なら API 呼び出しに置換）
     sessionStorage.setItem("profile_likes", JSON.stringify(selected));
