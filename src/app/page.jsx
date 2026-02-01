@@ -39,23 +39,23 @@ export default function LootPage() {
         ))}
         {/* マスク（暗くする） */}
         <div className="absolute inset-0 bg-black/50"></div>
-        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex-col text-center space-y-8">
-          <h1 className="text-6xl font-bold text-white drop-shadow-lg">
+        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center text-center space-y-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">
             食卓で家族は繋がる
           </h1>
 
-          <h1 className="text-white text-2xl md:text-5xl font-bold tracking-widest drop-shadow-lg">
+          <h1 className="text-white text-2xl md:text-4xl font-bold tracking-widest drop-shadow-lg">
             FamDishとは
           </h1>
 
-          <p className="text-white inline-block text-center drop-shadow-lg">
+          <p className="text-white text-center drop-shadow-lg max-w-xl">
             献立を考える手間をなくしたい。
             <br />
             食べたいものが食卓に出てくると嬉しい。
             <br />
             食材の無駄やマンネリ化をなくしたい。
             <br />
-            そんな願いを叶えます。
+            そんな悩みを解決。
           </p>
 
           <Link
@@ -66,7 +66,8 @@ export default function LootPage() {
           </Link>
 
           <p className="mt-6 text-white text-sm">
-            アカウントをお持ちの方は{" "}
+            アカウントをお持ちの方は
+            <br />{" "}
             <Link
               href="/login"
               className="underline underline-offset-4 hover:opacity-80 transition"
