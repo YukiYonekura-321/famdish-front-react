@@ -24,7 +24,7 @@ export function Header() {
 
         <Link
           className="text-white block leading-16 px-4 bg-gray-600/50 mr-8 hover:bg-gray-500/50 transition duration-500"
-          href="/login"
+          href="/sign-in"
         >
           新規登録
         </Link>

@@ -1,0 +1,110 @@
+"use client";
+
+import {
+  GoogleAuthProvider,
+  TwitterAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup,
+  getAdditionalUserInfo,
+} from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/header";
+
+export default function LoginPage() {
+  const router = useRouter();
+
+  const redirectTomyPageWhenLoginSuccess = async (provider) => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const additional = getAdditionalUserInfo(result); // 正規の取得方法
+      console.log("additionalUserInfo:", additional);
+      const isNewUser = additional?.isNewUser;
+      if (isNewUser) {
+        // 新規登録ユーザーはプロフィールステップへ
+        router.replace("/profile/step1");
+      } else {
+        // 既存ユーザーはメニュー一覧へ
+        router.replace("/menus");
+      }
+      // メールが確認されていない場合はメール登録画面に遷移する
+      if (!result.user.emailVerified) {
+        router.replace("/register-email");
+      }
+    } catch (error) {
+      console.log(error);
+      console.log(
+        error.code,
+        error.message,
+        error.credential,
+        error.customData,
+      );
+      alert(`エラー: ${error.code} ${error.message}`);
+      if (error.code === "auth/account-exists-with-different-credential") {
+        alert(
+          `${error.customData.email}は他のSNSと連携した既存ユーザーが登録済みです。既存ユーザーでログイン後、こちらのSNSとの連携が可能です。`,
+        );
+        return;
+      }
+      alert(`ログイン/新規登録に失敗しました。\n${error.message}`);
+    }
+  };
+
+  // Googleログインボタン
+  const googleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    await redirectTomyPageWhenLoginSuccess(provider);
+  };
+
+  // X(twitter)ログインボタン
+  const twitterLogin = async () => {
+    const provider = new TwitterAuthProvider();
+    await redirectTomyPageWhenLoginSuccess(provider);
+  };
+
+  // GitHubログインボタン
+  const githubLogin = async () => {
+    const provider = new GithubAuthProvider();
+    await redirectTomyPageWhenLoginSuccess(provider);
+  };
+  return (
+    <div>
+      <Header />
+
+      <div className="relative w-full min-h-screen p-8">
+        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex-col text-center space-y-8">
+          <h1 className="text-6xl font-bold text-black drop-shadow-lg">
+            食卓で家族は繋がる
+          </h1>
+
+          <button
+            className="px-4 py-2 inline-block bg-blue-500 text-white opacity-80 hover:opacity-100 transition duration-1000 rounded-md"
+            onClick={() => {
+              googleLogin();
+            }}
+          >
+            Googleで新規登録
+          </button>
+
+          <button
+            className="px-4 py-2 inline-block bg-sky-500 text-white opacity-80 hover:opacity-100 transition duration-1000 rounded-md"
+            onClick={() => {
+              twitterLogin();
+            }}
+          >
+            X(Twitter)で新規登録
+          </button>
+
+          <button
+            className="px-4 py-2 inline-block bg-gray-500 text-white opacity-80 hover:opacity-100 transition duration-1000 rounded-md"
+            onClick={() => {
+              githubLogin();
+            }}
+          >
+            Githubで新規登録
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

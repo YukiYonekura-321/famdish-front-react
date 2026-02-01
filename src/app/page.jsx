@@ -58,7 +58,7 @@ export default function LootPage() {
 
           <Link
             className="px-4 py-2 inline-block bg-green-500 text-white opacity-80 hover:opacity-100 transition duration-1000 rounded-md"
-            href="/login"
+            href="/sign-in"
           >
             今すぐ無料で始める
           </Link>
