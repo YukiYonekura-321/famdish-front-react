@@ -26,7 +26,7 @@ export default function MyPage() {
       <AuthHeader />
       <div className="relative w-full min-h-screen p-8">
         <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex-col text-center space-y-8">
-          <h2 className="text-2xl font-bold text-white drop-shadow-lg">
+          <h2 className="text-2xl md:text-4xl font-bold drop-shadow-lg">
             連携状態
           </h2>
           {authUser && <ProviderLinkTable user={authUser} />}
