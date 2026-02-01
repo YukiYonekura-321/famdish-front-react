@@ -36,26 +36,36 @@ export function ProviderLinkTable({ user }) {
   };
 
   return (
-    <table>
+    <table className="w-full table-auto">
       <tbody>
         {PROVIDERS.map(({ id, name, provider }) => {
           const isLinked = linkedProviders.includes(id);
-          const displayName =
-            user.providerData?.find((p) => p.providerId === id)?.displayName ??
-            "-";
           return (
-            <tr key={id}>
-              <th>{name}</th>
-              <td>{displayName}</td>
-              <td>{isLinked ? "連携" : "未連携"}</td>
-              <td>
-                {isLinked ? (
-                  canUnlink && (
-                    <button onClick={() => unlinkProvider(id)}>解除</button>
-                  )
-                ) : (
-                  <button onClick={() => linkProvider(provider)}>連携</button>
-                )}
+            <tr key={id} className="border-b">
+              <th className="text-left px-4 py-2">{name}</th>
+              <td className="px-4 py-2 text-center w-28">
+                {isLinked ? "連携" : "未連携"}
+              </td>
+              <td className="px-4 py-2">
+                <div className="flex items-center gap-3">
+                  {isLinked ? (
+                    canUnlink && (
+                      <button
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                        onClick={() => unlinkProvider(id)}
+                      >
+                        解除
+                      </button>
+                    )
+                  ) : (
+                    <button
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      onClick={() => linkProvider(provider)}
+                    >
+                      連携
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           );
