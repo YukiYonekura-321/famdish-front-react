@@ -109,9 +109,9 @@ export default function LoginPage() {
       <Header />
 
       <div className="relative w-full min-h-screen p-8">
-        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex-col text-center space-y-8">
-          <h1 className="text-6xl font-bold text-black drop-shadow-lg">
-            食卓で家族は繋がる
+        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex flex-col items-centertext-center space-y-8">
+          <h1 className="text-3xl md:text-6xl font-bold text-black drop-shadow-lg">
+            ログイン
           </h1>
 
           <button
@@ -142,10 +142,21 @@ export default function LoginPage() {
           </button>
 
           <Link href={"/recovery"}>
-            <p className="text-2xl font-semibold mb-2">
+            <p className="md:text-xl underline underline-offset-4 hover:opacity-80 transition">
               ソーシャルログインできない場合はここから
             </p>
           </Link>
+
+          <p className="md:text-3xl mt-6 text-sm">
+            アカウントをお持ちでない方
+            <br />
+            <Link
+              href="/sign-in"
+              className="md:text-xl underline underline-offset-4 hover:opacity-80 transition"
+            >
+              会員登録はこちら
+            </Link>
+          </p>
         </div>
       </div>
     </div>
