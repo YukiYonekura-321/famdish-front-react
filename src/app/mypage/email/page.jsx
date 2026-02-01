@@ -71,12 +71,10 @@ export default function MyPage() {
       <AuthHeader />
       <div className="relative w-full min-h-screen p-8">
         <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex-col text-center space-y-8">
-          <p className="inline-block text-center drop-shadow-lg">
-            メールアドレス
-          </p>
-          <p className="inline-block text-center drop-shadow-lg">
-            現在のメールアドレス{email}
-          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-black drop-shadow-lg">
+            現在のメールアドレス
+          </h1>
+          <p className="inline-block text-center drop-shadow-lg">{email}</p>
           <form onSubmit={updateEmail}>
             <label htmlFor="email">新しいメールアドレス</label>
             <input
