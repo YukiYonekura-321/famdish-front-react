@@ -22,50 +22,46 @@ export function AuthHeader() {
   };
 
   return (
-    <header className="flex justify-between items-center h-16 fixed top-0 left-0 w-full z-10 backdrop-blur bg-zinc-800/50">
-      <Link className="p-4 text-white text-[32px] mr-16" href="/">
+    <header className="flex justify-between items-center h-16 fixed top-0 left-0 w-full z-50 backdrop-blur bg-zinc-800/50">
+      <Link className="p-4 text-white text-[32px]" href="/">
         FamDish
       </Link>
-      <nav className="hidden md:flex space-x-8">
+      <nav className="hidden md:flex md:gap-0 gap-3 flex-wrap items-center">
         <Link
-          className="text-white block leading-16 px-4 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500"
+          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
           href="/members"
         >
           メンバー登録
         </Link>
 
         <Link
-          className="text-white block leading-16 px-4 bg-gray-600/50 mr-8 hover:bg-gray-500/50 transition duration-500"
+          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
+          href="/members/index"
+        >
+          メンバー一覧
+        </Link>
+
+        <Link
+          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
           href="/menus"
         >
           リクエスト
         </Link>
 
-        <button
-          onClick={logout}
-          className="text-white block leading-16 px-4 bg-gray-600/60 hover:bg-gray-500/60 transition duration-500 mr-8"
+        <Link
+          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
+          href="/menus/index"
         >
-          ログアウト
-        </button>
+          リクエスト一覧
+        </Link>
 
         <div className="relative group">
-          <Link
-            href="/mypage"
-            className="text-white block leading-16 px-4 bg-gray-600/50 mr-8 hover:bg-gray-500/50 transition duration-300"
-          >
-            マイページ設定
-          </Link>
+          <div className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-300 text-sm md:text-base">
+            マイページ
+          </div>
 
           {/* プルダウンメニュー */}
-          <div
-            className="
-              absolute right-0 mt-0 w-56
-              hidden group-hover:block
-              bg-zinc-800/95 backdrop-blur
-              shadow-lg rounded-md
-              py-2
-            "
-          >
+          <div className="absolute right-0 top-full mt-1 w-56 hidden group-hover:block bg-zinc-800/95 backdrop-blur shadow-lg rounded-md py-2">
             <Link
               href="/mypage/social"
               className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
