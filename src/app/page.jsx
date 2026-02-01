@@ -49,10 +49,12 @@ export default function LootPage() {
           </h1>
 
           <p className="text-white inline-block text-center drop-shadow-lg">
-            献立を考える手間をなくしたい。食べたいものが食卓に出てくると嬉しい。食材の無駄やマンネリ化をなくしたい。
-          </p>
-
-          <p className="text-white inline-block text-center drop-shadow-lg">
+            献立を考える手間をなくしたい。
+            <br />
+            食べたいものが食卓に出てくると嬉しい。
+            <br />
+            食材の無駄やマンネリ化をなくしたい。
+            <br />
             そんな願いを叶えます。
           </p>
 
