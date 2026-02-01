@@ -54,31 +54,25 @@ export default function MemberForm() {
             className="gra-card w-11/12 sm:w-1/2 flex flex-col"
           >
             <Link href={`/members/${m.id}`}>
-              <div className="text-2xl font-semibold mb-2">{m.name}</div>
+              <div className="text-sm md:text-2xl font-semibold mb-2">
+                {m.name}
+              </div>
             </Link>
 
             <div className="mt-2">
-              <div className="font-bold mb-1">好きなもの</div>
+              <div className="md:font-bold mb-1">好きなもの</div>
               <div className="flex flex-wrap gap-2">
                 {m.likes?.map((like) => (
-                  <div
-                    key={`likes-${m.id}-${like.id}`}
-                    className="gra-list-item"
-                  >
-                    {like.name}
-                  </div>
+                  <div key={`likes-${m.id}-${like.id}`}>{like.name}</div>
                 ))}
               </div>
             </div>
 
             <div className="mt-3">
-              <div className="font-bold mb-1">嫌いなもの</div>
+              <div className="md:font-bold mb-1">嫌いなもの</div>
               <div className="flex flex-wrap gap-2">
                 {m.dislikes?.map((dislike) => (
-                  <div
-                    key={`dislikes-${m.id}-${dislike.id}`}
-                    className="gra-list-item"
-                  >
+                  <div key={`dislikes-${m.id}-${dislike.id}`}>
                     {dislike.name}
                   </div>
                 ))}
