@@ -16,6 +16,9 @@ export default function MenuIndex() {
   const [usertoken, setUsertoken] = useState("");
   const { loading, suggestions, fetchSuggestions } = useSuggestion();
   const { saveFeedback } = useFeedback();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editingValue, setEditingValue] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -58,23 +61,99 @@ export default function MenuIndex() {
 
         <div className="w-full flex flex-col items-center gap-4 mt-6">
           {menu.map((m) => (
-            <React.Fragment key={m.id}>
-              <Link href={`/menus/${m.id}`}>
-                <div className="gra-card w-11/12 sm:w-80 cursor-pointer">
+            <div
+              key={m.id}
+              className="w-11/12 sm:w-3/4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            >
+              <Link href={`/menus/${m.id}`} className="w-full sm:w-auto">
+                <div className="gra-card w-full cursor-pointer">
                   <div>{m.menu}</div>
                 </div>
               </Link>
-              <button
-                className="gra-btn mt-2"
-                onClick={() => {
-                  fetchSuggestions(m.menu);
-                }}
-              >
-                提案を取得する
-              </button>
-            </React.Fragment>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <button
+                  className="gra-btn"
+                  onClick={() => fetchSuggestions(m.menu)}
+                >
+                  提案を取得する
+                </button>
+
+                <button
+                  className="px-3 py-2 bg-yellow-400 text-black rounded hover:brightness-95"
+                  onClick={() => {
+                    setEditingId(m.id);
+                    setEditingValue(m.menu);
+                    setShowEditModal(true);
+                  }}
+                >
+                  編集
+                </button>
+
+                <button
+                  className="px-3 py-2 bg-red-500 text-white rounded hover:brightness-90"
+                  onClick={async () => {
+                    if (!confirm("本当に削除しますか？")) return;
+                    try {
+                      await apiClient.delete(`/api/menus/${m.id}`);
+                      setMenu((prev) => prev.filter((it) => it.id !== m.id));
+                    } catch (err) {
+                      console.error("削除に失敗しました", err);
+                      alert("削除に失敗しました");
+                    }
+                  }}
+                >
+                  削除
+                </button>
+              </div>
+            </div>
           ))}
         </div>
+
+        {/* 編集モーダル */}
+        {showEditModal && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h2 className="text-lg font-bold mb-4">メニューを編集</h2>
+              <input
+                value={editingValue}
+                onChange={(e) => setEditingValue(e.target.value)}
+                className="gra-input w-full mb-4"
+              />
+              <div className="flex justify-end gap-3">
+                <button
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  キャンセル
+                </button>
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  onClick={async () => {
+                    try {
+                      await apiClient.patch(`/api/menus/${editingId}`, {
+                        menu: { menu: editingValue },
+                      });
+                      setMenu((prev) =>
+                        prev.map((it) =>
+                          it.id === editingId
+                            ? { ...it, menu: editingValue }
+                            : it,
+                        ),
+                      );
+                      setShowEditModal(false);
+                    } catch (err) {
+                      console.error("更新に失敗しました", err);
+                      alert("更新に失敗しました");
+                    }
+                  }}
+                >
+                  保存
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {loading && <p className="text-sm text-gray-600">提案を生成中です…</p>}
         {/* 提案カード一覧 */}
