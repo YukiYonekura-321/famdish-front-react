@@ -8,7 +8,7 @@ import { useState } from "react";
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <header className="flex justify-between items-center h-16 fixed top-0 left-0 w-full z-10 backdrop-blur bg-zinc-800/50">
+    <header className="flex justify-between items-center h-16 fixed top-0 left-0 w-full z-50 backdrop-blur bg-zinc-800/50">
       <Link className="p-4 text-white text-[32px] mr-16" href="/">
         FamDish
       </Link>
