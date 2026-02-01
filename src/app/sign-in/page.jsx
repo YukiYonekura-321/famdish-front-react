@@ -10,6 +10,7 @@ import {
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -72,9 +73,9 @@ export default function LoginPage() {
       <Header />
 
       <div className="relative w-full min-h-screen p-8">
-        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex-col text-center space-y-8">
-          <h1 className="text-6xl font-bold text-black drop-shadow-lg">
-            食卓で家族は繋がる
+        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex flex-col items-centertext-center space-y-6">
+          <h1 className="text-3xl md:text-6xl font-bold text-black drop-shadow-lg">
+            会員登録
           </h1>
 
           <button
@@ -103,6 +104,23 @@ export default function LoginPage() {
           >
             Githubで新規登録
           </button>
+
+          <p className="md:text-xl hover:opacity-80 transition">
+            新規登録できない場合はSNSアカウントを作成
+            <br className="hidden md:block" />
+            してください
+          </p>
+
+          <p className="md:text-xl mt-6 text-sm">
+            アカウントをお持ちの方
+            <br />
+            <Link
+              href="/login"
+              className="md:text-xl underline underline-offset-4 hover:opacity-80 transition"
+            >
+              ログインはこちら
+            </Link>
+          </p>
         </div>
       </div>
     </div>
