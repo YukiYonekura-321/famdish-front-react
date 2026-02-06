@@ -10,6 +10,7 @@ import { AuthHeader } from "@/components/auth_header";
 export default function MemberEdit({ params }) {
   const resolvedParams = use(params);
   const [usertoken, setUsertoken] = useState("");
+  const [currentUid, setCurrentUid] = useState(null);
   const [member, setMember] = useState(null);
   const [memberId, setMemberId] = useState(null);
   const [initialName, setInitialName] = useState("");
@@ -31,8 +32,10 @@ export default function MemberEdit({ params }) {
       if (user) {
         const token = await user.getIdToken();
         setUsertoken(token);
+        setCurrentUid(user.uid);
       } else {
         setUsertoken("");
+        setCurrentUid(null);
       }
     });
     return () => unsubscribe();
@@ -114,6 +117,31 @@ export default function MemberEdit({ params }) {
 
   if (!member) {
     return <div>読み込み中...</div>;
+  }
+
+  // 所有者チェック: バックエンドでは `member.user.firebase_uid` を所有者識別子として保持します。
+  // 例: member.user.firebase_uid に格納されている Firebase UID と比較します。
+  const ownerUid = member.user.firebase_uid || null;
+  const isOwner = currentUid && ownerUid ? currentUid === ownerUid : false;
+
+  if (ownerUid && currentUid !== null && !isOwner) {
+    return (
+      <div className="gra-page min-h-screen p-8 flex flex-col items-center">
+        <AuthHeader />
+        <div className="gra-card p-6 max-w-md mt-12 text-center">
+          <h2 className="text-2xl font-bold mb-4">権限がありません</h2>
+          <p className="mb-4">このメンバーを編集する権限がありません。</p>
+          <div className="flex justify-center gap-4">
+            <button
+              className="gra-btn"
+              onClick={() => router.replace(`/members/${memberId}`)}
+            >
+              戻る
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
