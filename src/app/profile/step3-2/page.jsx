@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/app/lib/api";
-import { auth } from "@/app/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
 const OPTIONS = [
   "にんじん",
