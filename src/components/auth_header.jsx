@@ -4,14 +4,38 @@ import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { auth } from "@/app/lib/firebase";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiClient } from "@/app/lib/api";
 import HamburgerButton from "./HamburgerButton";
 import MobileAuthMenuItems from "./MobileAuthMenuItems";
+import { onAuthStateChanged } from "firebase/auth";
 
 export function AuthHeader() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // まず API でメンバー情報を取得して表示名を上書きできるか試す
+        try {
+          const res = await apiClient.get("/api/members/me");
+          const data = res?.data || {};
+          console.log(data);
+          setDisplayName(data.username || "");
+        } catch (error) {
+          console.error("メンバー取得失敗", error);
+          // フォールバック処理
+          setDisplayName("");
+        }
+      } else {
+        setDisplayName("");
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const logout = async () => {
     try {
@@ -69,7 +93,7 @@ export function AuthHeader() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
           >
-            マイページ
+            マイページ{` — ${displayName}`}
           </div>
 
           {open && (
