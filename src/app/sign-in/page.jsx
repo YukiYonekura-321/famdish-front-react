@@ -22,8 +22,6 @@ export default function LoginPage() {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
         router.replace("/menus");
-        console.log("onAuthStateChanged user:", user);
-        console.log("calling replace");
       }
     });
     return () => unsub();
