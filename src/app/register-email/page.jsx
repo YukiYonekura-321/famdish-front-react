@@ -28,21 +28,13 @@ export default function RegisterEmailPage() {
       // サーバ側で member が紐付いていれば本登録とみなし /menus へリダイレクト
       try {
         const res = await apiClient.get("/api/members/me");
-        console.log(res.data);
-        if (res?.data?.id) {
+        if (res?.data?.username) {
           // 本登録済み
           router.replace("/menus");
-          console.log(`a${res.data}`);
           return;
         }
       } catch (err) {
-        // 404 は未登録（仮登録）としてページを表示する
-        if (err?.response?.status === 404) {
-          console.log("そのまま");
-          // 未登録: 続行してページを表示
-        } else {
-          console.error("member/me check failed", err);
-        }
+        console.error("member/me check failed", err);
       }
 
       // まだ本登録でない場合はフォームにプロバイダのメールを入れてページ表示
