@@ -54,6 +54,7 @@ export default function MemberForm() {
         family: {
           name: familyname || "Default Family",
         },
+        link_user: false, // ← ここを追加（true にすれば紐付けする）
       });
       setMessage(`作成成功ID: ${res.data.id}, 名前: ${res.data.name}
         好きなもの: ${res.data.likes.map((l) => l.name).join(", ")}
