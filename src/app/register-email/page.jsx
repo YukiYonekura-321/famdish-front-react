@@ -31,6 +31,7 @@ export default function RegisterEmailPage() {
         if (res?.data && res.data.id) {
           // 本登録済み
           router.replace("/menus");
+          console.log("menusページへ移動");
           return;
         }
       } catch (err) {
