@@ -121,8 +121,8 @@ export default function MemberEdit({ params }) {
 
   // 所有者チェック: バックエンドでは `member.user.firebase_uid` を所有者識別子として保持します。
   // 例: member.user.firebase_uid に格納されている Firebase UID と比較します。
-  const ownerUid = member.user.firebase_uid || null;
-  const isOwner = currentUid && ownerUid ? currentUid === ownerUid : false;
+  const ownerUid = member.user?.firebase_uid || null;
+  const isOwner = Boolean(currentUid && ownerUid && currentUid === ownerUid);
 
   if (ownerUid && currentUid !== null && !isOwner) {
     return (
