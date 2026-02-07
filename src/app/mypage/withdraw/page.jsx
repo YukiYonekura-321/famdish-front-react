@@ -1,5 +1,6 @@
 "use client";
 
+import { onAuthStateChanged } from "firebase/auth";
 import { AuthHeader } from "@/components/auth_header";
 import { deleteUser } from "@/app/lib/delete-user";
 import { auth } from "@/app/lib/firebase";
