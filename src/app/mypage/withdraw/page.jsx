@@ -4,6 +4,7 @@ import { AuthHeader } from "@/components/auth_header";
 import { deleteUser } from "@/app/lib/delete-user";
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 // LoginPage というReactコンポーネントを定義
 // ボタンを表示して、クリックすると login 関数が呼ばれ、Googleログイン開始
