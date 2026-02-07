@@ -12,6 +12,7 @@ export default function MemberForm({ params }) {
   const [usertoken, setUsertoken] = useState("");
   const [member, setMember] = useState(null);
   const [memberId, setMemberId] = useState(null); // params.id を安全に扱うための state
+  const router = useRouter();
 
   useEffect(() => {
     // params.id を安全に state にコピー
@@ -27,11 +28,12 @@ export default function MemberForm({ params }) {
         setUsertoken(token);
       } else {
         setUsertoken("");
+        router.replace("/login");
       }
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
-  }, []);
+  }, [router]);
 
   // トークンが変わったらメンバーを取得
   useEffect(() => {
@@ -49,8 +51,6 @@ export default function MemberForm({ params }) {
 
     loadMember();
   }, [usertoken, memberId]);
-
-  const router = useRouter();
 
   // 編集処理（遷移）
   const handleEdit = () => {

@@ -25,13 +25,13 @@ export default function MemberForm() {
         const token = await user.getIdToken();
         setUsertoken(token);
       } else {
-        console.log(user);
+        router.replace("/login");
         setUsertoken("");
       }
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
-  }, []);
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

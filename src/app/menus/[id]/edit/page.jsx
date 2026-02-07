@@ -30,10 +30,11 @@ export default function MenuEdit({ params }) {
         setUsertoken(token);
       } else {
         setUsertoken("");
+        router.replace("/login");
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   // メニュー情報を取得
   useEffect(() => {

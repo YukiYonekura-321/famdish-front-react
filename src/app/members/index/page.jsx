@@ -6,10 +6,12 @@ import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
 import { AuthHeader } from "@/components/auth_header";
+import { useRouter } from "next/navigation";
 
 export default function MemberForm() {
   const [usertoken, setUsertoken] = useState("");
   const [member, setMember] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -18,6 +20,7 @@ export default function MemberForm() {
         setUsertoken(token);
       } else {
         setUsertoken("");
+        router.replace("/login");
       }
     });
 

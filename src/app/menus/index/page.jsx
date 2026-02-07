@@ -9,6 +9,7 @@ import { useSuggestion } from "@/hooks/useSuggestion";
 import { useFeedback } from "@/hooks/useFeedback";
 import SuggestionCard from "@/components/SuggestionCard";
 import { AuthHeader } from "@/components/auth_header";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 export default function MenuIndex() {
@@ -19,6 +20,7 @@ export default function MenuIndex() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editingValue, setEditingValue] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -27,11 +29,12 @@ export default function MenuIndex() {
         setUsertoken(token);
       } else {
         setUsertoken("");
+        router.replace("/login");
       }
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
-  }, []);
+  }, [router]);
 
   // トークンが変わったらメンバーを取得
   useEffect(() => {

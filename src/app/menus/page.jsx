@@ -31,11 +31,12 @@ export default function MenuCreate() {
         setUsertoken(token);
       } else {
         setUsertoken("");
+        router.replace("/login");
       }
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
-  }, []);
+  }, [router]);
 
   // トークンが変わったらメンバーを取得
   useEffect(() => {

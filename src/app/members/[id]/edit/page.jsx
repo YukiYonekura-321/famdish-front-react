@@ -36,10 +36,11 @@ export default function MemberEdit({ params }) {
       } else {
         setUsertoken("");
         setCurrentUid(null);
+        router.replace("/login");
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   // メンバー情報を取得
   useEffect(() => {
@@ -65,13 +66,6 @@ export default function MemberEdit({ params }) {
   const handleChangeName = (e) => {
     setMember({ ...member, [e.target.name]: e.target.value });
   };
-
-  // const handleChangeArray = (field, e) => {
-  //   const values = e.target.value
-  //     .split(",")
-  //     .map((name) => ({ name: name.trim() }));
-  //   setMember({ ...member, [field]: values });
-  // };
 
   // 保存処理
   const handleSubmit = async (e) => {
