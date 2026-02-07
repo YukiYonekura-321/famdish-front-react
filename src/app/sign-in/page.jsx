@@ -19,12 +19,6 @@ export default function LoginPage() {
 
   // ログイン済みなら新規登録ページに来ても /menus にリダイレクト
   useEffect(() => {
-    // 既に認証済みの場合は即時リダイレクト
-    if (auth.currentUser) {
-      router.replace("/menus");
-      return;
-    }
-
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
         router.replace("/menus");
