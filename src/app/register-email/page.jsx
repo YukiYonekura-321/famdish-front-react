@@ -7,6 +7,7 @@ import {
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
+import { apiClient } from "@/app/lib/api";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/header";
 import { useRouter } from "next/navigation";
@@ -18,15 +19,32 @@ export default function RegisterEmailPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // user オブジェクトの中から email プロパティだけを取り出す
-        // プロバイダから取得したメールアドレスをフォームの初期値として設定
-        setEmail(user.email || "");
-        console.log(user.email);
-      } else {
+      if (!user) {
         router.replace("/login");
         return;
       }
+
+      // ユーザーが存在する場合、本登録状況を確認する
+      // サーバ側で member が紐付いていれば本登録とみなし /menus へリダイレクト
+      try {
+        const res = await apiClient.get("/api/members/me");
+        if (res?.data && res.data.id) {
+          // 本登録済み
+          router.replace("/menus");
+          return;
+        }
+      } catch (err) {
+        // 404 は未登録（仮登録）としてページを表示する
+        if (err?.response?.status === 404) {
+          // 未登録: 続行してページを表示
+        } else {
+          console.error("member/me check failed", err);
+        }
+      }
+
+      // まだ本登録でない場合はフォームにプロバイダのメールを入れてページ表示
+      setEmail(user.email || "");
+      console.log(user.email);
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除

@@ -10,10 +10,22 @@ import {
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
+import { useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  // ログイン済みなら新規登録ページに来ても /menus にリダイレクト
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.replace("/menus");
+      }
+    });
+    return () => unsub();
+  }, [router]);
 
   const redirectTomyPageWhenLoginSuccess = async (provider) => {
     try {
