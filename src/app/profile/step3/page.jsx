@@ -2,9 +2,23 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
+import { useEffect } from "react";
 
 export default function ProfileStep3() {
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace("/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-lg bg-white rounded-lg shadow-md p-8">

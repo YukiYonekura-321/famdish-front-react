@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/app/lib/api";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
+import { useEffect } from "react";
 
 const OPTIONS = [
   "にんじん",
@@ -31,6 +34,16 @@ export default function ProfileStep3DisLike() {
   const [selected, setSelected] = useState([]);
   const [message, setMessage] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace("/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const toggle = (opt) => {
     setSelected((prev) => {

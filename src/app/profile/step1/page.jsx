@@ -1,8 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function ProfileStep1() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        router.replace("/login");
+      }
+    });
+
+    return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
+  }, [router]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">

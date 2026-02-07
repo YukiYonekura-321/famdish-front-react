@@ -1,12 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function ProfileStep1() {
   const [displayName, setDisplayName] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        router.replace("/login");
+      }
+    });
+
+    return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

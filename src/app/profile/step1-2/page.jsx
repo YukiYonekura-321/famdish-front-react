@@ -22,11 +22,12 @@ export default function ProfileStep1() {
         setLinkedEmails(user.email);
       } else {
         setLinkedEmails([]);
+        router.replace("/login");
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   // If there are linked emails and the input is empty, prefill with the first linked email
   useEffect(() => {

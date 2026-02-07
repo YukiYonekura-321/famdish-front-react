@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
+import { useEffect } from "react";
 
 const OPTIONS = [
   "寿司",
@@ -29,6 +32,16 @@ const OPTIONS = [
 export default function ProfileStep3Like() {
   const [selected, setSelected] = useState([]);
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace("/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const toggle = (opt) => {
     setSelected((prev) => {

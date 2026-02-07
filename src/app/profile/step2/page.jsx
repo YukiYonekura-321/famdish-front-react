@@ -2,11 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
+import { useEffect } from "react";
 
 export default function ProfileStep2() {
   const [message, setMessage] = useState("");
   const [familyName, setFamilyName] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace("/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
