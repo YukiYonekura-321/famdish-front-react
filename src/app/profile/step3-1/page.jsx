@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { useEffect } from "react";
+import { apiClient } from "@/app/lib/api";
 
 const OPTIONS = [
   "寿司",
@@ -34,9 +35,16 @@ export default function ProfileStep3Like() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.replace("/login");
+      }
+
+      const res = await apiClient.get("/api/members/me");
+      if (res?.data?.username) {
+        // 本登録済み
+        router.replace("/menus");
+        return;
       }
     });
 

@@ -5,6 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { apiClient } from "@/app/lib/api";
 
 export default function ProfileStep1() {
   const router = useRouter();
@@ -14,6 +15,13 @@ export default function ProfileStep1() {
       if (!user) {
         console.log("ログインページに遷移します");
         router.replace("/login");
+      }
+
+      const res = await apiClient.get("/api/members/me");
+      if (res?.data?.username) {
+        // 本登録済み
+        router.replace("/menus");
+        return;
       }
     });
 

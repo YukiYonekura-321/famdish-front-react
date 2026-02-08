@@ -9,6 +9,7 @@ import {
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 import { getProvider } from "@/app/lib/provider-utils";
+import { apiClient } from "@/app/lib/api";
 
 export default function ProfileStep1() {
   const [email, setEmail] = useState("");
@@ -17,9 +18,16 @@ export default function ProfileStep1() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setLinkedEmails(user.email);
+
+        const res = await apiClient.get("/api/members/me");
+        if (res?.data?.username) {
+          // 本登録済み
+          router.replace("/menus");
+          return;
+        }
       } else {
         setLinkedEmails([]);
         router.replace("/login");
