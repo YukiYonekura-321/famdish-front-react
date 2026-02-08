@@ -10,6 +10,7 @@ import {
   //   onAuthStateChanged,
   getAdditionalUserInfo,
 } from "firebase/auth";
+import { apiClient } from "@/app/lib/api";
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
