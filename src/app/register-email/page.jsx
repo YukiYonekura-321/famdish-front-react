@@ -28,8 +28,16 @@ export default function RegisterEmailPage() {
       // サーバ側で member が紐付いていれば本登録とみなし /menus へリダイレクト
       try {
         const res = await apiClient.get("/api/members/me");
+        console.log(
+          "members/me:",
+          res?.data,
+          "username:",
+          res?.data?.username,
+          typeof res?.data?.username,
+        );
         if (res?.data?.username) {
           // 本登録済み
+          console.trace("redirect to /menus");
           router.replace("/menus");
           return;
         }
