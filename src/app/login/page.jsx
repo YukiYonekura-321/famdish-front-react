@@ -28,8 +28,20 @@ export default function LoginPage() {
         // 新規登録ユーザーはプロフィールステップへ
         router.replace("/profile/step1");
       } else {
-        // 既存ユーザーはメニュー一覧へ
-        router.replace("/menus");
+        // isNewUser = falseの場合でも、本登録状況を確認する
+        // サーバ側で member が紐付いていれば本登録とみなし /menus へリダイレクト
+        try {
+          const res = await apiClient.get("/api/members/me");
+          if (res?.data?.username) {
+            // 本登録済み
+            router.replace("/menus");
+            return;
+          } else {
+            router.replace("/profile/step1");
+          }
+        } catch (err) {
+          console.error("member/me check failed", err);
+        }
       }
       // メールが確認されていない場合はメール登録画面に遷移する
       if (!result.user.emailVerified) {
