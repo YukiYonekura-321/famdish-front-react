@@ -11,24 +11,12 @@ import {
   getAdditionalUserInfo,
 } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
-import { useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-
-  // ログイン済みならログインページに来ても /menus にリダイレクト
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.replace("/menus");
-      }
-    });
-    return () => unsub();
-  }, [router]);
 
   const redirectTomyPageWhenLoginSuccess = async (provider) => {
     try {

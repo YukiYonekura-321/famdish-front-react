@@ -68,9 +68,9 @@ export default function RegisterEmailPage() {
     }
     auth.languageCode = "ja";
 
-    // 例: https://yourdomain.com/login.html に飛ばす
+    // 例: https://yourdomain.com/login に飛ばす
     const actionCodeSettings = {
-      url: `${window.location.origin}/profile/step1`,
+      url: `${window.location.origin}/login`,
     };
 
     // プロバイダから取得したメールアドレスとは別のものを登録する場合
