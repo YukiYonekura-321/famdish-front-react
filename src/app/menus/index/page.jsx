@@ -70,14 +70,14 @@ export default function MenuIndex() {
             >
               <Link href={`/menus/${m.id}`} className="w-full sm:w-auto">
                 <div className="gra-card w-full cursor-pointer">
-                  <div>{m.menu}</div>
+                  <div>{m.name}</div>
                 </div>
               </Link>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <button
                   className="gra-btn"
-                  onClick={() => fetchSuggestions(m.menu)}
+                  onClick={() => fetchSuggestions(m.name)}
                 >
                   提案を取得する
                 </button>
@@ -86,7 +86,7 @@ export default function MenuIndex() {
                   className="px-3 py-2 bg-yellow-400 text-black rounded hover:brightness-95"
                   onClick={() => {
                     setEditingId(m.id);
-                    setEditingValue(m.menu);
+                    setEditingValue(m.name);
                     setShowEditModal(true);
                   }}
                 >
@@ -135,12 +135,12 @@ export default function MenuIndex() {
                   onClick={async () => {
                     try {
                       await apiClient.patch(`/api/menus/${editingId}`, {
-                        menu: { menu: editingValue },
+                        menu: { name: editingValue },
                       });
                       setMenu((prev) =>
                         prev.map((it) =>
                           it.id === editingId
-                            ? { ...it, menu: editingValue }
+                            ? { ...it, name: editingValue }
                             : it,
                         ),
                       );

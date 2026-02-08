@@ -85,7 +85,7 @@ export default function MenuShow({ params }) {
       <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
         <h1 className="gra-title text-2xl font-bold">メニュー詳細</h1>
         <div className="gra-card w-full max-w-xl mt-6">
-          <div className="gra-list-item text-center text-xl">{menu.menu}</div>
+          <div className="gra-list-item text-center text-xl">{menu.name}</div>
 
           <div className="flex flex-col md:flex-row gap-4 mt-6 justify-center">
             <button onClick={handleEdit} className="gra-btn">

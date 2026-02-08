@@ -70,7 +70,7 @@ export default function MenuCreate() {
     try {
       const res = await apiClient.post("/api/menus", {
         menu: {
-          menu: menu, // menuは選択したlikeのidやname
+          name: menu, // menuは選択したlikeのidやname
         },
       });
       setMessage(`リクエスト成功ID: ${res.data.id}, 名前: ${res.data.menu}`);

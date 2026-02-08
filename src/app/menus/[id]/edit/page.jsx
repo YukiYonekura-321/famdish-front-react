@@ -57,7 +57,7 @@ export default function MenuEdit({ params }) {
 
     try {
       await apiClient.put(`/api/menus/${menuId}`, {
-        menu: { menu: menu.menu },
+        menu: { name: menu.name },
       });
       router.push("/menus/index"); // 更新後に詳細ページへ遷移
     } catch (error) {
@@ -86,8 +86,8 @@ export default function MenuEdit({ params }) {
             <input
               type="text"
               id="name"
-              value={menu.menu || ""}
-              onChange={(e) => setMenu({ ...menu, menu: e.target.value })}
+              value={menu.name || ""}
+              onChange={(e) => setMenu({ ...menu, name: e.target.value })}
               required
               className="gra-input w-full"
             />
