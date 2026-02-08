@@ -6,7 +6,6 @@ import { apiClient } from "@/app/lib/api";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { useEffect } from "react";
-import { apiClient } from "@/app/lib/api";
 
 const OPTIONS = [
   "にんじん",
