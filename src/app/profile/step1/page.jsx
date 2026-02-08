@@ -12,6 +12,7 @@ export default function ProfileStep1() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        console.log("ログインページに遷移します");
         router.replace("/login");
       }
     });
