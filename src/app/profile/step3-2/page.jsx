@@ -63,13 +63,15 @@ export default function ProfileStep3DisLike() {
     e.preventDefault();
     // 最終送信: 各ステップで保存した sessionStorage をまとめて送る
     const displayName = sessionStorage.getItem("profile_display_name") || "";
+    const familyId = sessionStorage.getItem("invited_family_id") || null;
     const familyName =
       sessionStorage.getItem("profile_family_name") || "Default Family";
     const likes = JSON.parse(sessionStorage.getItem("profile_likes") || "[]");
     const dislikes = selected;
 
     try {
-      const res = await apiClient.post("/api/members", {
+      // リクエストボディの構築
+      const requestBody = {
         member: {
           name: displayName,
           likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
@@ -77,10 +79,18 @@ export default function ProfileStep3DisLike() {
             .filter((d) => d)
             .map((d) => ({ name: d })),
         },
-        family: {
+      };
+
+      // 招待経由（family_id あり）の場合は family_id を使用、そうでなければ family 情報を新規作成
+      if (familyId) {
+        requestBody.family_id = familyId;
+      } else {
+        requestBody.family = {
           name: familyName || "Default Family",
-        },
-      });
+        };
+      }
+
+      const res = await apiClient.post("/api/members", requestBody);
       setMessage(`作成成功ID: ${res.data.id}`);
       // 送信後は一時データをクリア
       sessionStorage.removeItem("profile_display_name");
@@ -88,6 +98,7 @@ export default function ProfileStep3DisLike() {
       sessionStorage.removeItem("profile_likes");
       sessionStorage.removeItem("from_invitation");
       sessionStorage.removeItem("invited_family_name");
+      sessionStorage.removeItem("invited_family_id");
       router.push("/menus");
     } catch (error) {
       if (error.response) {

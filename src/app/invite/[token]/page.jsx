@@ -59,10 +59,12 @@ export default function InvitePage() {
     try {
       const res = await apiClient.post(`/api/invitations/${token}/accept`);
       const familyName = res.data.family_name;
+      const familyId = res.data.family_id;
 
       // 招待経由の登録フラグと家族名を保存
       sessionStorage.setItem("from_invitation", "true");
       sessionStorage.setItem("invited_family_name", familyName);
+      sessionStorage.setItem("invited_family_id", familyId);
 
       alert(`${familyName}への参加が完了しました！`);
       // 招待経由の場合は /profile/step1 へ → step2（家族名）をスキップ
