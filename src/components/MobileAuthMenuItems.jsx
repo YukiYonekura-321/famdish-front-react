@@ -59,6 +59,17 @@ export default function MobileAuthMenuItems({ onClick }) {
           }`}
         >
           <Link
+            href="/mypage/invite"
+            onClick={() => {
+              setOpen(false);
+              onClick?.();
+            }}
+            className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+          >
+            💌 家族を招待
+          </Link>
+
+          <Link
             href="/mypage/social"
             onClick={() => {
               setOpen(false);

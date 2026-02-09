@@ -99,6 +99,13 @@ export function AuthHeader() {
           {open && (
             <div className="absolute right-0 top-full mt-1 w-56 bg-zinc-800/95 backdrop-blur shadow-lg rounded-md py-2">
               <Link
+                href="/mypage/invite"
+                className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+              >
+                💌 家族を招待
+              </Link>
+
+              <Link
                 href="/mypage/social"
                 className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
               >
