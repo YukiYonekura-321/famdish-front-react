@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { apiClient } from "@/app/lib/api";
-import { Header } from "@/components/header";
+import { AuthHeader } from "@/components/auth_header";
 
 export default function CreateInvitePage() {
   const router = useRouter();
@@ -89,7 +89,7 @@ export default function CreateInvitePage() {
   if (loading) {
     return (
       <div>
-        <Header />
+        <AuthHeader />
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
             <p className="text-lg">読み込み中...</p>
@@ -101,7 +101,7 @@ export default function CreateInvitePage() {
 
   return (
     <div>
-      <Header />
+      <AuthHeader />
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-lg shadow-md p-8">
