@@ -58,8 +58,15 @@ export default function InvitePage() {
 
     try {
       const res = await apiClient.post(`/api/invitations/${token}/accept`);
-      alert(`${res.data.family_name}への参加が完了しました！`);
-      router.push("/menus");
+      const familyName = res.data.family_name;
+
+      // 招待経由の登録フラグと家族名を保存
+      sessionStorage.setItem("from_invitation", "true");
+      sessionStorage.setItem("invited_family_name", familyName);
+
+      alert(`${familyName}への参加が完了しました！`);
+      // 招待経由の場合は /profile/step1 へ → step2（家族名）をスキップ
+      router.push("/profile/step1");
     } catch (err) {
       console.error("招待受諾エラー:", err);
       if (err.response?.data?.error) {

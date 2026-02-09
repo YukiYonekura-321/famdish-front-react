@@ -86,6 +86,8 @@ export default function ProfileStep3DisLike() {
       sessionStorage.removeItem("profile_display_name");
       sessionStorage.removeItem("profile_family_name");
       sessionStorage.removeItem("profile_likes");
+      sessionStorage.removeItem("from_invitation");
+      sessionStorage.removeItem("invited_family_name");
       router.push("/menus");
     } catch (error) {
       if (error.response) {

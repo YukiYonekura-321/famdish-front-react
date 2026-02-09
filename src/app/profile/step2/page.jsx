@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
-import { useEffect } from "react";
 import { apiClient } from "@/app/lib/api";
 
 export default function ProfileStep2() {
@@ -13,6 +12,16 @@ export default function ProfileStep2() {
   const router = useRouter();
 
   useEffect(() => {
+    // 招待経由の場合はスキップして直接 step3 へ
+    const isFromInvitation = sessionStorage.getItem("from_invitation");
+    if (isFromInvitation === "true") {
+      const invitedFamilyName = sessionStorage.getItem("invited_family_name");
+      sessionStorage.setItem("profile_family_name", invitedFamilyName || "");
+      // step3 へスキップ
+      router.replace("/profile/step3");
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.replace("/login");
