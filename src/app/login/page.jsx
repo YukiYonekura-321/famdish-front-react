@@ -10,14 +10,32 @@ import {
   //   onAuthStateChanged,
   getAdditionalUserInfo,
 } from "firebase/auth";
+import { useSearchParams } from "next/navigation";
 import { apiClient } from "@/app/lib/api";
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import Link from "next/link";
 
+// リダイレクト先がアプリ内の安全なパスか検証
+const isValidRedirectPath = (path) => {
+  if (!path) return false;
+  // 外部 URL や プロトコル付きは拒否
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("//")
+  ) {
+    return false;
+  }
+  // アプリ内パス（/で始まる）のみ許可
+  return path.startsWith("/");
+};
+
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
 
   const redirectTomyPageWhenLoginSuccess = async (provider) => {
     try {
@@ -25,9 +43,13 @@ export default function LoginPage() {
       const additional = getAdditionalUserInfo(result); // 正規の取得方法
       console.log("additionalUserInfo:", additional);
       const isNewUser = additional?.isNewUser;
+
+      // リダイレクト先を決定（redirect param があれば優先）
+      let targetPath = "/menus";
+
       if (isNewUser) {
         // 新規登録ユーザーはプロフィールステップへ
-        router.replace("/profile/step1");
+        targetPath = "/profile/step1";
       } else {
         // isNewUser = falseの場合でも、本登録状況を確認する
         // サーバ側で member が紐付いていれば本登録とみなし /menus へリダイレクト
@@ -35,19 +57,27 @@ export default function LoginPage() {
           const res = await apiClient.get("/api/members/me");
           if (res?.data?.username) {
             // 本登録済み
-            router.replace("/menus");
-            return;
+            targetPath = "/menus";
           } else {
-            router.replace("/profile/step1");
+            targetPath = "/profile/step1";
           }
         } catch (err) {
           console.error("member/me check failed", err);
+          targetPath = "/profile/step1";
         }
       }
+
       // メールが確認されていない場合はメール登録画面に遷移する
       if (!result.user.emailVerified) {
-        router.replace("/register-email");
+        targetPath = "/register-email";
       }
+
+      // redirect クエリパラメータがあり、かつ安全なパスなら優先
+      if (isValidRedirectPath(redirectParam)) {
+        targetPath = redirectParam;
+      }
+
+      router.replace(targetPath);
     } catch (error) {
       console.log(error);
       console.log(
