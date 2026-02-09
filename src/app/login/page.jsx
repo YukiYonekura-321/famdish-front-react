@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import {
   GoogleAuthProvider,
   TwitterAuthProvider,
@@ -12,9 +10,8 @@ import {
   //   onAuthStateChanged,
   getAdditionalUserInfo,
 } from "firebase/auth";
-import { useSearchParams } from "next/navigation";
 import { apiClient } from "@/app/lib/api";
-// import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
@@ -37,15 +34,12 @@ const isValidRedirectPath = (path) => {
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectParam = searchParams.get("redirect");
+  const [redirectParam, setRedirectParam] = useState(null);
 
-  //   const [redirectParam, setRedirectParam] = useState(null);
-
-  //   useEffect(() => {
-  //     const params = new URLSearchParams(window.location.search);
-  //     setRedirectParam(params.get("redirect"));
-  //   }, []);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setRedirectParam(params.get("redirect"));
+  }, []);
 
   const redirectTomyPageWhenLoginSuccess = async (provider) => {
     try {
