@@ -73,7 +73,12 @@ export default function LoginPage() {
 
       // ⭐ メール未認証は最優先（redirect パラメータより優先）
       if (!result.user.emailVerified) {
-        targetPath = "/register-email";
+        // メール未認証かつ redirect パラメータがある場合は、それを /register-email に渡す
+        if (isValidRedirectPath(redirectParam)) {
+          targetPath = `/register-email?redirect=${encodeURIComponent(redirectParam)}`;
+        } else {
+          targetPath = "/register-email";
+        }
       } else if (isValidRedirectPath(redirectParam)) {
         // メール認証済み かつ redirect パラメータがある場合のみ redirect を使用
         targetPath = redirectParam;
