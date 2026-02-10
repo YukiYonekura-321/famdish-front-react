@@ -136,7 +136,7 @@ export default function RegisterEmailPage() {
     // プロバイダーから取得したメールアドレスを登録する場合
     try {
       await sendEmailVerification(user, {
-        url: `${window.location.origin}/profile/step1`, // ← 専用ページ推奨
+        url: `${window.location.origin}/${redirectParam}`,
         handleCodeInApp: false,
       });
       alert(`${emailToBeRegistered}に確認メールを送りました`);
