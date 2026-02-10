@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import {
   onAuthStateChanged,
   sendEmailVerification,
@@ -10,17 +12,23 @@ import { auth } from "@/app/lib/firebase";
 import { apiClient } from "@/app/lib/api";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/header";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function RegisterEmailPage() {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        router.replace("/login");
+        // redirect パラメータがあれば付けてログインページへ
+        const loginUrl = redirectParam
+          ? `/login?redirect=${encodeURIComponent(redirectParam)}`
+          : "/login";
+        router.replace(loginUrl);
         return;
       }
 
@@ -51,7 +59,7 @@ export default function RegisterEmailPage() {
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
-  }, [router]);
+  }, [router, redirectParam]);
 
   const registerEmail = async (e) => {
     e.preventDefault();
@@ -63,14 +71,20 @@ export default function RegisterEmailPage() {
     const user = auth.currentUser;
     if (!user) {
       alert("認証情報を取得できませんでした。再度ログインしてください。");
-      router.replace("/login");
+      const loginUrl = redirectParam
+        ? `/login?redirect=${encodeURIComponent(redirectParam)}`
+        : "/login";
+      router.replace(loginUrl);
       return;
     }
     auth.languageCode = "ja";
 
-    // 例: https://yourdomain.com/login に飛ばす
+    // redirect パラメータがあれば actionCodeSettings.url に含める
+    const redirectPath = redirectParam
+      ? `?redirect=${encodeURIComponent(redirectParam)}`
+      : "";
     const actionCodeSettings = {
-      url: `${window.location.origin}/login`,
+      url: `${window.location.origin}/register-email${redirectPath}`,
     };
 
     // プロバイダから取得したメールアドレスとは別のものを登録する場合
@@ -95,7 +109,10 @@ export default function RegisterEmailPage() {
           if (result) {
             // SNS の認証に成功している時点でユーザーが作られており、このままでは既存ユーザーに連携できなくなるので、ここで削除
             await user.delete();
-            router.replace("/login");
+            const loginUrl = redirectParam
+              ? `/login?redirect=${encodeURIComponent(redirectParam)}`
+              : "/login";
+            router.replace(loginUrl);
             return;
           }
           // Noの場合、フォームを初期化して終了
@@ -104,7 +121,10 @@ export default function RegisterEmailPage() {
         } else if (error.code === "auth/requires-recent-login") {
           alert("安全のため、再ログインが必要です。");
           await signOut(auth);
-          router.replace("/login");
+          const loginUrl = redirectParam
+            ? `/login?redirect=${encodeURIComponent(redirectParam)}`
+            : "/login";
+          router.replace(loginUrl);
           return;
         }
         alert(`メールの送信に失敗しました。\n${error.message}`);
@@ -131,7 +151,10 @@ export default function RegisterEmailPage() {
   const logout = async () => {
     try {
       await signOut(auth);
-      router.replace("/login");
+      const loginUrl = redirectParam
+        ? `/login?redirect=${encodeURIComponent(redirectParam)}`
+        : "/login";
+      router.replace(loginUrl);
     } catch (err) {
       console.error("❌ Logout failed", err);
     }
