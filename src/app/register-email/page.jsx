@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import {
   onAuthStateChanged,
   sendEmailVerification,
@@ -12,16 +10,18 @@ import { auth } from "@/app/lib/firebase";
 import { apiClient } from "@/app/lib/api";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/header";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function RegisterEmailPage() {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectParam = searchParams.get("redirect");
+  const [redirectParam, setRedirectParam] = useState(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setRedirectParam(params.get("redirect"));
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         // redirect パラメータがあれば付けてログインページへ
