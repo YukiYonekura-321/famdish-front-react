@@ -71,13 +71,11 @@ export default function LoginPage() {
         }
       }
 
-      // メールが確認されていない場合はメール登録画面に遷移する
+      // ⭐ メール未認証は最優先（redirect パラメータより優先）
       if (!result.user.emailVerified) {
         targetPath = "/register-email";
-      }
-
-      // redirect クエリパラメータがあり、かつ安全なパスなら優先
-      if (isValidRedirectPath(redirectParam)) {
+      } else if (isValidRedirectPath(redirectParam)) {
+        // メール認証済み かつ redirect パラメータがある場合のみ redirect を使用
         targetPath = redirectParam;
       }
 
