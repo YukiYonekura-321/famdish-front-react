@@ -9,25 +9,22 @@ import { useRouter } from "next/navigation";
 
 export default function MemberForm() {
   const [name, setName] = useState("");
-  const [familyname, setFamilyName] = useState(""); // 家族名を追加
+  const [familyid, setFamilyId] = useState("");
   const [likes, setLikes] = useState([""]);
   const [dislikes, setDislikes] = useState([""]);
   const [message, setMessage] = useState("");
-  const [usertoken, setUsertoken] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     console.log(auth);
     onAuthStateChanged(auth, (user) => console.log("onAuthStateChanged", user));
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        console.log(user);
-        const token = await user.getIdToken();
-        setUsertoken(token);
-      } else {
+      if (!user) {
         router.replace("/login");
-        setUsertoken("");
       }
+
+      const res = await apiClient.get("/api/members/me");
+      setFamilyId(res?.data?.family_id);
     });
 
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
@@ -36,14 +33,10 @@ export default function MemberForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!usertoken) {
-      setMessage("ログインしてください");
-      return;
-    }
-
     // likes/dislikes をnested attributes 形式に変換
     try {
-      const res = await apiClient.post("/api/members", {
+      // リクエストボディの構築
+      const requestBody = {
         member: {
           name,
           likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
@@ -51,11 +44,11 @@ export default function MemberForm() {
             .filter((d) => d)
             .map((d) => ({ name: d })),
         },
-        family: {
-          name: familyname || "Default Family",
-        },
-        link_user: false, // ← ここを追加（true にすれば紐付けする）
-      });
+        link_user: false, // ← ユーザーに紐付けない（既存家族に追加するため）
+        family_id: familyid,
+      };
+
+      const res = await apiClient.post("/api/members", requestBody);
       setMessage(`作成成功ID: ${res.data.id}, 名前: ${res.data.name}
         好きなもの: ${res.data.likes.map((l) => l.name).join(", ")}
         嫌いなもの: ${res.data.dislikes.map((d) => d.name).join(", ")}`);
@@ -89,17 +82,6 @@ export default function MemberForm() {
                   placeholder="全半角英数字で入力"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="gra-input w-full md:w-72"
-                />
-              </div>
-
-              <div className="flex flex-col w-full md:w-auto">
-                <label className="font-bold">家族名</label>
-                <input
-                  type="text"
-                  placeholder="家族の名前（例：鈴木家）"
-                  value={familyname}
-                  onChange={(e) => setFamilyName(e.target.value)}
                   className="gra-input w-full md:w-72"
                 />
               </div>
