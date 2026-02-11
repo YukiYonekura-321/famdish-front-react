@@ -71,6 +71,11 @@ export default function MenuIndex() {
               <Link href={`/menus/${m.id}`} className="w-full sm:w-auto">
                 <div className="gra-card w-full cursor-pointer">
                   <div>{m.name}</div>
+                  {m.member && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      提案者: {m.member.name}
+                    </div>
+                  )}
                 </div>
               </Link>
 
