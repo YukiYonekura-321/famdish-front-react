@@ -189,6 +189,29 @@ export default function MemberForm() {
                 </div>
               </div>
 
+              {/* 提案したメニュー */}
+              <div className="mt-3">
+                <div className="md:font-bold mb-1">提案したメニュー</div>
+                <div className="flex flex-col gap-2">
+                  {Array.isArray(m.menus) && m.menus.length > 0 ? (
+                    m.menus.map((menu) => (
+                      <div
+                        key={`menu-${m.id}-${menu.id}`}
+                        className="text-lg font-medium"
+                      >
+                        {menu.name}
+                      </div>
+                    ))
+                  ) : m.menu && m.menu.name ? (
+                    <div key={`menu-${m.id}`} className="text-lg font-medium">
+                      {m.menu.name}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500">未提案</div>
+                  )}
+                </div>
+              </div>
+
               {/* 編集・削除ボタン（オーナーのみ表示） */}
               {isOwner && (
                 <div className="flex gap-4 mt-4">
