@@ -15,6 +15,8 @@ export default function MemberForm() {
   const [editName, setEditName] = useState("");
   const [editLikes, setEditLikes] = useState([]);
   const [editDislikes, setEditDislikes] = useState([]);
+  const [removedLikeIds, setRemovedLikeIds] = useState([]);
+  const [removedDislikeIds, setRemovedDislikeIds] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
@@ -65,6 +67,8 @@ export default function MemberForm() {
     setEditName(m.name);
     setEditLikes(m.likes || []);
     setEditDislikes(m.dislikes || []);
+    setRemovedLikeIds([]);
+    setRemovedDislikeIds([]);
     setIsModalOpen(true);
   };
 
@@ -72,6 +76,8 @@ export default function MemberForm() {
   const handleEditClose = () => {
     setIsModalOpen(false);
     setEditingMember(null);
+    setRemovedLikeIds([]);
+    setRemovedDislikeIds([]);
   };
 
   // 編集を保存
@@ -79,17 +85,28 @@ export default function MemberForm() {
     if (!editingMember) return;
 
     try {
+      // 残す項目＋削除マーク付きの既存項目をまとめて送る
+      const likesAttrs = [
+        ...editLikes.map((like) =>
+          like.id ? { id: like.id, name: like.name } : { name: like.name },
+        ),
+        ...removedLikeIds.map((id) => ({ id, _destroy: true })),
+      ];
+
+      const dislikesAttrs = [
+        ...editDislikes.map((dislike) =>
+          dislike.id
+            ? { id: dislike.id, name: dislike.name }
+            : { name: dislike.name },
+        ),
+        ...removedDislikeIds.map((id) => ({ id, _destroy: true })),
+      ];
+
       await apiClient.put(`/api/members/${editingMember.id}`, {
         member: {
           name: editName,
-          likes_attributes: editLikes.map((like) => ({
-            id: like.id,
-            name: like.name,
-          })),
-          dislikes_attributes: editDislikes.map((dislike) => ({
-            id: dislike.id,
-            name: dislike.name,
-          })),
+          likes_attributes: likesAttrs,
+          dislikes_attributes: dislikesAttrs,
         },
       });
       alert("更新しました");
@@ -97,6 +114,9 @@ export default function MemberForm() {
       // メンバー情報を再取得
       const res = await apiClient.get("/api/members");
       setMember(res.data);
+      // 保存後リセット
+      setRemovedLikeIds([]);
+      setRemovedDislikeIds([]);
     } catch (error) {
       console.error("更新に失敗しました:", error);
       alert("更新に失敗しました");
@@ -225,7 +245,12 @@ export default function MemberForm() {
                     <button
                       type="button"
                       onClick={() => {
+                        const removed = editLikes[idx];
                         const newLikes = editLikes.filter((_, i) => i !== idx);
+                        // 既存のレコードなら削除 id を記録して _destroy を送る
+                        if (removed?.id) {
+                          setRemovedLikeIds((prev) => [...prev, removed.id]);
+                        }
                         setEditLikes(newLikes);
                       }}
                       className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
@@ -260,9 +285,13 @@ export default function MemberForm() {
                     <button
                       type="button"
                       onClick={() => {
+                        const removed = editDislikes[idx];
                         const newDislikes = editDislikes.filter(
                           (_, i) => i !== idx,
                         );
+                        if (removed?.id) {
+                          setRemovedDislikeIds((prev) => [...prev, removed.id]);
+                        }
                         setEditDislikes(newDislikes);
                       }}
                       className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
