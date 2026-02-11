@@ -1,213 +1,155 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
+import { useState, useEffect } from "react";
 import { apiClient } from "@/app/lib/api";
-import { AuthHeader } from "@/components/auth_header";
+import { auth } from "../../lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { AuthHeader } from "../../../components/auth_header";
+import { useRouter } from "next/navigation";
 
-export default function CreateInvitePage() {
+export default function MemberForm() {
+  const [name, setName] = useState("");
+  const [familyid, setFamilyId] = useState("");
+  const [likes, setLikes] = useState([""]);
+  const [dislikes, setDislikes] = useState([""]);
+  const [message, setMessage] = useState("");
   const router = useRouter();
-  const [memberInfo, setMemberInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [invitation, setInvitation] = useState(null);
-  const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) {
+    console.log(auth);
+    onAuthStateChanged(auth, (user) => console.log("onAuthStateChanged", user));
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
         router.replace("/login");
-        return;
       }
 
-      // メンバー情報を取得して家族オーナーかチェック
-      try {
-        const res = await apiClient.get("/api/members/me");
-        if (!res?.data?.member) {
-          router.replace("/profile/step1");
-          return;
-        }
-        setMemberInfo(res.data);
-      } catch (err) {
-        console.error("メンバー情報取得エラー:", err);
-        setError("メンバー情報の取得に失敗しました");
-      } finally {
-        setLoading(false);
-      }
+      const res = await apiClient.get("/api/members/me");
+      setFamilyId(res?.data?.family_id);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
   }, [router]);
 
-  const handleGenerate = async () => {
-    setGenerating(true);
-    setError("");
-    setCopied(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    // likes/dislikes をnested attributes 形式に変換
     try {
-      const res = await apiClient.post("/api/invitations");
-      setInvitation(res.data);
-    } catch (err) {
-      console.error("招待生成エラー:", err);
-      if (err.response?.data?.error) {
-        setError(err.response.data.error);
+      // リクエストボディの構築
+      const requestBody = {
+        member: {
+          name,
+          likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
+          dislikes_attributes: dislikes
+            .filter((d) => d)
+            .map((d) => ({ name: d })),
+        },
+        link_user: false, // ← ユーザーに紐付けない（既存家族に追加するため）
+        family_id: familyid,
+      };
+
+      const res = await apiClient.post("/api/members", requestBody);
+      setMessage(`作成成功ID: ${res.data.id}, 名前: ${res.data.name}
+        好きなもの: ${res.data.likes.map((l) => l.name).join(", ")}
+        嫌いなもの: ${res.data.dislikes.map((d) => d.name).join(", ")}`);
+      router.push("/members/index");
+    } catch (error) {
+      if (error.response) {
+        const errors = error.response.data.errors || [
+          error.response.data.error,
+        ];
+        // Railsの422エラーや401エラーなどのレスポンスがある場合
+        setMessage(`エラー: ${errors.join(", ")}`);
       } else {
-        setError("招待リンクの生成に失敗しました");
+        setMessage("通信エラーが発生しました");
       }
-    } finally {
-      setGenerating(false);
     }
   };
-
-  const handleCopy = async () => {
-    if (!invitation?.invite_url) return;
-
-    try {
-      await navigator.clipboard.writeText(invitation.invite_url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
-    } catch (err) {
-      console.error("コピーエラー:", err);
-      alert("クリップボードへのコピーに失敗しました");
-    }
-  };
-
-  const formatExpiresAt = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("ja-JP", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  if (loading) {
-    return (
-      <div>
-        <AuthHeader />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <p className="text-lg">読み込み中...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div>
+    <div className="gra-page min-h-screen">
       <AuthHeader />
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h1 className="text-3xl font-bold mb-6">家族への招待リンク生成</h1>
-
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-700 mb-2">
-                <span className="font-bold">家族名:</span>{" "}
-                {memberInfo?.family_name || "未設定"}
-              </p>
-              <p className="text-sm text-gray-600">
-                この招待リンクを使って、他のメンバーを家族に追加できます。
-              </p>
+      <div className="relative w-full min-h-screen p-8 flex flex-col items-center justify-center">
+        <h1 className="gra-title text-2xl font-bold">
+          ログインできない家族を登録
+        </h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-16">
+          <div className="gra-card space-y-4">
+            <p className="small-note">新しいメンバーを登録します。</p>
+            <div className="flex flex-col md:flex-row gap-8 items-center">
+              <div className="flex flex-col w-full md:w-auto">
+                <label className="font-bold">名前</label>
+                <input
+                  type="text"
+                  placeholder="全半角英数字で入力"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="gra-input w-full md:w-72"
+                />
+              </div>
             </div>
-
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
-
-            {!invitation ? (
-              <div className="space-y-4">
-                <button
-                  onClick={handleGenerate}
-                  disabled={generating}
-                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-bold"
-                >
-                  {generating ? "生成中..." : "招待リンクを生成"}
-                </button>
-
-                <div className="p-4 bg-gray-50 rounded border border-gray-200">
-                  <h3 className="font-bold mb-2">招待リンクについて</h3>
-                  <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-                    <li>リンクは7日間有効です</li>
-                    <li>リンクを受け取った人は、家族に参加できます</li>
-                    <li>必要に応じて何度でも生成できます</li>
-                  </ul>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="p-4 bg-green-50 border border-green-200 rounded">
-                  <p className="text-green-800 font-bold mb-2">
-                    ✓ 招待リンクを生成しました
-                  </p>
-                  <p className="text-sm text-green-700">
-                    有効期限: {formatExpiresAt(invitation.expires_at)}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    招待リンク
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={invitation.invite_url}
-                      readOnly
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
-                      onClick={(e) => e.target.select()}
-                    />
-                    <button
-                      onClick={handleCopy}
-                      className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition whitespace-nowrap"
-                    >
-                      {copied ? "✓ コピー済み" : "コピー"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
-                  <p className="text-sm text-yellow-800">
-                    <span className="font-bold">注意:</span>{" "}
-                    このリンクを知っている人は誰でも家族に参加できます。信頼できる人にのみ共有してください。
-                  </p>
-                </div>
-
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => setInvitation(null)}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold"
-                  >
-                    新しいリンクを生成
-                  </button>
-                  <button
-                    onClick={() => router.push("/menus")}
-                    className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                  >
-                    メニュー一覧へ
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => router.back()}
-              className="text-blue-600 hover:underline"
-            >
-              ← 戻る
+          <div className="gra-card space-y-4">
+            <p className="small-note">
+              好きなものと嫌いなものを入力してください。
+            </p>
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="flex flex-col w-full md:w-auto">
+                <label className="font-bold">好きなもの</label>
+                {likes.map((like, idx) => (
+                  <input
+                    key={idx}
+                    value={like}
+                    placeholder="全半角英数字で入力"
+                    onChange={(e) => {
+                      const newLikes = [...likes];
+                      newLikes[idx] = e.target.value;
+                      setLikes(newLikes);
+                    }}
+                    className="gra-input mb-2 w-full md:w-64"
+                  />
+                ))}
+                <button
+                  type="button"
+                  className="gra-btn mt-1 w-fit"
+                  onClick={() => setLikes([...likes, ""])}
+                >
+                  +追加
+                </button>
+              </div>
+
+              <div className="flex flex-col w-full md:w-auto">
+                <label className="font-bold">嫌いなもの</label>
+                {dislikes.map((dislike, idx) => (
+                  <input
+                    key={idx}
+                    value={dislike}
+                    placeholder="全半角英数字で入力"
+                    onChange={(e) => {
+                      const newDislikes = [...dislikes];
+                      newDislikes[idx] = e.target.value;
+                      setDislikes(newDislikes);
+                    }}
+                    className="gra-input mb-2 w-full md:w-64"
+                  />
+                ))}
+                <button
+                  type="button"
+                  className="gra-btn mt-1 w-fit"
+                  onClick={() => setDislikes([...dislikes, ""])}
+                >
+                  +追加
+                </button>
+              </div>
+            </div>
+            <button type="submit" className="gra-btn w-full mt-4">
+              登録
             </button>
           </div>
-        </div>
+        </form>
+
+        {message && <p className="mt-4 small-note">{message}</p>}
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ export default function MobileAuthMenuItems({ onClick }) {
   return (
     <>
       <MobileNavLink href="/members" onClick={onClick}>
-        メンバー登録
+        💌 家族を招待
       </MobileNavLink>
       <MobileNavLink href="/members/index" onClick={onClick}>
         メンバー一覧
@@ -66,7 +66,7 @@ export default function MobileAuthMenuItems({ onClick }) {
             }}
             className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
           >
-            💌 家族を招待
+            ログインできない家族を登録
           </Link>
 
           <Link

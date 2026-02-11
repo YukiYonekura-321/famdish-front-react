@@ -56,7 +56,7 @@ export function AuthHeader() {
           className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
           href="/members"
         >
-          メンバー登録
+          💌 家族を招待
         </Link>
 
         <Link
@@ -102,7 +102,7 @@ export function AuthHeader() {
                 href="/mypage/invite"
                 className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
               >
-                💌 家族を招待
+                ログインできない家族を登録
               </Link>
 
               <Link
