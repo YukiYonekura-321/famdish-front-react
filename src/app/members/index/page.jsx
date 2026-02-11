@@ -54,7 +54,7 @@ export default function MemberForm() {
   // 編集モーダルを開く
   const handleEditOpen = (m) => {
     const ownerUid = m.user?.firebase_uid || null;
-    const isOwner = Boolean(currentUid && ownerUid && currentUid === ownerUid);
+    const isOwner = ownerUid ? currentUid === ownerUid : Boolean(currentUid);
 
     if (!isOwner) {
       alert("このメンバーを編集する権限がありません。");
@@ -106,8 +106,7 @@ export default function MemberForm() {
   // 削除
   const handleDelete = async (m) => {
     const ownerUid = m.user?.firebase_uid || null;
-    const isOwner = Boolean(currentUid && ownerUid && currentUid === ownerUid);
-
+    const isOwner = ownerUid ? currentUid === ownerUid : Boolean(currentUid);
     if (!isOwner) {
       alert("このメンバーを削除する権限がありません。");
       return;
@@ -137,9 +136,9 @@ export default function MemberForm() {
 
         {member.map((m, idx) => {
           const ownerUid = m.user?.firebase_uid || null;
-          const isOwner = Boolean(
-            currentUid && ownerUid && currentUid === ownerUid,
-          );
+          const isOwner = ownerUid
+            ? currentUid === ownerUid
+            : Boolean(currentUid);
 
           return (
             <div
