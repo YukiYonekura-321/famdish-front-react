@@ -20,6 +20,7 @@ export default function MenuIndex() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editingValue, setEditingValue] = useState("");
+  const [goodStatus, setGoodStatus] = useState({}); // { menu_id: { exists: bool, good_id: int } }
   const router = useRouter();
 
   useEffect(() => {
@@ -45,6 +46,26 @@ export default function MenuIndex() {
         const res = await apiClient.get("/api/menus");
         console.log(res.data);
         setMenu(res.data);
+
+        // 各メニューについて good チェック
+        if (Array.isArray(res.data)) {
+          const goodStatusMap = {};
+          for (const m of res.data) {
+            try {
+              const goodRes = await apiClient.get("/api/goods/check", {
+                params: { menu_id: m.id },
+              });
+              goodStatusMap[m.id] = {
+                exists: goodRes.data.exists,
+                good_id: goodRes.data.good?.id || null,
+              };
+            } catch (err) {
+              console.error(`good チェック失敗 (menu_id: ${m.id}):`, err);
+              goodStatusMap[m.id] = { exists: false, good_id: null };
+            }
+          }
+          setGoodStatus(goodStatusMap);
+        }
       } catch (error) {
         console.error("メニューの取得に失敗しました:", error);
       }
@@ -52,6 +73,33 @@ export default function MenuIndex() {
 
     loadMenu();
   }, [usertoken]); // ← 依存配列に usertoken を入
+
+  // ハート（good）のトグル
+  const handleToggleGood = async (menuId) => {
+    try {
+      if (goodStatus[menuId]?.exists) {
+        // 既にいいね済みなら削除
+        const goodId = goodStatus[menuId].good_id;
+        await apiClient.delete(`/api/goods/${goodId}`);
+        setGoodStatus((prev) => ({
+          ...prev,
+          [menuId]: { exists: false, good_id: null },
+        }));
+      } else {
+        // いいねしていなければ作成
+        const res = await apiClient.post("/api/goods", {
+          good: { menu_id: menuId },
+        });
+        setGoodStatus((prev) => ({
+          ...prev,
+          [menuId]: { exists: true, good_id: res.data.id },
+        }));
+      }
+    } catch (err) {
+      console.error("good トグル失敗:", err);
+      alert("いいね操作に失敗しました");
+    }
+  };
 
   return (
     <div className="gra-page p-8 flex flex-col items-center">
@@ -70,7 +118,23 @@ export default function MenuIndex() {
             >
               <Link href={`/menus/${m.id}`} className="w-full sm:w-auto">
                 <div className="gra-card w-full cursor-pointer">
-                  <div>{m.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span>{m.name}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleToggleGood(m.id);
+                      }}
+                      className="focus:outline-none"
+                    >
+                      {goodStatus[m.id]?.exists ? (
+                        <span className="text-2xl text-pink-500">❤️</span>
+                      ) : (
+                        <span className="text-2xl text-gray-400">🤍</span>
+                      )}
+                    </button>
+                  </div>
                   {m.member && (
                     <div className="text-sm text-gray-600 mt-1">
                       提案者: {m.member.name}
