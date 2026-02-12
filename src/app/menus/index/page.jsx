@@ -21,6 +21,7 @@ export default function MenuIndex() {
   const [editingId, setEditingId] = useState(null);
   const [editingValue, setEditingValue] = useState("");
   const [goodStatus, setGoodStatus] = useState({}); // { menu_id: { exists: bool, good_id: int } }
+  const [goodCount, setGoodCount] = useState({}); // { menu_id: count }
   const router = useRouter();
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function MenuIndex() {
         // 各メニューについて good チェック
         if (Array.isArray(res.data)) {
           const goodStatusMap = {};
+          const goodCountMap = {};
           for (const m of res.data) {
             try {
               const goodRes = await apiClient.get("/api/goods/check", {
@@ -63,8 +65,18 @@ export default function MenuIndex() {
               console.error(`good チェック失敗 (menu_id: ${m.id}):`, err);
               goodStatusMap[m.id] = { exists: false, good_id: null };
             }
+
+            // いいね数を取得
+            try {
+              const countRes = await apiClient.get(`/api/goods/${m.id}/count`);
+              goodCountMap[m.id] = Number(countRes.data.count) || 0;
+            } catch (err) {
+              console.error(`good count 取得失敗 (menu_id: ${m.id}):`, err);
+              goodCountMap[m.id] = 0;
+            }
           }
           setGoodStatus(goodStatusMap);
+          setGoodCount(goodCountMap);
         }
       } catch (error) {
         console.error("メニューの取得に失敗しました:", error);
@@ -85,6 +97,11 @@ export default function MenuIndex() {
           ...prev,
           [menuId]: { exists: false, good_id: null },
         }));
+        // いいね数を減らす
+        setGoodCount((prev) => ({
+          ...prev,
+          [menuId]: Math.max((prev[menuId] || 0) - 1, 0),
+        }));
       } else {
         // いいねしていなければ作成
         const res = await apiClient.post("/api/goods", {
@@ -93,6 +110,11 @@ export default function MenuIndex() {
         setGoodStatus((prev) => ({
           ...prev,
           [menuId]: { exists: true, good_id: res.data.id },
+        }));
+        // いいね数を増やす
+        setGoodCount((prev) => ({
+          ...prev,
+          [menuId]: (prev[menuId] || 0) + 1,
         }));
       }
     } catch (err) {
@@ -134,6 +156,9 @@ export default function MenuIndex() {
                         <span className="text-2xl text-gray-400">🤍</span>
                       )}
                     </button>
+                    <span className="text-sm text-gray-600">
+                      {goodCount[m.id] ?? 0}
+                    </span>
                   </div>
                   {m.member && (
                     <div className="text-sm text-gray-600 mt-1">
