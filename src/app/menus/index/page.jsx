@@ -68,8 +68,9 @@ export default function MenuIndex() {
 
             // いいね数を取得
             try {
-              const countRes = await apiClient.get(`/api/goods/${m.id}/count`);
-              console.log(`menu_id: ${m.id}, count response:`, countRes.data);
+              const countRes = await apiClient.get("/api/goods/count", {
+                params: { menu_id: m.id },
+              });
               goodCountMap[m.id] = Number(countRes.data.count) || 0;
             } catch (err) {
               console.error(`good count 取得失敗 (menu_id: ${m.id}):`, err);
@@ -78,7 +79,6 @@ export default function MenuIndex() {
           }
           setGoodStatus(goodStatusMap);
           setGoodCount(goodCountMap);
-          console.log("goodCountMap 設定完了:", goodCountMap);
         }
       } catch (error) {
         console.error("メニューの取得に失敗しました:", error);
