@@ -62,7 +62,7 @@ export default function MenuShow({ params }) {
     try {
       await apiClient.delete(`/api/menus/${menuId}`);
       alert("削除しました");
-      router.push("/menus/index");
+      router.push("/menus");
     } catch (error) {
       console.error("削除に失敗しました:", error);
       alert("削除に失敗しました");
@@ -71,7 +71,7 @@ export default function MenuShow({ params }) {
 
   // 一覧へ戻る
   const handleBackIndex = () => {
-    router.push("/menus/index");
+    router.push("/menus");
   };
 
   if (!menu) {

@@ -29,9 +29,6 @@ export default function MobileAuthMenuItems({ onClick }) {
       <MobileNavLink href="/menus" onClick={onClick}>
         リクエスト
       </MobileNavLink>
-      <MobileNavLink href="/menus/index" onClick={onClick}>
-        リクエスト一覧
-      </MobileNavLink>
       <div
         className="relative"
         tabIndex={0}

@@ -59,7 +59,7 @@ export default function MenuEdit({ params }) {
       await apiClient.put(`/api/menus/${menuId}`, {
         menu: { name: menu.name },
       });
-      router.push("/menus/index"); // 更新後に詳細ページへ遷移
+      router.push("/menus"); // 更新後に一覧ページへ遷移
     } catch (error) {
       console.error("メニューの更新に失敗しました:", error);
       alert("メニューの更新に失敗しました。");
