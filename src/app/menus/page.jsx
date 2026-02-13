@@ -217,7 +217,7 @@ export default function MenuPage() {
     try {
       setCookSelectMessage("");
       await apiClient.post("/api/families/assign_cook", {
-        today_cook_id: memberId,
+        member_id: memberId,
       });
       setTodayCookId(memberId);
       setCookSelectMessage(
