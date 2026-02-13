@@ -35,7 +35,6 @@ export default function MenuPage() {
   // ── 料理担当者関連 state ──
   const [members, setMembers] = useState([]);
   const [todayCookId, setTodayCookId] = useState(null);
-  const [currentMemberId, setCurrentMemberId] = useState(null);
   const [cookSelectMessage, setCookSelectMessage] = useState("");
   const [suggestionError, setSuggestionError] = useState("");
 
@@ -66,18 +65,10 @@ export default function MenuPage() {
           : [];
         setMembers(membersList);
 
-        // ファミリー情報取得（today_cook_id と current_member_id）
+        // ファミリー情報取得（today_cook_id）
         const familyRes = await apiClient.get("/api/families");
         const familyData = familyRes.data;
         setTodayCookId(familyData.today_cook_id || null);
-
-        // 現在のメンバーIDを取得
-        const currentMember = membersList.find(
-          (m) => m.firebase_uid === auth.currentUser?.uid,
-        );
-        if (currentMember) {
-          setCurrentMemberId(currentMember.id);
-        }
       } catch (error) {
         console.error("ファミリー情報取得失敗:", error);
       }
@@ -233,10 +224,6 @@ export default function MenuPage() {
   // ── 献立提案（提案ボタン）──
   const handleFetchSuggestions = async (menuName) => {
     setSuggestionError("");
-    if (todayCookId !== currentMemberId) {
-      setSuggestionError("提案できるのは今日の料理担当者のみです");
-      return;
-    }
     try {
       await fetchSuggestions(menuName);
     } catch (error) {
@@ -354,13 +341,8 @@ export default function MenuPage() {
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <button
-                  className={`gra-btn ${
-                    todayCookId !== currentMemberId
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className="gra-btn"
                   onClick={() => handleFetchSuggestions(m.name)}
-                  disabled={todayCookId !== currentMemberId}
                 >
                   提案を取得する
                 </button>
