@@ -227,7 +227,7 @@ export default function MenuPage() {
     try {
       await fetchSuggestions(menuName);
     } catch (error) {
-      if (error.response?.status === 403) {
+      if (error.status === 403) {
         setSuggestionError("今日の料理担当者ではありません");
       } else {
         setSuggestionError("提案取得に失敗しました");
