@@ -32,6 +32,13 @@ export default function MenuPage() {
   const [goodStatus, setGoodStatus] = useState({});
   const [goodCount, setGoodCount] = useState({});
 
+  // ── 料理担当者関連 state ──
+  const [members, setMembers] = useState([]);
+  const [todayCookId, setTodayCookId] = useState(null);
+  const [currentMemberId, setCurrentMemberId] = useState(null);
+  const [cookSelectMessage, setCookSelectMessage] = useState("");
+  const [suggestionError, setSuggestionError] = useState("");
+
   // ── 認証 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -45,6 +52,39 @@ export default function MenuPage() {
     });
     return () => unsubscribe();
   }, [router]);
+
+  // ── メンバー一覧とファミリー情報取得 ──
+  useEffect(() => {
+    if (!usertoken) return;
+
+    const fetchFamilyInfo = async () => {
+      try {
+        // メンバー一覧取得
+        const membersRes = await apiClient.get("/api/members");
+        const membersList = Array.isArray(membersRes.data)
+          ? membersRes.data
+          : [];
+        setMembers(membersList);
+
+        // ファミリー情報取得（today_cook_id と current_member_id）
+        const familyRes = await apiClient.get("/api/families");
+        const familyData = familyRes.data;
+        setTodayCookId(familyData.today_cook_id || null);
+
+        // 現在のメンバーIDを取得
+        const currentMember = membersList.find(
+          (m) => m.firebase_uid === auth.currentUser?.uid,
+        );
+        if (currentMember) {
+          setCurrentMemberId(currentMember.id);
+        }
+      } catch (error) {
+        console.error("ファミリー情報取得失敗:", error);
+      }
+    };
+
+    fetchFamilyInfo();
+  }, [usertoken]);
 
   // ── データ読み込み（likes + menus + good） ──
   useEffect(() => {
@@ -65,7 +105,11 @@ export default function MenuPage() {
     const loadMenus = async () => {
       try {
         const res = await apiClient.get("/api/menus");
-        const menus = Array.isArray(res.data) ? res.data : res.data ? [res.data] : [];
+        const menus = Array.isArray(res.data)
+          ? res.data
+          : res.data
+            ? [res.data]
+            : [];
         setMenuList(menus);
 
         const goodStatusMap = {};
@@ -116,14 +160,18 @@ export default function MenuPage() {
       const res = await apiClient.post("/api/menus", {
         menu: { name: newMenu },
       });
-      setMessage(`リクエスト成功 — ID: ${res.data.id}, 名前: ${res.data.name || res.data.menu}`);
+      setMessage(
+        `リクエスト成功 — ID: ${res.data.id}, 名前: ${res.data.name || res.data.menu}`,
+      );
       setNewMenu("");
       // 一覧を再読み込み
       const listRes = await apiClient.get("/api/menus");
       setMenuList(Array.isArray(listRes.data) ? listRes.data : []);
     } catch (error) {
       if (error.response) {
-        const errors = error.response.data.errors || ["不明なエラーが発生しました"];
+        const errors = error.response.data.errors || [
+          "不明なエラーが発生しました",
+        ];
         setMessage("リクエストに失敗しました:\n" + errors.join("\n"));
       } else {
         setMessage("リクエストに失敗しました: ネットワークエラー");
@@ -164,11 +212,67 @@ export default function MenuPage() {
     }
   };
 
+  // ── 料理担当者選択 ──
+  const handleSelectCook = async (memberId) => {
+    try {
+      setCookSelectMessage("");
+      await apiClient.post("/api/families/assign_cook", {
+        today_cook_id: memberId,
+      });
+      setTodayCookId(memberId);
+      setCookSelectMessage(
+        "料理担当者を設定しました（提案ボタンは担当者のみ有効です）",
+      );
+      setTimeout(() => setCookSelectMessage(""), 3000);
+    } catch (error) {
+      console.error("料理担当者設定失敗:", error);
+      setCookSelectMessage("料理担当者の設定に失敗しました");
+    }
+  };
+
+  // ── 献立提案（提案ボタン）──
+  const handleFetchSuggestions = async (menuName) => {
+    setSuggestionError("");
+    if (todayCookId !== currentMemberId) {
+      setSuggestionError("提案できるのは今日の料理担当者のみです");
+      return;
+    }
+    try {
+      await fetchSuggestions(menuName);
+    } catch (error) {
+      if (error.response?.status === 403) {
+        setSuggestionError("今日の料理担当者ではありません");
+      } else {
+        setSuggestionError("提案取得に失敗しました");
+      }
+    }
+  };
+
   return (
     <div className="gra-page p-8 flex flex-col items-center">
       <AuthHeader />
 
       <div className="w-full flex flex-col items-center gap-6 mt-12">
+        {/* ─── 料理担当者選択 ─── */}
+        <div className="gra-card w-full max-w-xl flex flex-col items-center space-y-4">
+          <label className="font-bold text-2xl">今日の料理担当者</label>
+          <select
+            value={todayCookId || ""}
+            onChange={(e) => handleSelectCook(Number(e.target.value) || null)}
+            className="gra-input w-full"
+          >
+            <option value="">選択してください</option>
+            {members.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+          {cookSelectMessage && (
+            <p className="text-sm text-green-600">{cookSelectMessage}</p>
+          )}
+        </div>
+
         {/* ─── リクエスト作成フォーム ─── */}
         <h1 className="gra-title">食べたいものをリクエストしよう！</h1>
 
@@ -250,11 +354,19 @@ export default function MenuPage() {
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <button
-                  className="gra-btn"
-                  onClick={() => fetchSuggestions(m.name)}
+                  className={`gra-btn ${
+                    todayCookId !== currentMemberId
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  onClick={() => handleFetchSuggestions(m.name)}
+                  disabled={todayCookId !== currentMemberId}
                 >
                   提案を取得する
                 </button>
+                {suggestionError && (
+                  <p className="text-sm text-red-600">{suggestionError}</p>
+                )}
 
                 <button
                   className="px-3 py-2 bg-yellow-400 text-black rounded hover:brightness-95"
@@ -273,7 +385,9 @@ export default function MenuPage() {
                     if (!confirm("本当に削除しますか？")) return;
                     try {
                       await apiClient.delete(`/api/menus/${m.id}`);
-                      setMenuList((prev) => prev.filter((it) => it.id !== m.id));
+                      setMenuList((prev) =>
+                        prev.filter((it) => it.id !== m.id),
+                      );
                     } catch (err) {
                       console.error("削除に失敗しました", err);
                       alert("削除に失敗しました");
