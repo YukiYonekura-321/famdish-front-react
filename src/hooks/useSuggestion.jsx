@@ -49,8 +49,10 @@ export function useSuggestion() {
 
     if (!res.ok) {
       setLoading(false);
-      alert("提案の取得に失敗しました");
-      return;
+      const errorData = await res.json().catch(() => ({}));
+      const error = new Error(errorData.message || "提案の取得に失敗しました");
+      error.status = res.status;
+      throw error;
     }
 
     const data = await res.json();
