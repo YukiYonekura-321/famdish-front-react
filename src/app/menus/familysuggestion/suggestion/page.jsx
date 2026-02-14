@@ -95,7 +95,7 @@ export default function AllSuggestionsPage() {
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">
-                      Family #{s.family_id}
+                      家族：{s.family_name}
                     </span>
                     <span className="text-xs text-gray-400">
                       {new Date(s.created_at).toLocaleDateString("ja-JP")}
