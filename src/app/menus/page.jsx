@@ -249,6 +249,22 @@ export default function MenuPage() {
       <AuthHeader />
 
       <div className="w-full flex flex-col items-center gap-6 mt-12">
+        {/* ─── 過去の献立リンク ─── */}
+        <div className="w-full max-w-xl flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/menus/familysuggestion"
+            className="gra-btn flex items-center gap-2"
+          >
+            🏠 わが家の過去の献立
+          </Link>
+          <Link
+            href="/menus/familysuggestion/suggestion"
+            className="gra-btn flex items-center gap-2"
+          >
+            🌍 みんなの献立を参考にする
+          </Link>
+        </div>
+
         {/* ─── 料理担当者選択 ─── */}
         <div className="gra-card w-full max-w-xl flex flex-col items-center space-y-4">
           <label className="font-bold text-2xl">今日の料理担当者</label>
