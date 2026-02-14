@@ -73,6 +73,13 @@ export function AuthHeader() {
           リクエスト
         </Link>
 
+        <Link
+          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
+          href="/menus/familysuggestion"
+        >
+          🏠 わが家の献立
+        </Link>
+
         <div
           tabIndex={0}
           className="relative"

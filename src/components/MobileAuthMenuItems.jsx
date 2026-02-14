@@ -29,6 +29,9 @@ export default function MobileAuthMenuItems({ onClick }) {
       <MobileNavLink href="/menus" onClick={onClick}>
         リクエスト
       </MobileNavLink>
+      <MobileNavLink href="/menus/familysuggestion" onClick={onClick}>
+        🏠 わが家の献立
+      </MobileNavLink>
       <div
         className="relative"
         tabIndex={0}
