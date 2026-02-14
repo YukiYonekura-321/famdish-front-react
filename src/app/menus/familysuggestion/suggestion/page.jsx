@@ -47,7 +47,7 @@ export default function AllSuggestionsPage() {
         const goodCountMap = {};
         for (const s of suggestionsData) {
           try {
-            const goodRes = await apiClient.get("/api/goods/check", {
+            const goodRes = await apiClient.get("/api/goods/check_suggestion", {
               params: { suggestion_id: s.id },
             });
             goodStatusMap[s.id] = {
@@ -60,9 +60,12 @@ export default function AllSuggestionsPage() {
           }
 
           try {
-            const countRes = await apiClient.get("/api/goods/count", {
-              params: { suggestion_id: s.id },
-            });
+            const countRes = await apiClient.get(
+              "/api/goods/count_suggestion",
+              {
+                params: { suggestion_id: s.id },
+              },
+            );
             goodCountMap[s.id] = Number(countRes.data.count) || 0;
           } catch (err) {
             console.error(`good count 取得失敗 (suggestion_id: ${s.id}):`, err);
@@ -87,7 +90,7 @@ export default function AllSuggestionsPage() {
     try {
       if (goodStatus[suggestionId]?.exists) {
         const goodId = goodStatus[suggestionId].good_id;
-        await apiClient.delete(`/api/goods/${goodId}`);
+        await apiClient.delete(`/api/goods/destroy_suggestion/${goodId}`);
         setGoodStatus((prev) => ({
           ...prev,
           [suggestionId]: { exists: false, good_id: null },
@@ -97,7 +100,7 @@ export default function AllSuggestionsPage() {
           [suggestionId]: Math.max((prev[suggestionId] || 0) - 1, 0),
         }));
       } else {
-        const res = await apiClient.post("/api/goods", {
+        const res = await apiClient.post("/api/goods/create_suggestion", {
           good: { suggestion_id: suggestionId },
         });
         setGoodStatus((prev) => ({
