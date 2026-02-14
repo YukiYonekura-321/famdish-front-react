@@ -10,12 +10,14 @@ import { useFeedback } from "@/hooks/useFeedback";
 import SuggestionCard from "@/components/SuggestionCard";
 import { AuthHeader } from "../../components/auth_header";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useRef } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function MenuPage() {
   // ── 共通 state ──
   const [usertoken, setUsertoken] = useState("");
   const router = useRouter();
+  const suggestionsRef = useRef(null);
 
   // ── 作成フォーム用 state ──
   const [newMenu, setNewMenu] = useState("");
@@ -224,6 +226,13 @@ export default function MenuPage() {
   // ── 献立提案（提案ボタン）──
   const handleFetchSuggestions = async (menuName) => {
     setSuggestionError("");
+    // スクロールして提案セクションまで移動
+    setTimeout(() => {
+      suggestionsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 100);
     try {
       await fetchSuggestions(menuName);
     } catch (error) {
@@ -428,36 +437,38 @@ export default function MenuPage() {
           </div>
         )}
 
-        {loading && <p className="text-sm text-gray-600">提案を生成中です…</p>}
+        {loading && <LoadingSpinner />}
 
-        {suggestions && (
-          <div className="mt-4 grid gap-4">
-            <SuggestionCard
-              suggestion={suggestions.suggest_field}
-              onOk={async () => {
-                await saveFeedback(suggestions.id, "ok", "");
-                alert("採用しました");
-              }}
-              onRetry={async () => {
-                await saveFeedback(suggestions.id, "alt", "");
-                alert("別案を要求しました");
-                fetchSuggestions(
-                  suggestions.suggest_field.requests,
-                  suggestions.id,
-                );
-              }}
-              onNg={async () => {
-                const reason = prompt("NG 理由を入力してください（任意）:");
-                await saveFeedback(suggestions.id, "ng", reason || "");
-                alert("NG理由を送信しました");
-                fetchSuggestions(
-                  suggestions.suggest_field.requests,
-                  suggestions.id,
-                );
-              }}
-            />
-          </div>
-        )}
+        <div ref={suggestionsRef}>
+          {suggestions && (
+            <div className="mt-4 grid gap-4">
+              <SuggestionCard
+                suggestion={suggestions.suggest_field}
+                onOk={async () => {
+                  await saveFeedback(suggestions.id, "ok", "");
+                  alert("採用しました");
+                }}
+                onRetry={async () => {
+                  await saveFeedback(suggestions.id, "alt", "");
+                  alert("別案を要求しました");
+                  fetchSuggestions(
+                    suggestions.suggest_field.requests,
+                    suggestions.id,
+                  );
+                }}
+                onNg={async () => {
+                  const reason = prompt("NG 理由を入力してください（任意）:");
+                  await saveFeedback(suggestions.id, "ng", reason || "");
+                  alert("NG理由を送信しました");
+                  fetchSuggestions(
+                    suggestions.suggest_field.requests,
+                    suggestions.id,
+                  );
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
