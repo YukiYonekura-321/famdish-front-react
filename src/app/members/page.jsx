@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { apiClient } from "@/app/lib/api";
 import { AuthHeader } from "@/components/auth_header";
+import QRCode from "qrcode.react";
 
 export default function CreateInvitePage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function CreateInvitePage() {
   const [invitation, setInvitation] = useState(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const qrCodeRef = useRef(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -72,6 +74,27 @@ export default function CreateInvitePage() {
     } catch (err) {
       console.error("コピーエラー:", err);
       alert("クリップボードへのコピーに失敗しました");
+    }
+  };
+
+  const handleDownloadQR = () => {
+    if (!qrCodeRef.current) return;
+
+    try {
+      const canvas = qrCodeRef.current.querySelector("canvas");
+      if (!canvas) {
+        alert("QRコードの生成に失敗しました");
+        return;
+      }
+
+      const url = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "family_invitation_qr.png";
+      a.click();
+    } catch (err) {
+      console.error("QRコードダウンロードエラー:", err);
+      alert("QRコードのダウンロードに失敗しました");
     }
   };
 
@@ -153,31 +176,62 @@ export default function CreateInvitePage() {
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    招待リンク
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={invitation.invite_url}
-                      readOnly
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
-                      onClick={(e) => e.target.select()}
-                    />
-                    <button
-                      onClick={handleCopy}
-                      className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition whitespace-nowrap"
-                    >
-                      {copied ? "✓ コピー済み" : "コピー"}
-                    </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* ─── 招待リンク ─── */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      📋 招待リンク
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={invitation.invite_url}
+                        readOnly
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
+                        onClick={(e) => e.target.select()}
+                      />
+                      <button
+                        onClick={handleCopy}
+                        className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition whitespace-nowrap"
+                      >
+                        {copied ? "✓ コピー済み" : "コピー"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ─── QRコード ─── */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      📱 QRコード
+                    </label>
+                    <div className="flex flex-col items-center gap-3">
+                      <div
+                        ref={qrCodeRef}
+                        className="flex items-center justify-center p-4 bg-gray-50 border border-gray-300 rounded"
+                      >
+                        <QRCode
+                          value={invitation.invite_url}
+                          size={200}
+                          bgColor="#ffffff"
+                          fgColor="#000000"
+                          level="H"
+                          includeMargin={true}
+                        />
+                      </div>
+                      <button
+                        onClick={handleDownloadQR}
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                      >
+                        ⬇️ QRコードをダウンロード
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
                   <p className="text-sm text-yellow-800">
                     <span className="font-bold">注意:</span>{" "}
-                    このリンクを知っている人は誰でも家族に参加できます。信頼できる人にのみ共有してください。
+                    このリンク・QRコードを知っている人は誰でも家族に参加できます。信頼できる人にのみ共有してください。
                   </p>
                 </div>
 
