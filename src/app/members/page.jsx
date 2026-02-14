@@ -6,7 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { apiClient } from "@/app/lib/api";
 import { AuthHeader } from "@/components/auth_header";
-import QRCode from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function CreateInvitePage() {
   const router = useRouter();
@@ -209,7 +209,7 @@ export default function CreateInvitePage() {
                         ref={qrCodeRef}
                         className="flex items-center justify-center p-4 bg-gray-50 border border-gray-300 rounded"
                       >
-                        <QRCode
+                        <QRCodeCanvas
                           value={invitation.invite_url}
                           size={200}
                           bgColor="#ffffff"
