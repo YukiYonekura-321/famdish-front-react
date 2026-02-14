@@ -13,6 +13,8 @@ export default function AllSuggestionsPage() {
   const [usertoken, setUsertoken] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [goodStatus, setGoodStatus] = useState({});
+  const [goodCount, setGoodCount] = useState({});
   const router = useRouter();
 
   // ── 認証 ──
@@ -37,7 +39,38 @@ export default function AllSuggestionsPage() {
       setLoading(true);
       try {
         const res = await apiClient.get("/api/suggestions");
-        setSuggestions(Array.isArray(res.data) ? res.data : []);
+        const suggestionsData = Array.isArray(res.data) ? res.data : [];
+        setSuggestions(suggestionsData);
+
+        // 各献立の good ステータスと count を取得
+        const goodStatusMap = {};
+        const goodCountMap = {};
+        for (const s of suggestionsData) {
+          try {
+            const goodRes = await apiClient.get("/api/goods/check", {
+              params: { suggestion_id: s.id },
+            });
+            goodStatusMap[s.id] = {
+              exists: goodRes.data.exists,
+              good_id: goodRes.data.good?.id || null,
+            };
+          } catch (err) {
+            console.error(`good チェック失敗 (suggestion_id: ${s.id}):`, err);
+            goodStatusMap[s.id] = { exists: false, good_id: null };
+          }
+
+          try {
+            const countRes = await apiClient.get("/api/goods/count", {
+              params: { suggestion_id: s.id },
+            });
+            goodCountMap[s.id] = Number(countRes.data.count) || 0;
+          } catch (err) {
+            console.error(`good count 取得失敗 (suggestion_id: ${s.id}):`, err);
+            goodCountMap[s.id] = 0;
+          }
+        }
+        setGoodStatus(goodStatusMap);
+        setGoodCount(goodCountMap);
       } catch (error) {
         console.error("献立一覧の取得に失敗しました:", error);
         setSuggestions([]);
@@ -48,6 +81,39 @@ export default function AllSuggestionsPage() {
 
     fetchAllSuggestions();
   }, [usertoken]);
+
+  // ── いいね（good）トグル ──
+  const handleToggleGood = async (suggestionId) => {
+    try {
+      if (goodStatus[suggestionId]?.exists) {
+        const goodId = goodStatus[suggestionId].good_id;
+        await apiClient.delete(`/api/goods/${goodId}`);
+        setGoodStatus((prev) => ({
+          ...prev,
+          [suggestionId]: { exists: false, good_id: null },
+        }));
+        setGoodCount((prev) => ({
+          ...prev,
+          [suggestionId]: Math.max((prev[suggestionId] || 0) - 1, 0),
+        }));
+      } else {
+        const res = await apiClient.post("/api/goods", {
+          good: { suggestion_id: suggestionId },
+        });
+        setGoodStatus((prev) => ({
+          ...prev,
+          [suggestionId]: { exists: true, good_id: res.data.id },
+        }));
+        setGoodCount((prev) => ({
+          ...prev,
+          [suggestionId]: (prev[suggestionId] || 0) + 1,
+        }));
+      }
+    } catch (err) {
+      console.error("いいね操作失敗:", err);
+      alert("いいね操作に失敗しました");
+    }
+  };
 
   return (
     <div className="gra-page p-8 flex flex-col items-center">
@@ -86,9 +152,25 @@ export default function AllSuggestionsPage() {
               <div key={s.id} className="gra-card w-full">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-800">
-                      🍽️ {s.ai_raw_json?.title || "タイトルなし"}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-gray-800">
+                        🍽️ {s.ai_raw_json?.title || "タイトルなし"}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleGood(s.id)}
+                        className="focus:outline-none"
+                      >
+                        {goodStatus[s.id]?.exists ? (
+                          <span className="text-2xl text-pink-500">❤️</span>
+                        ) : (
+                          <span className="text-2xl text-gray-400">🤍</span>
+                        )}
+                      </button>
+                      <span className="text-sm text-gray-600">
+                        {goodCount[s.id] ?? 0}
+                      </span>
+                    </div>
                     <p className="text-sm text-blue-600 mt-1">
                       リクエスト：{s.requests}
                     </p>
