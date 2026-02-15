@@ -29,79 +29,88 @@ export default function MobileAuthMenuItems({ onClick }) {
       <MobileNavLink href="/menus" onClick={onClick}>
         リクエスト
       </MobileNavLink>
-      <MobileNavLink href="/menus/familysuggestion" onClick={onClick}>
-        🏠 わが家の献立
-      </MobileNavLink>
-      <li className="relative">
+      <div
+        className="relative"
+        tabIndex={0}
+        onBlur={(e) => {
+          // フォーカスがコンテナ外に移動したら閉じる
+          const related = e.relatedTarget;
+          if (!e.currentTarget.contains(related)) {
+            setOpen(false);
+          }
+        }}
+      >
         <button
           type="button"
           onClick={() => setOpen((s) => !s)}
-          className="text-[var(--foreground)] w-full text-left py-3 px-4 hover:bg-[var(--surface)] transition-colors duration-300 rounded-lg font-medium"
+          className="text-white"
           aria-expanded={open}
         >
           マイページ設定
         </button>
 
-        {/* プルダウンメニュー */}
-        {open && (
-          <div className="mt-2 ml-4 space-y-1 animate-fade-in">
-            <Link
-              href="/mypage/invite"
-              onClick={() => {
-                setOpen(false);
-                onClick?.();
-              }}
-              className="block px-4 py-2 text-sm text-muted hover:text-[var(--primary)] hover:bg-[var(--surface)] transition-colors rounded-lg"
-            >
-              ログインできない家族を登録
-            </Link>
+        {/* プルダウンメニュー（open 状態で表示） */}
+        <div
+          className={`absolute right-0 mt-0 w-56 bg-zinc-800/95 backdrop-blur shadow-lg rounded-md py-2 ${
+            open ? "block" : "hidden"
+          }`}
+        >
+          <Link
+            href="/mypage/invite"
+            onClick={() => {
+              setOpen(false);
+              onClick?.();
+            }}
+            className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+          >
+            ログインできない家族を登録
+          </Link>
 
-            <Link
-              href="/mypage/social"
-              onClick={() => {
-                setOpen(false);
-                onClick?.();
-              }}
-              className="block px-4 py-2 text-sm text-muted hover:text-[var(--primary)] hover:bg-[var(--surface)] transition-colors rounded-lg"
-            >
-              ソーシャルアカウント連携状態
-            </Link>
+          <Link
+            href="/mypage/social"
+            onClick={() => {
+              setOpen(false);
+              onClick?.();
+            }}
+            className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+          >
+            ソーシャルアカウント連携状態
+          </Link>
 
-            <Link
-              href="/mypage/email"
-              onClick={() => {
-                setOpen(false);
-                onClick?.();
-              }}
-              className="block px-4 py-2 text-sm text-muted hover:text-[var(--primary)] hover:bg-[var(--surface)] transition-colors rounded-lg"
-            >
-              通知先メールアドレス変更
-            </Link>
+          <Link
+            href="/mypage/email"
+            onClick={() => {
+              setOpen(false);
+              onClick?.();
+            }}
+            className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+          >
+            通知先メールアドレス変更
+          </Link>
 
-            <button
-              onClick={() => {
-                setOpen(false);
-                onClick?.();
-                logout();
-              }}
-              className="w-full text-left px-4 py-2 text-sm text-muted hover:text-[var(--primary)] hover:bg-[var(--surface)] transition-colors rounded-lg"
-            >
-              ログアウト
-            </button>
+          <button
+            onClick={() => {
+              setOpen(false);
+              onClick?.();
+              logout();
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
+          >
+            ログアウト
+          </button>
 
-            <Link
-              href="/mypage/withdraw"
-              onClick={() => {
-                setOpen(false);
-                onClick?.();
-              }}
-              className="block px-4 py-2 text-sm text-[var(--secondary)] hover:bg-[var(--terracotta-50)] transition-colors rounded-lg"
-            >
-              退会
-            </Link>
-          </div>
-        )}
-      </li>
+          <Link
+            href="/mypage/withdraw"
+            onClick={() => {
+              setOpen(false);
+              onClick?.();
+            }}
+            className="block px-4 py-2 text-sm text-red-400 hover:bg-zinc-700 transition"
+          >
+            退会
+          </Link>
+        </div>
+      </div>
     </>
   );
 }

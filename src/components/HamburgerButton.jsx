@@ -18,17 +18,17 @@ export default function HamburgerButton({ onToggle, className = "" }) {
           <span
             className={`block w-6 h-0.5 rounded-full transition-all duration-300
             ${open ? "rotate-45 translate-y-2" : ""}`}
-            style={{ backgroundColor: 'var(--foreground)' }}
+            style={{ backgroundColor: "var(--foreground)" }}
           />
           <span
             className={`block w-6 h-0.5 rounded-full transition-all duration-300
             ${open ? "opacity-0" : ""}`}
-            style={{ backgroundColor: 'var(--foreground)' }}
+            style={{ backgroundColor: "var(--foreground)" }}
           />
           <span
             className={`block w-6 h-0.5 rounded-full transition-all duration-300
             ${open ? "-rotate-45 -translate-y-2" : ""}`}
-            style={{ backgroundColor: 'var(--foreground)' }}
+            style={{ backgroundColor: "var(--foreground)" }}
           />
         </div>
       </button>

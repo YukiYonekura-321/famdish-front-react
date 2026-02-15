@@ -269,7 +269,9 @@ export default function MenuPage() {
 
         {/* ─── 料理担当者選択 ─── */}
         <div className="luxury-card max-w-2xl mx-auto mb-12">
-          <label className="luxury-label text-center block mb-4">今日の料理担当者</label>
+          <label className="luxury-label text-center block mb-4">
+            今日の料理担当者
+          </label>
           <select
             value={todayCookId || ""}
             onChange={(e) => handleSelectCook(Number(e.target.value) || null)}
@@ -283,7 +285,9 @@ export default function MenuPage() {
             ))}
           </select>
           {cookSelectMessage && (
-            <p className="text-sm text-[var(--primary)] mt-3 text-center">{cookSelectMessage}</p>
+            <p className="text-sm text-[var(--primary)] mt-3 text-center">
+              {cookSelectMessage}
+            </p>
           )}
         </div>
 
@@ -321,19 +325,22 @@ export default function MenuPage() {
             placeholder="例: カレーライス"
           />
 
-          <button type="submit" className="luxury-btn luxury-btn-primary w-full sm:w-auto mx-auto block">
+          <button
+            type="submit"
+            className="luxury-btn luxury-btn-primary w-full sm:w-auto mx-auto block"
+          >
             リクエストを送信
           </button>
         </form>
 
-        {message && <p className="text-center text-sm text-muted mb-6">{message}</p>}
+        {message && (
+          <p className="text-center text-sm text-muted mb-6">{message}</p>
+        )}
 
         {/* ─── メニュー一覧 ─── */}
         <div className="divider-accent"></div>
 
-        <h2 className="luxury-title text-2xl">
-          リクエストされたメニュー
-        </h2>
+        <h2 className="luxury-title text-2xl">リクエストされたメニュー</h2>
 
         <div className="grid grid-cols-1 gap-4 max-w-4xl mx-auto">
           {menuList.map((m) => (
@@ -344,7 +351,10 @@ export default function MenuPage() {
               <Link href={`/menus/${m.id}`} className="flex-1 min-w-0">
                 <div className="cursor-pointer group">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-lg font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors" style={{ fontFamily: 'var(--font-display)' }}>
+                    <span
+                      className="text-lg font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
                       {m.name}
                     </span>
                     <button
@@ -358,7 +368,9 @@ export default function MenuPage() {
                       {goodStatus[m.id]?.exists ? (
                         <span className="text-2xl">❤️</span>
                       ) : (
-                        <span className="text-2xl opacity-40 hover:opacity-70 transition-opacity">🤍</span>
+                        <span className="text-2xl opacity-40 hover:opacity-70 transition-opacity">
+                          🤍
+                        </span>
                       )}
                     </button>
                     <span className="text-sm text-muted font-medium">
@@ -413,7 +425,9 @@ export default function MenuPage() {
             </div>
           ))}
           {suggestionError && (
-            <p className="text-sm text-[var(--secondary)] text-center">{suggestionError}</p>
+            <p className="text-sm text-[var(--secondary)] text-center">
+              {suggestionError}
+            </p>
           )}
         </div>
 

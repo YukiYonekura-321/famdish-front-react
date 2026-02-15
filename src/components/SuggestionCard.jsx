@@ -5,7 +5,7 @@ export default function SuggestionCard({ suggestion, onOk, onRetry, onNg }) {
         <span className="text-3xl">🍽️</span>
         <h2
           className="text-2xl font-medium text-[var(--foreground)]"
-          style={{ fontFamily: 'var(--font-display)' }}
+          style={{ fontFamily: "var(--font-display)" }}
         >
           献立案
         </h2>
@@ -14,7 +14,7 @@ export default function SuggestionCard({ suggestion, onOk, onRetry, onNg }) {
       <div className="space-y-4 mb-6">
         <div>
           <span className="luxury-label text-base block mb-2">タイトル</span>
-          <p className="text-lg" style={{ fontFamily: 'var(--font-display)' }}>
+          <p className="text-lg" style={{ fontFamily: "var(--font-display)" }}>
             {suggestion.title}
           </p>
         </div>
