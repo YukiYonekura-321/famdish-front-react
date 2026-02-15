@@ -116,12 +116,11 @@ export default function ProfileStep3() {
                     className="text-xl font-semibold text-[var(--foreground)] mb-3"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
-                    Just 40 seconds to go!
+                    このステップは40秒で完了します。
                   </h3>
                   <p className="text-muted leading-relaxed">
-                    The next two steps help us understand what you love and what
-                    you'd rather avoid. This ensures every suggestion is
-                    perfectly tailored to your family's tastes.
+                    次の2ステップで、好きなもの・苦手なものを教えてください。
+                    ご家族の好みに合った提案をお届けします。
                   </p>
                 </div>
               </div>
@@ -221,7 +220,7 @@ export default function ProfileStep3() {
                 ></span>
 
                 <span className="relative z-10 flex items-center gap-3">
-                  <span>Let's Do This</span>
+                  <span>よし、始めよう！</span>
                   <svg
                     className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
                     fill="none"
