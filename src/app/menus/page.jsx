@@ -20,6 +20,7 @@ export default function MenuPage() {
   const [usertoken, setUsertoken] = useState("");
   const router = useRouter();
   const suggestionsRef = useRef(null);
+  const menuListRef = useRef(null);
 
   // ── 作成フォーム用 state ──
   const [newMenu, setNewMenu] = useState("");
@@ -41,16 +42,26 @@ export default function MenuPage() {
   const [todayCookId, setTodayCookId] = useState(null);
   const [cookSelectMessage, setCookSelectMessage] = useState("");
   const [suggestionError, setSuggestionError] = useState("");
+  const [isEmailSigningIn, setIsEmailSigningIn] = useState(false);
 
   // ── 認証 ──
   useEffect(() => {
     const runEmailLikSignIn = async () => {
       if (isSignInWithEmailLink(auth, window.location.href)) {
-        await handleEmailSignIn();
+        setIsEmailSigningIn(true);
+        try {
+          await handleEmailSignIn();
+        } catch (error) {
+          console.error("Email sign in failed:", error);
+        }
+        setIsEmailSigningIn(false);
       }
     };
 
     runEmailLikSignIn();
+
+    // メールリンク処理中は認証チェックをスキップ
+    if (isEmailSigningIn) return;
 
     // 認証状態監視
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -63,7 +74,7 @@ export default function MenuPage() {
       }
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [router, isEmailSigningIn]);
 
   // ── メンバー一覧とファミリー情報取得 ──
   useEffect(() => {
@@ -171,6 +182,15 @@ export default function MenuPage() {
       // 一覧を再読み込み
       const listRes = await apiClient.get("/api/menus");
       setMenuList(Array.isArray(listRes.data) ? listRes.data : []);
+      // メニューリストへ自動スクロール
+      setTimeout(() => {
+        if (menuListRef.current) {
+          menuListRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+          });
+        }
+      }, 100);
     } catch (error) {
       if (error.response) {
         const errors = error.response.data.errors || [
@@ -354,9 +374,10 @@ export default function MenuPage() {
         <h2 className="luxury-title text-2xl">リクエストされたメニュー</h2>
 
         <div className="grid grid-cols-1 gap-4 max-w-4xl mx-auto">
-          {menuList.map((m) => (
+          {menuList.map((m, index) => (
             <div
               key={m.id}
+              ref={index === menuList.length - 1 ? menuListRef : null}
               className="luxury-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
             >
               <Link href={`/menus/${m.id}`} className="flex-1 min-w-0">
