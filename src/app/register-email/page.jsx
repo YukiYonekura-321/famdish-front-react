@@ -24,10 +24,10 @@ export default function RegisterEmailPage() {
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        // redirect パラメータがあれば付けてログインページへ
+        // メール認証完了後のリダイレクト：emailVerified=true を付与
         const loginUrl = redirectParam
-          ? `/login?redirect=${encodeURIComponent(redirectParam)}`
-          : "/login";
+          ? `/login?redirect=${encodeURIComponent(redirectParam)}&emailVerified=true`
+          : "/login?emailVerified=true";
         router.replace(loginUrl);
         return;
       }

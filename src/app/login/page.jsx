@@ -39,6 +39,14 @@ export default function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setRedirectParam(params.get("redirect"));
+    const emailVerified = params.get("emailVerified");
+
+    // メール認証完了後はアラート表示
+    if (emailVerified === "true") {
+      alert("メールアドレスの確認ができたので、もう一度ログインしてください");
+      // URLからパラメータを削除
+      window.history.replaceState({}, document.title, "/login");
+    }
   }, []);
 
   const redirectTomyPageWhenLoginSuccess = async (provider) => {
