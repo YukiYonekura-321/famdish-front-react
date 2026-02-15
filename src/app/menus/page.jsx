@@ -1,17 +1,19 @@
 "use client";
 
 import { apiClient } from "@/app/lib/api";
-import { auth } from "../lib/firebase";
+import { auth } from "@/app/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSuggestion } from "@/hooks/useSuggestion";
 import { useFeedback } from "@/hooks/useFeedback";
 import SuggestionCard from "@/components/SuggestionCard";
-import { AuthHeader } from "../../components/auth_header";
+import { AuthHeader } from "@/components/auth_header";
 import { useRouter } from "next/navigation";
 import React, { useRef } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { handleEmailSignIn } from "@/app/lib/email-signin";
+import { isSignInWithEmailLink } from "firebase/auth";
 
 export default function MenuPage() {
   // ── 共通 state ──
@@ -42,6 +44,15 @@ export default function MenuPage() {
 
   // ── 認証 ──
   useEffect(() => {
+    const runEmailLikSignIn = async () => {
+      if (isSignInWithEmailLink(auth, window.location.href)) {
+        await handleEmailSignIn();
+      }
+    };
+
+    runEmailLikSignIn();
+
+    // 認証状態監視
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const token = await user.getIdToken();
