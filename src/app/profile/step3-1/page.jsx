@@ -59,192 +59,170 @@ export default function ProfileStep3_1() {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden aurora">
-      <div className="fixed inset-0 gradient-mesh particle-bg"></div>
-
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div
-          className="absolute top-16 left-[8%] w-64 h-64 rounded-full blur-3xl opacity-15 floating"
-          style={{
-            background: "radial-gradient(circle, var(--sage-400), transparent 70%)",
-            animationDelay: "0.8s"
-          }}
-        ></div>
-        <div
-          className="absolute bottom-24 right-[12%] w-80 h-80 rounded-full blur-3xl opacity-18 floating"
-          style={{
-            background: "radial-gradient(circle, var(--gold-400), transparent 70%)",
-            animationDelay: "2.8s"
-          }}
-        ></div>
-      </div>
-
-      <div className="relative min-h-screen flex items-center justify-center p-6 py-24">
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-10 animate-fade-in">
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: '85%' }}></div>
-          </div>
-          <div className="text-center mt-3 text-sm font-medium text-muted">
-            Step 6 of 7
+    <div className="min-h-screen bg-gradient-to-br from-[var(--cream-50)] via-white to-[var(--sage-50)]">
+      <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 py-28 sm:py-32">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 sm:px-6 z-10">
+          <div className="bg-white/80 backdrop-blur-sm rounded-full p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm font-medium text-[var(--foreground)]">
+                プロフィール登録
+              </span>
+              <span className="text-xs sm:text-sm text-muted">ステップ 6/7</span>
+            </div>
+            <div className="h-2 bg-[var(--cream-100)] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[var(--sage-400)] to-[var(--sage-500)] transition-all duration-500 ease-out"
+                style={{ width: "85%" }}
+              ></div>
+            </div>
           </div>
         </div>
 
-        <div className="ultra-card max-w-4xl w-full animate-fade-in-up tilt-3d">
-          <div
-            className="h-2 rounded-t-3xl"
-            style={{
-              background: "linear-gradient(90deg, var(--terracotta-400), var(--gold-400), var(--sage-400))"
-            }}
-          ></div>
+        <div className="w-full max-w-4xl">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg border border-[var(--cream-200)] overflow-hidden">
+            <div className="h-1.5 bg-gradient-to-r from-[var(--terracotta-400)] via-[var(--gold-400)] to-[var(--sage-400)]"></div>
 
-          <div className="p-10 sm:p-14">
-            <div className="text-center mb-10 animate-fade-in-up stagger-1">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5 floating"
-                   style={{
-                     background: "linear-gradient(135deg, rgba(90, 122, 90, 0.2), rgba(212, 175, 55, 0.15))",
-                     boxShadow: "0 8px 32px rgba(90, 122, 90, 0.25)"
-                   }}>
-                <span className="text-4xl">❤️</span>
+            <div className="p-6 sm:p-8 md:p-10">
+              <div className="text-center mb-6 sm:mb-8">
+                <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-[var(--sage-100)] to-[var(--gold-100)] mb-4">
+                  <span className="text-3xl sm:text-4xl">❤️</span>
+                </div>
+
+                <h1
+                  className="text-2xl sm:text-3xl md:text-4xl font-light mb-3 sm:mb-4 text-[var(--foreground)]"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  好きなものを選んでください
+                </h1>
+
+                <p className="text-sm sm:text-base text-muted">
+                  複数選択できます
+                </p>
               </div>
 
-              <h1
-                className="text-4xl sm:text-5xl font-light mb-4 gradient-text"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                What Do You Love?
-              </h1>
+              <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                  {OPTIONS.map((opt) => {
+                    const isSelected = selected.includes(opt);
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => toggle(opt)}
+                        className={`relative p-3 sm:p-4 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
+                                 text-center font-medium text-sm sm:text-base min-h-[44px] flex items-center justify-center ${
+                                   isSelected
+                                     ? "bg-gradient-to-br from-[var(--sage-100)] to-[var(--sage-200)] border-2 border-[var(--sage-400)] shadow-md"
+                                     : "bg-white border-2 border-[var(--cream-200)] hover:border-[var(--sage-300)]"
+                                 }`}
+                      >
+                        {isSelected && (
+                          <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[var(--sage-500)] flex items-center justify-center">
+                            <svg
+                              className="w-3 h-3 text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={3}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                        <span
+                          className={
+                            isSelected
+                              ? "text-[var(--sage-700)]"
+                              : "text-[var(--foreground)]"
+                          }
+                        >
+                          {opt}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
-              <p className="text-muted text-lg">
-                Select your favorite foods and cuisines (choose as many as you like)
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in-up stagger-2">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {OPTIONS.map((opt, idx) => {
-                  const isSelected = selected.includes(opt);
-                  return (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => toggle(opt)}
-                      className={`group relative p-4 rounded-2xl transition-all duration-300 hover:scale-105
-                               text-center font-medium animate-fade-in-up`}
-                      style={{
-                        background: isSelected
-                          ? "linear-gradient(135deg, var(--sage-100), var(--sage-200))"
-                          : "linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6))",
-                        backdropFilter: "blur(20px)",
-                        border: isSelected
-                          ? "2px solid var(--sage-400)"
-                          : "2px solid rgba(212, 175, 55, 0.15)",
-                        boxShadow: isSelected
-                          ? "0 8px 24px rgba(90, 122, 90, 0.25), inset 0 2px 8px rgba(255, 255, 255, 0.5)"
-                          : "0 4px 12px rgba(212, 175, 55, 0.08), inset 0 2px 8px rgba(255, 255, 255, 0.5)",
-                        animationDelay: `${idx * 0.03}s`
-                      }}
-                    >
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[var(--sage-500)]
-                                     flex items-center justify-center animate-scale-in">
-                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                      )}
-                      <span className={`text-base transition-colors ${
-                        isSelected ? "text-[var(--sage-700)]" : "text-[var(--foreground)]"
-                      }`}>
-                        {opt}
+                <div className="bg-[var(--sage-50)] border border-[var(--sage-200)] rounded-xl p-4 sm:p-5 text-center">
+                  <div className="flex items-center justify-center gap-2 sm:gap-3">
+                    <span className="text-xl sm:text-2xl">🎉</span>
+                    <div>
+                      <span
+                        className="text-xl sm:text-2xl font-semibold text-[var(--primary)]"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        {selected.length}
                       </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="glass-ultra rounded-2xl p-6 text-center">
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-2xl">🎉</span>
-                  <div>
-                    <span className="font-semibold text-[var(--primary)] text-xl"
-                          style={{ fontFamily: "var(--font-display)" }}>
-                      {selected.length}
-                    </span>
-                    <span className="text-muted ml-2">items selected</span>
+                      <span className="text-sm sm:text-base text-muted ml-2">
+                        個選択中
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => router.push("/profile/step3")}
-                  className="group relative px-8 py-4 rounded-full font-medium text-[var(--foreground)]
-                           transition-all duration-300 hover:scale-105 flex-1
-                           bg-gradient-to-br from-[var(--cream-100)] to-[var(--cream-200)]
-                           border border-[var(--gold-400)]/20 hover:border-[var(--gold-400)]/40"
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
+                <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/profile/step3")}
+                    className="w-full sm:flex-1 px-6 py-3 sm:py-4 rounded-xl font-medium text-[var(--foreground)]
+                             bg-[var(--cream-100)] hover:bg-[var(--cream-200)] border-2 border-[var(--cream-200)]
+                             transition-all duration-200 flex items-center justify-center gap-2 min-h-[44px]"
+                  >
                     <svg
-                      className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1"
+                      className="w-5 h-5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      strokeWidth={2}
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2}
                         d="M11 17l-5-5m0 0l5-5m-5 5h12"
                       />
                     </svg>
-                    <span>Back</span>
-                  </span>
-                </button>
+                    <span>戻る</span>
+                  </button>
 
-                <button
-                  type="submit"
-                  className="group relative px-8 py-4 rounded-full font-semibold text-white
-                           transition-all duration-500 hover:scale-105 hover:shadow-2xl flex-1
-                           flex items-center justify-center gap-2 overflow-hidden"
-                  style={{
-                    background: "linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%)",
-                    boxShadow: "0 8px 32px rgba(90, 122, 90, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.2)"
-                  }}
-                >
-                  <span
-                    className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"
+                  <button
+                    type="submit"
+                    className="w-full sm:flex-1 px-6 py-3 sm:py-4 rounded-xl font-semibold text-white
+                             transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
+                             flex items-center justify-center gap-2 shadow-lg hover:shadow-xl min-h-[44px]"
                     style={{
-                      background: "linear-gradient(135deg, var(--sage-400), var(--sage-600))"
+                      background:
+                        "linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%)",
                     }}
-                  ></span>
-
-                  <span className="relative z-10 flex items-center gap-2">
-                    <span>Continue</span>
+                  >
+                    <span>次へ</span>
                     <svg
-                      className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
+                      className="w-5 h-5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      strokeWidth={2.5}
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2.5}
                         d="M13 7l5 5m0 0l-5 5m5-5H6"
                       />
                     </svg>
-                  </span>
-                </button>
-              </div>
-            </form>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
 
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 text-center animate-fade-in">
-          <p className="text-xs text-muted">
-            One more step to complete your profile!
-          </p>
+          <div className="text-center mt-6 sm:mt-8">
+            <p className="text-xs sm:text-sm text-muted">
+              あと1ステップで完了です！
+            </p>
+          </div>
         </div>
       </div>
     </div>
