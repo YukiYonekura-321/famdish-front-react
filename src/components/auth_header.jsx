@@ -90,7 +90,7 @@ export function AuthHeader() {
         ></div>
 
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="flex justify-between items-center h-24">
+          <div className="flex justify-between items-center h-16">
             {/* Logo with premium styling */}
             <Link href="/" className="group relative">
               <span
@@ -100,7 +100,6 @@ export function AuthHeader() {
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 FamDish
-
                 {/* Decorative accent */}
                 <span
                   className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-gradient-to-r
@@ -144,7 +143,9 @@ export function AuthHeader() {
                     <span>マイページ</span>
                     {displayName && (
                       <>
-                        <span className="text-[var(--gold-500)] font-light">—</span>
+                        <span className="text-[var(--gold-500)] font-light">
+                          —
+                        </span>
                         <span
                           className="text-[var(--gold-600)] font-medium"
                           style={{ fontFamily: "var(--font-display)" }}
