@@ -105,7 +105,9 @@ export default function MemberForm() {
       await apiClient.put(`/api/members/${editingMember.id}`, {
         member: {
           name: editName,
+          // eslint-disable-next-line camelcase
           likes_attributes: likesAttrs,
+          // eslint-disable-next-line camelcase
           dislikes_attributes: dislikesAttrs,
         },
       });
@@ -162,20 +164,19 @@ export default function MemberForm() {
               : Boolean(currentUid);
 
             return (
-              <div
-                key={`member-${idx}-${m.id}`}
-                className="luxury-card"
-              >
+              <div key={`member-${idx}-${m.id}`} className="luxury-card">
                 <h3
                   className="text-2xl font-medium mb-4 text-[var(--foreground)]"
-                  style={{ fontFamily: 'var(--font-display)' }}
+                  style={{ fontFamily: "var(--font-display)" }}
                 >
                   {m.name}
                 </h3>
 
                 <div className="space-y-4">
                   <div>
-                    <div className="luxury-label text-base mb-2">好きなもの</div>
+                    <div className="luxury-label text-base mb-2">
+                      好きなもの
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {m.likes?.length > 0 ? (
                         m.likes.map((like) => (
@@ -193,7 +194,9 @@ export default function MemberForm() {
                   </div>
 
                   <div>
-                    <div className="luxury-label text-base mb-2">嫌いなもの</div>
+                    <div className="luxury-label text-base mb-2">
+                      嫌いなもの
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {m.dislikes?.length > 0 ? (
                         m.dislikes.map((dislike) => (
@@ -211,7 +214,9 @@ export default function MemberForm() {
                   </div>
 
                   <div>
-                    <div className="luxury-label text-base mb-2">提案したメニュー</div>
+                    <div className="luxury-label text-base mb-2">
+                      提案したメニュー
+                    </div>
                     <div className="flex flex-col gap-2">
                       {Array.isArray(m.menus) && m.menus.length > 0 ? (
                         m.menus.map((menu) => (
@@ -244,7 +249,10 @@ export default function MemberForm() {
                     <button
                       onClick={() => handleDelete(m)}
                       className="luxury-btn luxury-btn-outline flex-1"
-                      style={{ borderColor: 'var(--secondary)', color: 'var(--secondary)' }}
+                      style={{
+                        borderColor: "var(--secondary)",
+                        color: "var(--secondary)",
+                      }}
                     >
                       削除
                     </button>
@@ -258,11 +266,13 @@ export default function MemberForm() {
 
       {/* 編集モーダル */}
       {isModalOpen && editingMember && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="luxury-card max-w-md w-full max-h-[80vh] overflow-y-auto animate-scale-in">
-            <h2 className="luxury-label text-center mb-6">{editName}さんを編集</h2>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in overflow-hidden">
+          <div className="luxury-card max-w-md w-full max-h-[80vh] flex flex-col animate-scale-in">
+            <h2 className="luxury-label text-center mb-6 flex-shrink-0">
+              {editName}さんを編集
+            </h2>
 
-            <div className="space-y-6">
+            <div className="space-y-6 overflow-y-auto flex-1 pr-2">
               <div>
                 <label className="luxury-label text-sm">名前</label>
                 <input
@@ -356,7 +366,7 @@ export default function MemberForm() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-8">
+            <div className="flex gap-3 mt-8 flex-shrink-0">
               <button
                 onClick={handleEditSave}
                 className="luxury-btn luxury-btn-primary flex-1"
