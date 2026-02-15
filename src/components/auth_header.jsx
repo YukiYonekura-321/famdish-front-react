@@ -13,21 +13,28 @@ import { onAuthStateChanged } from "firebase/auth";
 export function AuthHeader() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [myPageOpen, setMyPageOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // まず API でメンバー情報を取得して表示名を上書きできるか試す
         try {
           const res = await apiClient.get("/api/members/me");
           const data = res?.data || {};
-          console.log(data);
           setDisplayName(data.username || "");
         } catch (error) {
           console.error("メンバー取得失敗", error);
-          // フォールバック処理
           setDisplayName("");
         }
       } else {
@@ -47,108 +54,304 @@ export function AuthHeader() {
   };
 
   return (
-    <header className="flex justify-between items-center h-16 fixed top-0 left-0 w-full z-50 backdrop-blur bg-zinc-800/50">
-      <Link className="p-4 text-white text-[32px]" href="/">
-        FamDish
-      </Link>
-      <nav className="hidden md:flex md:gap-0 gap-3 flex-wrap items-center">
-        <Link
-          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
-          href="/members"
-        >
-          💌 家族を招待
-        </Link>
-
-        <Link
-          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
-          href="/members/index"
-        >
-          メンバー一覧
-        </Link>
-
-        <Link
-          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
-          href="/menus"
-        >
-          リクエスト
-        </Link>
-
-        <Link
-          className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-500 text-sm md:text-base"
-          href="/menus/index"
-        >
-          リクエスト一覧
-        </Link>
-
+    <>
+      {/* Ambient gold glow */}
+      <div className="fixed top-0 left-0 right-0 h-32 pointer-events-none z-40">
         <div
-          tabIndex={0}
-          className="relative"
-          onBlur={(e) => {
-            // フォーカスがコンポーネント外に移動したら閉じる
-            if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+          className="absolute inset-0 opacity-20"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 175, 55, 0.2), transparent)",
           }}
-        >
-          <div
-            className="text-white block leading-16 px-2 md:px-3 py-1 md:py-0 bg-gray-600/50 hover:bg-gray-500/50 transition duration-300 text-sm md:text-base cursor-pointer"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-          >
-            マイページ{` — ${displayName}`}
-          </div>
-
-          {open && (
-            <div className="absolute right-0 top-full mt-1 w-56 bg-zinc-800/95 backdrop-blur shadow-lg rounded-md py-2">
-              <Link
-                href="/mypage/invite"
-                className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
-              >
-                ログインできない家族を登録
-              </Link>
-
-              <Link
-                href="/mypage/social"
-                className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
-              >
-                ソーシャルアカウント連携状態
-              </Link>
-
-              <Link
-                href="/mypage/email"
-                className="block px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
-              >
-                通知先メールアドレス変更
-              </Link>
-
-              <button
-                onClick={logout}
-                className="w-full text-left px-4 py-2 text-sm text-white hover:bg-zinc-700 transition"
-              >
-                ログアウト
-              </button>
-
-              <Link
-                href="/mypage/withdraw"
-                className="block px-4 py-2 text-sm text-red-400 hover:bg-zinc-700 transition"
-              >
-                退会
-              </Link>
-            </div>
-          )}
-        </div>
-      </nav>
-
-      {/* ハンバーガーボタン（スマホのみ） */}
-      <div className="md:hidden">
-        <HamburgerButton onToggle={(open) => setMenuOpen(open)} />
-        {/* モバイルメニュー */}
-        {menuOpen && (
-          <nav className="absolute top-full right-0 left-0 z-20 bg-zinc-900/90 backdrop-blur-sm">
-            <ul className="flex flex-col space-y-4 p-4">
-              <MobileAuthMenuItems onClick={() => setMenuOpen(false)} />
-            </ul>
-          </nav>
-        )}
+        ></div>
       </div>
-    </header>
+
+      <header
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-700 ${
+          scrolled
+            ? "backdrop-blur-2xl bg-white/75 shadow-2xl"
+            : "backdrop-blur-xl bg-white/65"
+        }`}
+        style={{
+          boxShadow: scrolled
+            ? "0 8px 32px rgba(212, 175, 55, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05)"
+            : "0 4px 16px rgba(0, 0, 0, 0.02)",
+          borderBottom: "1px solid rgba(212, 175, 55, 0.15)",
+        }}
+      >
+        {/* Premium gold accent line */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, var(--gold-400) 50%, transparent)",
+            opacity: 0.7,
+          }}
+        ></div>
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="flex justify-between items-center h-24">
+            {/* Logo with premium styling */}
+            <Link href="/" className="group relative">
+              <span
+                className="text-4xl font-light tracking-tight text-[var(--foreground)]
+                         transition-all duration-500 group-hover:text-[var(--gold-500)]
+                         relative inline-block"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                FamDish
+
+                {/* Decorative accent */}
+                <span
+                  className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-gradient-to-r
+                           from-[var(--gold-400)] via-[var(--gold-500)] to-[var(--terracotta-400)]
+                           transition-all duration-500 group-hover:w-full shadow-lg shadow-[var(--gold-400)]/30"
+                ></span>
+              </span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-1.5">
+              <AuthNavLink href="/members" icon="💌">
+                家族を招待
+              </AuthNavLink>
+
+              <AuthNavLink href="/members/index">メンバー一覧</AuthNavLink>
+
+              <AuthNavLink href="/menus">リクエスト</AuthNavLink>
+
+              <AuthNavLink href="/menus/familysuggestion" icon="🏠">
+                わが家の献立
+              </AuthNavLink>
+
+              {/* My Page Dropdown - Ultra Luxury */}
+              <div
+                className="relative"
+                onMouseEnter={() => setMyPageOpen(true)}
+                onMouseLeave={() => setMyPageOpen(false)}
+              >
+                <button
+                  className="group relative px-5 py-2.5 rounded-full transition-all duration-300
+                           hover:bg-gradient-to-br from-[var(--cream-100)] to-[var(--cream-200)]
+                           ml-2"
+                  onClick={() => setMyPageOpen(!myPageOpen)}
+                >
+                  <span
+                    className="relative z-10 font-medium text-[var(--foreground)]
+                             transition-colors duration-300 group-hover:text-[var(--primary)]
+                             flex items-center gap-2"
+                  >
+                    <span>マイページ</span>
+                    {displayName && (
+                      <>
+                        <span className="text-[var(--gold-500)] font-light">—</span>
+                        <span
+                          className="text-[var(--gold-600)] font-medium"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          {displayName}
+                        </span>
+                      </>
+                    )}
+                    <svg
+                      className={`w-4 h-4 transition-transform duration-300 ${
+                        myPageOpen ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </span>
+
+                  {/* Hover glow effect */}
+                  <span
+                    className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100
+                             transition-opacity duration-500 blur-lg"
+                    style={{
+                      background:
+                        "radial-gradient(circle, var(--sage-200), transparent 70%)",
+                    }}
+                  ></span>
+
+                  {/* Gold border on hover */}
+                  <span
+                    className="absolute inset-0 rounded-full border border-[var(--gold-400)]/0
+                             transition-all duration-300 group-hover:border-[var(--gold-400)]/40"
+                  ></span>
+                </button>
+
+                {/* Premium Dropdown Menu */}
+                {myPageOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-3 w-80 backdrop-blur-2xl
+                             bg-white/90 rounded-3xl shadow-2xl border border-[var(--gold-400)]/20
+                             overflow-hidden animate-scale-in origin-top-right"
+                    style={{
+                      boxShadow:
+                        "0 20px 60px rgba(212, 175, 55, 0.15), 0 8px 24px rgba(0, 0, 0, 0.08)",
+                    }}
+                  >
+                    {/* Gold accent top border */}
+                    <div
+                      className="h-1"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, var(--terracotta-400), var(--gold-400), var(--sage-400))",
+                      }}
+                    ></div>
+
+                    <div className="p-3">
+                      <DropdownLink href="/mypage/invite">
+                        <span className="text-lg mr-2">👨‍👩‍👧‍👦</span>
+                        ログインできない家族を登録
+                      </DropdownLink>
+
+                      <DropdownLink href="/mypage/social">
+                        <span className="text-lg mr-2">🔗</span>
+                        ソーシャルアカウント連携状態
+                      </DropdownLink>
+
+                      <DropdownLink href="/mypage/email">
+                        <span className="text-lg mr-2">✉️</span>
+                        通知先メールアドレス変更
+                      </DropdownLink>
+
+                      <div className="my-2 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent"></div>
+
+                      <button
+                        onClick={logout}
+                        className="w-full text-left group relative px-4 py-3 rounded-2xl
+                                 transition-all duration-300 hover:bg-[var(--cream-100)]
+                                 flex items-center"
+                      >
+                        <span className="text-lg mr-2">🚪</span>
+                        <span className="font-medium text-[var(--foreground)] transition-colors group-hover:text-[var(--primary)]">
+                          ログアウト
+                        </span>
+                      </button>
+
+                      <DropdownLink href="/mypage/withdraw" danger>
+                        <span className="text-lg mr-2">⚠️</span>
+                        退会
+                      </DropdownLink>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </nav>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden">
+              <HamburgerButton onToggle={(open) => setMenuOpen(open)} />
+              {menuOpen && (
+                <nav
+                  className="absolute top-full right-0 left-0 z-20 backdrop-blur-2xl bg-white/90
+                           border-b border-[var(--gold-400)]/20 shadow-2xl animate-fade-in"
+                  style={{
+                    boxShadow:
+                      "0 8px 32px rgba(212, 175, 55, 0.12), 0 2px 8px rgba(0, 0, 0, 0.05)",
+                  }}
+                >
+                  <ul className="flex flex-col p-6">
+                    <MobileAuthMenuItems onClick={() => setMenuOpen(false)} />
+                  </ul>
+                </nav>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom gradient accent */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, var(--terracotta-300) 25%, var(--gold-400) 50%, var(--sage-300) 75%, transparent)",
+            opacity: 0.5,
+          }}
+        ></div>
+      </header>
+    </>
+  );
+}
+
+// Premium Authenticated Nav Link
+function AuthNavLink({ href, children, icon }) {
+  return (
+    <Link
+      href={href}
+      className="group relative px-4 py-2.5 rounded-full transition-all duration-300
+                 hover:bg-gradient-to-br from-[var(--cream-100)] to-[var(--cream-200)]"
+    >
+      <span
+        className="relative z-10 font-medium text-[var(--foreground)]
+                   transition-colors duration-300 group-hover:text-[var(--primary)]
+                   flex items-center gap-1.5"
+      >
+        {icon && <span className="text-base">{icon}</span>}
+        <span>{children}</span>
+      </span>
+
+      {/* Ripple glow */}
+      <span
+        className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100
+                   transition-opacity duration-500 blur-md"
+        style={{
+          background:
+            "radial-gradient(circle at center, var(--sage-200), transparent 70%)",
+        }}
+      ></span>
+
+      {/* Gold accent border */}
+      <span
+        className="absolute inset-0 rounded-full border border-[var(--gold-400)]/0
+                   transition-all duration-300 group-hover:border-[var(--gold-400)]/30"
+      ></span>
+    </Link>
+  );
+}
+
+// Premium Dropdown Link
+function DropdownLink({ href, children, danger = false }) {
+  if (danger) {
+    return (
+      <Link
+        href={href}
+        className="group relative block px-4 py-3 rounded-2xl transition-all duration-300
+                   hover:bg-[var(--terracotta-50)] flex items-center"
+      >
+        <span
+          className="font-medium transition-colors group-hover:text-[var(--secondary)]"
+          style={{ color: "var(--secondary)" }}
+        >
+          {children}
+        </span>
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className="group relative block px-4 py-3 rounded-2xl transition-all duration-300
+                 hover:bg-[var(--cream-100)] flex items-center"
+    >
+      <span className="font-medium text-[var(--foreground)] transition-colors group-hover:text-[var(--primary)]">
+        {children}
+      </span>
+
+      {/* Hover accent line */}
+      <span
+        className="absolute left-4 bottom-2 w-0 h-px bg-gradient-to-r from-[var(--gold-400)] to-[var(--terracotta-400)]
+                   transition-all duration-300 group-hover:w-12"
+      ></span>
+    </Link>
   );
 }
