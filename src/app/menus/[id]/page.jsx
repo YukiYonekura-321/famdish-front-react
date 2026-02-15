@@ -74,6 +74,11 @@ export default function MenuShow({ params }) {
     router.push("/menus");
   };
 
+  // この献立に決定
+  const handleDecide = () => {
+    router.push("/menus/familysuggestion");
+  };
+
   if (!menu) {
     return <div>読み込み中...</div>;
   }
@@ -93,6 +98,12 @@ export default function MenuShow({ params }) {
             </button>
             <button onClick={handleDelete} className="gra-btn">
               削除
+            </button>
+            <button
+              onClick={handleDecide}
+              className="gra-btn bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
+            >
+              この献立に決定
             </button>
             <button onClick={handleBackIndex} className="gra-btn">
               一覧へ戻る

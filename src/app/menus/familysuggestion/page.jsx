@@ -119,6 +119,15 @@ export default function FamilySuggestionPage() {
             ))}
           </div>
         )}
+
+        <div className="flex gap-4 mt-8 justify-center">
+          <Link
+            href="/menus"
+            className="gra-btn bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)]"
+          >
+            リクエストページへ戻る
+          </Link>
+        </div>
       </div>
     </div>
   );
