@@ -46,7 +46,7 @@ export default function MobileAuthMenuItems({ onClick }) {
           className="text-[var(--foreground)] block py-3 px-4 hover:bg-[var(--surface)] transition-colors duration-300 rounded-lg font-medium w-full text-left"
           aria-expanded={open}
         >
-          👤 マイページ
+          ⚙️ マイページ
         </button>
 
         {/* プルダウンメニュー（open 状態で表示） */}

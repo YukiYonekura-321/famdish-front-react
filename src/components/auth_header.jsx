@@ -34,7 +34,7 @@ export function AuthHeader() {
           const res = await apiClient.get("/api/members/me");
           const data = res?.data || {};
           setDisplayName(data.username || "");
-          setFamilyName(data.family?.name || "");
+          setFamilyName(data.family_name || "");
         } catch (error) {
           console.error("メンバー取得失敗", error);
           setDisplayName("");
@@ -96,7 +96,7 @@ export function AuthHeader() {
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="flex justify-between items-center h-16">
             {/* Logo with family name */}
-            <Link href="/" className="group relative">
+            <div className="group relative">
               <span
                 className="text-2xl font-light tracking-tight text-[var(--foreground)]
                          transition-all duration-500 group-hover:text-[var(--gold-500)]
@@ -111,7 +111,7 @@ export function AuthHeader() {
                            transition-all duration-500 group-hover:w-full shadow-lg shadow-[var(--gold-400)]/30"
                 ></span>
               </span>
-            </Link>
+            </div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1.5">
@@ -148,7 +148,7 @@ export function AuthHeader() {
                              transition-colors duration-300 group-hover:text-[var(--primary)]
                              flex items-center gap-2"
                   >
-                    <span>👤 マイページ</span>
+                    <span>⚙️ マイページ</span>
                     {displayName && (
                       <>
                         <span className="text-[var(--gold-500)] font-light">
