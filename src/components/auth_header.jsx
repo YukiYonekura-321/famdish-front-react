@@ -15,6 +15,7 @@ export function AuthHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [myPageOpen, setMyPageOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
+  const [familyName, setFamilyName] = useState("");
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -33,12 +34,15 @@ export function AuthHeader() {
           const res = await apiClient.get("/api/members/me");
           const data = res?.data || {};
           setDisplayName(data.username || "");
+          setFamilyName(data.family?.name || "");
         } catch (error) {
           console.error("メンバー取得失敗", error);
           setDisplayName("");
+          setFamilyName("");
         }
       } else {
         setDisplayName("");
+        setFamilyName("");
       }
     });
     return () => unsub();
@@ -91,15 +95,15 @@ export function AuthHeader() {
 
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="flex justify-between items-center h-16">
-            {/* Logo with premium styling */}
+            {/* Logo with family name */}
             <Link href="/" className="group relative">
               <span
-                className="text-4xl font-light tracking-tight text-[var(--foreground)]
+                className="text-2xl font-light tracking-tight text-[var(--foreground)]
                          transition-all duration-500 group-hover:text-[var(--gold-500)]
                          relative inline-block"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                FamDish
+                {familyName || "FamDish"}
                 {/* Decorative accent */}
                 <span
                   className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-gradient-to-r
@@ -115,9 +119,13 @@ export function AuthHeader() {
                 家族を招待
               </AuthNavLink>
 
-              <AuthNavLink href="/members/index">メンバー一覧</AuthNavLink>
+              <AuthNavLink href="/members/index" icon="👥">
+                メンバー一覧
+              </AuthNavLink>
 
-              <AuthNavLink href="/menus">リクエスト</AuthNavLink>
+              <AuthNavLink href="/menus" icon="📋">
+                リクエスト
+              </AuthNavLink>
 
               <AuthNavLink href="/menus/familysuggestion" icon="🏠">
                 わが家の献立
@@ -140,7 +148,7 @@ export function AuthHeader() {
                              transition-colors duration-300 group-hover:text-[var(--primary)]
                              flex items-center gap-2"
                   >
-                    <span>マイページ</span>
+                    <span>👤 マイページ</span>
                     {displayName && (
                       <>
                         <span className="text-[var(--gold-500)] font-light">
