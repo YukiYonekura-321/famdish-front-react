@@ -518,6 +518,7 @@ export default function MenuPage() {
                 onOk={async () => {
                   await saveFeedback(suggestions.id, "ok", "");
                   alert("採用しました");
+                  router.push("/menus/familysuggestion");
                 }}
                 onRetry={async () => {
                   await saveFeedback(suggestions.id, "alt", "");
