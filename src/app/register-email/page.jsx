@@ -136,8 +136,8 @@ export default function RegisterEmailPage() {
     // プロバイダーから取得したメールアドレスを登録する場合
     try {
       const emailVerificationUrl = redirectParam
-        ? `${window.location.origin}/login?redirect=${encodeURIComponent(redirectParam)}`
-        : `${window.location.origin}/login`;
+        ? `${window.location.origin}/login?redirect=${encodeURIComponent(redirectParam)}&emailVerified=true`
+        : `${window.location.origin}/login?emailVerified=true`;
 
       await sendEmailVerification(user, {
         url: emailVerificationUrl,
