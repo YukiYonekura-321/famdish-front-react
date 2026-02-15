@@ -26,7 +26,7 @@ export default function LoadingSpinner() {
         className="text-center text-muted font-medium animate-pulse"
         style={{ fontFamily: "var(--font-body)" }}
       >
-        提案を生成中です...
+        準備中です…
       </p>
     </div>
   );
