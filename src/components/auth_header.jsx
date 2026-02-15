@@ -133,7 +133,7 @@ export function AuthHeader() {
 
               {/* My Page Dropdown - Ultra Luxury */}
               <div
-                className="relative"
+                className="relative group"
                 onMouseEnter={() => setMyPageOpen(true)}
                 onMouseLeave={() => setMyPageOpen(false)}
               >
@@ -197,68 +197,63 @@ export function AuthHeader() {
                 </button>
 
                 {/* Premium Dropdown Menu */}
-                {myPageOpen && (
+                <div
+                  className="absolute right-0 top-full mt-0 w-80 backdrop-blur-2xl
+                           bg-white/90 rounded-3xl shadow-2xl border border-[var(--gold-400)]/20
+                           overflow-hidden origin-top-right
+                           pointer-events-auto transition-all duration-500 ease-out
+                           invisible group-hover:visible opacity-0 group-hover:opacity-100 
+                           scale-y-95 group-hover:scale-y-100"
+                  style={{
+                    boxShadow:
+                      "0 20px 60px rgba(212, 175, 55, 0.15), 0 8px 24px rgba(0, 0, 0, 0.08)",
+                  }}
+                >
+                  {/* Gold accent top border */}
                   <div
-                    className="absolute right-0 top-full mt-3 w-80 backdrop-blur-2xl
-                             bg-white/90 rounded-3xl shadow-2xl border border-[var(--gold-400)]/20
-                             overflow-hidden origin-top-right
-                             pointer-events-auto transition-all duration-500 ease-out
-                             opacity-0 scale-y-95 animate-in fade-in slide-in-from-top-2"
-                    onMouseEnter={() => setMyPageOpen(true)}
-                    onMouseLeave={() => setMyPageOpen(false)}
+                    className="h-1"
                     style={{
-                      boxShadow:
-                        "0 20px 60px rgba(212, 175, 55, 0.15), 0 8px 24px rgba(0, 0, 0, 0.08)",
-                      opacity: myPageOpen ? 1 : 0,
-                      transform: myPageOpen ? "scaleY(1)" : "scaleY(0.95)",
+                      background:
+                        "linear-gradient(90deg, var(--terracotta-400), var(--gold-400), var(--sage-400))",
                     }}
-                  >
-                    {/* Gold accent top border */}
-                    <div
-                      className="h-1"
-                      style={{
-                        background:
-                          "linear-gradient(90deg, var(--terracotta-400), var(--gold-400), var(--sage-400))",
-                      }}
-                    ></div>
+                  ></div>
 
-                    <div className="p-3">
-                      <DropdownLink href="/mypage/invite">
-                        <span className="text-lg mr-2">👨‍👩‍👧‍👦</span>
-                        ログインできない家族を登録
-                      </DropdownLink>
+                  <div className="p-3">
+                    <DropdownLink href="/mypage/invite">
+                      <span className="text-lg mr-2">👨‍👩‍👧‍👦</span>
+                      ログインできない家族を登録
+                    </DropdownLink>
 
-                      <DropdownLink href="/mypage/social">
-                        <span className="text-lg mr-2">🔗</span>
-                        ソーシャルアカウント連携状態
-                      </DropdownLink>
+                    <DropdownLink href="/mypage/social">
+                      <span className="text-lg mr-2">🔗</span>
+                      ソーシャルアカウント連携状態
+                    </DropdownLink>
 
-                      <DropdownLink href="/mypage/email">
-                        <span className="text-lg mr-2">✉️</span>
-                        通知先メールアドレス変更
-                      </DropdownLink>
+                    <DropdownLink href="/mypage/email">
+                      <span className="text-lg mr-2">✉️</span>
+                      通知先メールアドレス変更
+                    </DropdownLink>
 
-                      <div className="my-2 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent"></div>
+                    <div className="my-2 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent"></div>
 
-                      <button
-                        onClick={logout}
-                        className="w-full text-left group relative px-4 py-3 rounded-2xl
+                    <button
+                      onClick={logout}
+                      className="w-full text-left group relative px-4 py-3 rounded-2xl
                                  transition-all duration-300 hover:bg-[var(--cream-100)]
                                  flex items-center"
-                      >
-                        <span className="text-lg mr-2">🚪</span>
-                        <span className="font-medium text-[var(--foreground)] transition-colors group-hover:text-[var(--primary)]">
-                          ログアウト
-                        </span>
-                      </button>
+                    >
+                      <span className="text-lg mr-2">🚪</span>
+                      <span className="font-medium text-[var(--foreground)] transition-colors group-hover:text-[var(--primary)]">
+                        ログアウト
+                      </span>
+                    </button>
 
-                      <DropdownLink href="/mypage/withdraw" danger>
-                        <span className="text-lg mr-2">⚠️</span>
-                        退会
-                      </DropdownLink>
-                    </div>
+                    <DropdownLink href="/mypage/withdraw" danger>
+                      <span className="text-lg mr-2">⚠️</span>
+                      退会
+                    </DropdownLink>
                   </div>
-                )}
+                </div>
               </div>
             </nav>
 
