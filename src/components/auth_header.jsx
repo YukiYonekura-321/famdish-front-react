@@ -201,7 +201,10 @@ export function AuthHeader() {
                   <div
                     className="absolute right-0 top-full mt-3 w-80 backdrop-blur-2xl
                              bg-white/90 rounded-3xl shadow-2xl border border-[var(--gold-400)]/20
-                             overflow-hidden animate-scale-in origin-top-right"
+                             overflow-hidden animate-scale-in origin-top-right
+                             pointer-events-auto"
+                    onMouseEnter={() => setMyPageOpen(true)}
+                    onMouseLeave={() => setMyPageOpen(false)}
                     style={{
                       boxShadow:
                         "0 20px 60px rgba(212, 175, 55, 0.15), 0 8px 24px rgba(0, 0, 0, 0.08)",
