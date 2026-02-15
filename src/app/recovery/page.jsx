@@ -76,7 +76,7 @@ export default function RecoveryPage() {
           <form onSubmit={sendLoginLink}>
             <label htmlFor="email">登録しているメールアドレス</label>
             <input
-              className="gra-input mb-2 w-full"
+              className="gra-input mb-2 w-full border-2 border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-md"
               name="email"
               type="email"
               value={email}
