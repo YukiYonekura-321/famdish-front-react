@@ -58,7 +58,7 @@ export default function LootPage() {
         {/* メインコンテンツ */}
         <div className="relative z-10 flex flex-col items-center text-center px-6 md:px-8 max-w-4xl mx-auto">
           <h1
-            className="text-4xl md:text-6xl lg:text-7xl font-medium text-white mb-6 tracking-tight animate-fade-in-up drop-shadow-lg"
+            className="text-4xl md:text-6xl lg:text-7xl font-medium !text-white mb-6 tracking-tight animate-fade-in-up drop-shadow-lg"
             style={{ fontFamily: "var(--font-display)" }}
           >
             食卓で家族は繋がる
@@ -67,7 +67,7 @@ export default function LootPage() {
           <div className="w-20 h-1 bg-gradient-to-r from-transparent via-[var(--gold-400)] to-transparent mb-8 animate-fade-in stagger-1"></div>
 
           <h2
-            className="text-2xl md:text-4xl font-light text-white mb-12 tracking-wide animate-fade-in-up stagger-2 drop-shadow-lg"
+            className="text-2xl md:text-4xl font-light !text-white mb-12 tracking-wide animate-fade-in-up stagger-2 drop-shadow-lg"
             style={{ fontFamily: "var(--font-display)" }}
           >
             FamDishとは
