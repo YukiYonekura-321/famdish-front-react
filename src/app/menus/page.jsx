@@ -245,33 +245,35 @@ export default function MenuPage() {
   };
 
   return (
-    <div className="gra-page p-8 flex flex-col items-center">
+    <div className="luxury-page">
       <AuthHeader />
 
-      <div className="w-full flex flex-col items-center gap-6 mt-12">
+      <div className="luxury-container mt-8">
         {/* ─── 過去の献立リンク ─── */}
-        <div className="w-full max-w-xl flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           <Link
             href="/menus/familysuggestion"
-            className="gra-btn flex items-center gap-2"
+            className="luxury-btn luxury-btn-secondary flex items-center gap-2"
           >
-            🏠 わが家の過去の献立
+            <span>🏠</span>
+            <span>わが家の過去の献立</span>
           </Link>
           <Link
             href="/menus/familysuggestion/suggestion"
-            className="gra-btn flex items-center gap-2"
+            className="luxury-btn luxury-btn-outline flex items-center gap-2"
           >
-            🌍 みんなの献立を参考にする
+            <span>🌍</span>
+            <span>みんなの献立を参考にする</span>
           </Link>
         </div>
 
         {/* ─── 料理担当者選択 ─── */}
-        <div className="gra-card w-full max-w-xl flex flex-col items-center space-y-4">
-          <label className="font-bold text-2xl">今日の料理担当者</label>
+        <div className="luxury-card max-w-2xl mx-auto mb-12">
+          <label className="luxury-label text-center block mb-4">今日の料理担当者</label>
           <select
             value={todayCookId || ""}
             onChange={(e) => handleSelectCook(Number(e.target.value) || null)}
-            className="gra-input w-full"
+            className="luxury-select"
           >
             <option value="">選択してください</option>
             {members.map((member) => (
@@ -281,23 +283,23 @@ export default function MenuPage() {
             ))}
           </select>
           {cookSelectMessage && (
-            <p className="text-sm text-green-600">{cookSelectMessage}</p>
+            <p className="text-sm text-[var(--primary)] mt-3 text-center">{cookSelectMessage}</p>
           )}
         </div>
 
         {/* ─── リクエスト作成フォーム ─── */}
-        <h1 className="gra-title">食べたいものをリクエストしよう！</h1>
+        <h1 className="luxury-title">食べたいものをリクエストしよう！</h1>
 
         <form
           onSubmit={handleSubmit}
-          className="gra-card w-full max-w-xl flex flex-col items-center space-y-6"
+          className="luxury-card max-w-2xl mx-auto space-y-6 mb-12"
         >
-          <label className="font-bold text-2xl">リクエスト内容</label>
+          <label className="luxury-label">リクエスト内容</label>
 
           <select
             value={newMenu}
             onChange={(e) => setNewMenu(e.target.value)}
-            className="gra-input w-full"
+            className="luxury-select"
           >
             <option value="">選択してください</option>
             {likes.map((like) => (
@@ -307,76 +309,80 @@ export default function MenuPage() {
             ))}
           </select>
 
-          <p className="font-bold text-lg small-note">
-            または、テキストでリクエスト内容を入力してください。
+          <p className="text-muted text-center text-sm">
+            または、テキストでリクエスト内容を入力してください
           </p>
+
           <input
             type="text"
             value={newMenu}
             onChange={(e) => setNewMenu(e.target.value)}
-            className="gra-input w-full"
+            className="luxury-input"
+            placeholder="例: カレーライス"
           />
-          <button type="submit" className="gra-btn w-40 mx-auto">
-            送信
+
+          <button type="submit" className="luxury-btn luxury-btn-primary w-full sm:w-auto mx-auto block">
+            リクエストを送信
           </button>
         </form>
 
-        {message && <p className="mt-4 small-note">{message}</p>}
+        {message && <p className="text-center text-sm text-muted mb-6">{message}</p>}
 
         {/* ─── メニュー一覧 ─── */}
-        <h2 className="text-2xl font-bold gra-title mt-12">
-          リクエストされたメニュー(一覧)
+        <div className="divider-accent"></div>
+
+        <h2 className="luxury-title text-2xl">
+          リクエストされたメニュー
         </h2>
 
-        <div className="w-full flex flex-col items-center gap-4 mt-6">
+        <div className="grid grid-cols-1 gap-4 max-w-4xl mx-auto">
           {menuList.map((m) => (
             <div
               key={m.id}
-              className="w-11/12 sm:w-3/4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+              className="luxury-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
             >
-              <Link href={`/menus/${m.id}`} className="w-full sm:w-auto">
-                <div className="gra-card w-full cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <span>{m.name}</span>
+              <Link href={`/menus/${m.id}`} className="flex-1 min-w-0">
+                <div className="cursor-pointer group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-lg font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors" style={{ fontFamily: 'var(--font-display)' }}>
+                      {m.name}
+                    </span>
                     <button
                       type="button"
                       onClick={(e) => {
                         e.preventDefault();
                         handleToggleGood(m.id);
                       }}
-                      className="focus:outline-none"
+                      className="focus:outline-none transition-transform hover:scale-110"
                     >
                       {goodStatus[m.id]?.exists ? (
-                        <span className="text-2xl text-pink-500">❤️</span>
+                        <span className="text-2xl">❤️</span>
                       ) : (
-                        <span className="text-2xl text-gray-400">🤍</span>
+                        <span className="text-2xl opacity-40 hover:opacity-70 transition-opacity">🤍</span>
                       )}
                     </button>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-muted font-medium">
                       {goodCount[m.id] ?? 0}
                     </span>
                   </div>
                   {m.member && (
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div className="text-sm text-muted">
                       提案者: {m.member.name}
                     </div>
                   )}
                 </div>
               </Link>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <button
-                  className="gra-btn"
+                  className="luxury-btn luxury-btn-primary text-sm px-4 py-2"
                   onClick={() => handleFetchSuggestions(m.name)}
                 >
-                  提案を取得する
+                  提案を取得
                 </button>
-                {suggestionError && (
-                  <p className="text-sm text-red-600">{suggestionError}</p>
-                )}
 
                 <button
-                  className="px-3 py-2 bg-yellow-400 text-black rounded hover:brightness-95"
+                  className="luxury-btn luxury-btn-outline text-sm px-4 py-2"
                   onClick={() => {
                     setEditingId(m.id);
                     setEditingValue(m.name);
@@ -387,7 +393,7 @@ export default function MenuPage() {
                 </button>
 
                 <button
-                  className="px-3 py-2 bg-red-500 text-white rounded hover:brightness-90"
+                  className="px-4 py-2 text-sm bg-[var(--terracotta-100)] text-[var(--terracotta-600)] rounded-full hover:bg-[var(--terracotta-200)] transition-colors font-medium"
                   onClick={async () => {
                     if (!confirm("本当に削除しますか？")) return;
                     try {
@@ -406,27 +412,30 @@ export default function MenuPage() {
               </div>
             </div>
           ))}
+          {suggestionError && (
+            <p className="text-sm text-[var(--secondary)] text-center">{suggestionError}</p>
+          )}
         </div>
 
         {/* 編集モーダル */}
         {showEditModal && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h2 className="text-lg font-bold mb-4">メニューを編集</h2>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="luxury-card max-w-md w-full animate-scale-in">
+              <h2 className="luxury-label text-center mb-6">メニューを編集</h2>
               <input
                 value={editingValue}
                 onChange={(e) => setEditingValue(e.target.value)}
-                className="gra-input w-full mb-4"
+                className="luxury-input mb-6"
               />
               <div className="flex justify-end gap-3">
                 <button
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded"
+                  className="luxury-btn luxury-btn-ghost"
                   onClick={() => setShowEditModal(false)}
                 >
                   キャンセル
                 </button>
                 <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  className="luxury-btn luxury-btn-primary"
                   onClick={async () => {
                     try {
                       await apiClient.patch(`/api/menus/${editingId}`, {

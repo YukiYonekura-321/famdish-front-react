@@ -1,44 +1,79 @@
 export default function SuggestionCard({ suggestion, onOk, onRetry, onNg }) {
   return (
-    <div className="border rounded-lg p-4 shadow-sm bg-white">
-      <h2 className="text-lg font-bold mb-2">🍽️ 献立案</h2>
+    <div className="luxury-card max-w-3xl mx-auto animate-fade-in-up">
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-3xl">🍽️</span>
+        <h2
+          className="text-2xl font-medium text-[var(--foreground)]"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          献立案
+        </h2>
+      </div>
 
-      <p>
-        <strong>タイトル：</strong>
-        {suggestion.title}
-      </p>
-      <p>
-        <strong>理由：</strong>
-        {suggestion.reason}
-      </p>
-      <p>
-        <strong>時間：</strong>
-        {suggestion.time} 分
-      </p>
-      <p>
-        <strong>材料：</strong>
-        {suggestion.ingredients.join(" / ")}
-      </p>
+      <div className="space-y-4 mb-6">
+        <div>
+          <span className="luxury-label text-base block mb-2">タイトル</span>
+          <p className="text-lg" style={{ fontFamily: 'var(--font-display)' }}>
+            {suggestion.title}
+          </p>
+        </div>
 
-      <div className="flex gap-2 mt-4">
+        <div>
+          <span className="luxury-label text-base block mb-2">選んだ理由</span>
+          <p className="text-muted leading-relaxed">{suggestion.reason}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-6">
+          <div>
+            <span className="luxury-label text-base block mb-2">調理時間</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-medium text-[var(--primary)]">
+                {suggestion.time}
+              </span>
+              <span className="text-muted">分</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <span className="luxury-label text-base block mb-2">材料</span>
+          <div className="flex flex-wrap gap-2">
+            {suggestion.ingredients.map((ingredient, idx) => (
+              <span key={idx} className="luxury-badge">
+                {ingredient}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="divider"></div>
+
+      <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <button
-          className="bg-green-500 text-white px-3 py-1 rounded"
+          className="luxury-btn luxury-btn-primary flex-1 flex items-center justify-center gap-2"
           onClick={onOk}
         >
-          👍 OK
-        </button>
-        <button
-          className="bg-blue-500 text-white px-3 py-1 rounded"
-          onClick={onRetry}
-        >
-          🔄 別案
+          <span>👍</span>
+          <span>この献立に決定</span>
         </button>
 
         <button
-          className="bg-red-500 text-white px-3 py-1 rounded"
-          onClick={onNg}
+          className="luxury-btn luxury-btn-outline flex-1 flex items-center justify-center gap-2"
+          onClick={onRetry}
         >
-          👎NG理由をお聞かせください(理由を記載することで、提案の精度が上がります。)
+          <span>🔄</span>
+          <span>別の案を見る</span>
+        </button>
+
+        <button
+          className="luxury-btn luxury-btn-ghost flex-1 flex items-center justify-center gap-2 text-[var(--secondary)]"
+          onClick={onNg}
+          title="理由を記載することで、提案の精度が向上します"
+        >
+          <span>👎</span>
+          <span>フィードバック</span>
         </button>
       </div>
     </div>
