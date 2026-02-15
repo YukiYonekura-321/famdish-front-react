@@ -35,7 +35,9 @@ export default function ProfileStep1() {
               <span className="text-xs sm:text-sm font-medium text-[var(--foreground)]">
                 プロフィール登録
               </span>
-              <span className="text-xs sm:text-sm text-muted">ステップ 1/7</span>
+              <span className="text-xs sm:text-sm text-muted">
+                ステップ 1/7
+              </span>
             </div>
             <div className="h-2 bg-[var(--cream-100)] rounded-full overflow-hidden">
               <div
@@ -73,7 +75,8 @@ export default function ProfileStep1() {
                 className="text-base sm:text-lg text-center text-muted mb-8 sm:mb-12 max-w-xl mx-auto leading-relaxed"
                 style={{ fontFamily: "var(--font-body)" }}
               >
-                ご家族の食卓を豊かにする、<br className="sm:hidden" />
+                ご家族の食卓を豊かにする、
+                <br className="sm:hidden" />
                 献立提案サービスです
               </p>
 
@@ -107,7 +110,9 @@ export default function ProfileStep1() {
                     家族向け
                   </h4>
                   <p className="text-xs sm:text-sm text-muted">
-                    ご家族みんなの<br className="sm:hidden" />好みに対応
+                    ご家族みんなの
+                    <br className="sm:hidden" />
+                    好みに対応
                   </p>
                 </div>
 
@@ -119,7 +124,9 @@ export default function ProfileStep1() {
                     パーソナライズ
                   </h4>
                   <p className="text-xs sm:text-sm text-muted">
-                    あなたの好みに<br className="sm:hidden" />ぴったり合う
+                    あなたの好みに
+                    <br className="sm:hidden" />
+                    ぴったり合う
                   </p>
                 </div>
 
@@ -131,7 +138,9 @@ export default function ProfileStep1() {
                     簡単・便利
                   </h4>
                   <p className="text-xs sm:text-sm text-muted">
-                    すぐに使える<br className="sm:hidden" />シンプル設計
+                    すぐに使える
+                    <br className="sm:hidden" />
+                    シンプル設計
                   </p>
                 </div>
               </div>
@@ -165,13 +174,6 @@ export default function ProfileStep1() {
                 </button>
               </div>
             </div>
-          </div>
-
-          {/* Footer note */}
-          <div className="text-center mt-6 sm:mt-8">
-            <p className="text-xs sm:text-sm text-muted">
-              ご家族のために、心を込めて作りました
-            </p>
           </div>
         </div>
       </div>
