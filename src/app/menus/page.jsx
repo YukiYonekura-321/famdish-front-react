@@ -17,7 +17,6 @@ import { isSignInWithEmailLink } from "firebase/auth";
 
 export default function MenuPage() {
   // ── 共通 state ──
-  const [usertoken, setUsertoken] = useState("");
   const router = useRouter();
   const suggestionsRef = useRef(null);
   const menuListRef = useRef(null);
@@ -42,43 +41,39 @@ export default function MenuPage() {
   const [todayCookId, setTodayCookId] = useState(null);
   const [cookSelectMessage, setCookSelectMessage] = useState("");
   const [suggestionError, setSuggestionError] = useState("");
-  const [isEmailSigningIn, setIsEmailSigningIn] = useState(false);
 
   // ── 認証 ──
   useEffect(() => {
-    const runEmailLikSignIn = async () => {
+    let unsubscribe;
+
+    const runEmailSignIn = async () => {
       if (isSignInWithEmailLink(auth, window.location.href)) {
-        setIsEmailSigningIn(true);
         try {
           await handleEmailSignIn();
         } catch (error) {
           console.error("Email sign in failed:", error);
         }
-        setIsEmailSigningIn(false);
+        return; // メール処理後は早期終了
       }
+
+      // メール処理がない場合のみ認証チェック
+      unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          router.replace("/login");
+        }
+      });
     };
 
-    runEmailLikSignIn();
+    runEmailSignIn();
 
-    // メールリンク処理中は認証チェックをスキップ
-    if (isEmailSigningIn) return;
-
-    // 認証状態監視
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const token = await user.getIdToken();
-        setUsertoken(token);
-      } else {
-        setUsertoken("");
-        router.replace("/login");
-      }
-    });
-    return () => unsubscribe();
-  }, [router, isEmailSigningIn]);
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [router]);
 
   // ── メンバー一覧とファミリー情報取得 ──
   useEffect(() => {
-    if (!usertoken) return;
+    if (!auth.currentUser) return;
 
     const fetchFamilyInfo = async () => {
       try {
@@ -99,11 +94,11 @@ export default function MenuPage() {
     };
 
     fetchFamilyInfo();
-  }, [usertoken]);
+  }, []);
 
   // ── データ読み込み（likes + menus + good） ──
   useEffect(() => {
-    if (!usertoken) return;
+    if (!auth.currentUser) return;
 
     // likes 一覧取得（作成フォーム用）
     const fetchLikes = async () => {
@@ -162,12 +157,12 @@ export default function MenuPage() {
 
     fetchLikes();
     loadMenus();
-  }, [usertoken]);
+  }, []);
 
   // ── メニュー作成 ──
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!usertoken) {
+    if (!auth.currentUser) {
       alert("ログインしてください");
       return;
     }
