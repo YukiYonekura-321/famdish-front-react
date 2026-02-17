@@ -146,7 +146,7 @@ export default function ProfileStep3_2() {
                 </h1>
 
                 <p className="text-sm sm:text-base text-muted">
-                  複数選択できます（選択は任意です）
+                  複数選択できます（選択は任意です）。後から変更できます。
                 </p>
               </div>
 

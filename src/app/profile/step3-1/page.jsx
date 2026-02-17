@@ -67,7 +67,9 @@ export default function ProfileStep3_1() {
               <span className="text-xs sm:text-sm font-medium text-[var(--foreground)]">
                 プロフィール登録
               </span>
-              <span className="text-xs sm:text-sm text-muted">ステップ 6/7</span>
+              <span className="text-xs sm:text-sm text-muted">
+                ステップ 6/7
+              </span>
             </div>
             <div className="h-2 bg-[var(--cream-100)] rounded-full overflow-hidden">
               <div
@@ -96,7 +98,7 @@ export default function ProfileStep3_1() {
                 </h1>
 
                 <p className="text-sm sm:text-base text-muted">
-                  複数選択できます
+                  複数選択できます。後から変更できます。
                 </p>
               </div>
 

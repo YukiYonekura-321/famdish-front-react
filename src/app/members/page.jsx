@@ -179,7 +179,7 @@ export default function CreateInvitePage() {
             </h1>
 
             <p
-              className="text-xl text-[var(--warm-gray-500)] max-w-2xl mx-auto leading-relaxed"
+              className="text-xl text-[var(--warm-gray-500)] max-w-2xl mx-auto leading-relaxed text-center"
               style={{ fontFamily: "var(--font-body)" }}
             >
               大切な家族をFamDishに招待しましょう。
@@ -197,9 +197,7 @@ export default function CreateInvitePage() {
 
           {/* Family Info Badge */}
           {memberInfo?.family_name && (
-            <div
-              className="max-w-2xl mx-auto mb-12 animate-fade-in-up stagger-1"
-            >
+            <div className="max-w-2xl mx-auto mb-12 animate-fade-in-up stagger-1">
               <div
                 className="backdrop-blur-xl bg-gradient-to-br from-white/70 to-white/50
                          border border-[var(--gold-400)]/20 rounded-3xl p-6 shadow-xl"
@@ -259,9 +257,7 @@ export default function CreateInvitePage() {
 
           {/* Main Content Card */}
           {!invitation ? (
-            <div
-              className="max-w-2xl mx-auto animate-fade-in-up stagger-2"
-            >
+            <div className="max-w-2xl mx-auto animate-fade-in-up stagger-2">
               <div
                 className="backdrop-blur-2xl bg-gradient-to-br from-white/80 to-white/60
                          border border-[var(--gold-400)]/30 rounded-[2.5rem] overflow-hidden shadow-2xl"
@@ -491,18 +487,10 @@ export default function CreateInvitePage() {
                         }}
                       >
                         {/* Decorative corners */}
-                        <div
-                          className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[var(--gold-500)] rounded-tl-3xl"
-                        ></div>
-                        <div
-                          className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[var(--gold-500)] rounded-tr-3xl"
-                        ></div>
-                        <div
-                          className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[var(--gold-500)] rounded-bl-3xl"
-                        ></div>
-                        <div
-                          className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[var(--gold-500)] rounded-br-3xl"
-                        ></div>
+                        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[var(--gold-500)] rounded-tl-3xl"></div>
+                        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[var(--gold-500)] rounded-tr-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[var(--gold-500)] rounded-bl-3xl"></div>
+                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[var(--gold-500)] rounded-br-3xl"></div>
 
                         <QRCodeCanvas
                           value={invitation.invite_url}
@@ -524,8 +512,7 @@ export default function CreateInvitePage() {
                           style={{
                             background:
                               "linear-gradient(135deg, var(--terracotta-400), var(--terracotta-500))",
-                            boxShadow:
-                              "0 6px 20px rgba(217, 112, 72, 0.3)",
+                            boxShadow: "0 6px 20px rgba(217, 112, 72, 0.3)",
                           }}
                         >
                           <span className="text-xl">⬇️</span>
