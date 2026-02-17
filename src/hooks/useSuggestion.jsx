@@ -22,7 +22,7 @@ export function useSuggestion() {
     return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
   }, []);
 
-  const fetchSuggestions = async (requests, suggestionId) => {
+  const fetchSuggestions = async (requests, suggestionId, constraints = {}) => {
     if (!usertoken) {
       alert("ログインしてください");
       return;
@@ -35,16 +35,25 @@ export function useSuggestion() {
         ? process.env.NEXT_PUBLIC_API_URL // 本番 → 相対パス
         : process.env.NEXT_PUBLIC_API_URL; // 開発 → http://localhost:3001
 
+    const body = {
+      requests,
+      sgId: suggestionId || null,
+    };
+
+    // 制約パラメータを追加
+    if (constraints.servings) body.servings = constraints.servings;
+    if (constraints.budget) body.budget = constraints.budget;
+    // eslint-disable-next-line camelcase
+    if (constraints.cooking_time) body.cooking_time = constraints.cooking_time;
+    if (constraints.days) body.days = constraints.days;
+
     const res = await fetch(`${base}/api/suggestions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${usertoken}`,
       },
-      body: JSON.stringify({
-        requests,
-        sgId: suggestionId || null, // suggestionIdがない場合はnullを渡す
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
