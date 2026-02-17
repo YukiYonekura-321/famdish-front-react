@@ -14,12 +14,32 @@ const PRESET_INGREDIENTS = [
   { name: "牛乳", unit: "ml", quantities: [100, 200, 300, 500, 1000] },
   { name: "米", unit: "合", quantities: [1, 2, 3, 4, 5, 10] },
   { name: "パン", unit: "枚", quantities: [1, 2, 3, 4, 5, 6] },
-  { name: "鶏もも肉", unit: "g", quantities: [100, 150, 200, 250, 300, 400, 500] },
-  { name: "鶏むね肉", unit: "g", quantities: [100, 150, 200, 250, 300, 400, 500] },
-  { name: "豚バラ肉", unit: "g", quantities: [100, 150, 200, 250, 300, 400, 500] },
-  { name: "豚こま肉", unit: "g", quantities: [100, 150, 200, 250, 300, 400, 500] },
+  {
+    name: "鶏もも肉",
+    unit: "g",
+    quantities: [100, 150, 200, 250, 300, 400, 500],
+  },
+  {
+    name: "鶏むね肉",
+    unit: "g",
+    quantities: [100, 150, 200, 250, 300, 400, 500],
+  },
+  {
+    name: "豚バラ肉",
+    unit: "g",
+    quantities: [100, 150, 200, 250, 300, 400, 500],
+  },
+  {
+    name: "豚こま肉",
+    unit: "g",
+    quantities: [100, 150, 200, 250, 300, 400, 500],
+  },
   { name: "牛肉", unit: "g", quantities: [100, 150, 200, 250, 300, 400, 500] },
-  { name: "ひき肉", unit: "g", quantities: [100, 150, 200, 250, 300, 400, 500] },
+  {
+    name: "ひき肉",
+    unit: "g",
+    quantities: [100, 150, 200, 250, 300, 400, 500],
+  },
   { name: "鮭", unit: "切", quantities: [1, 2, 3, 4] },
   { name: "サバ", unit: "切", quantities: [1, 2, 3, 4] },
   { name: "エビ", unit: "尾", quantities: [3, 5, 8, 10, 15, 20] },
@@ -64,7 +84,21 @@ const PRESET_INGREDIENTS = [
 
 // カスタム食材用のデフォルト量選択肢
 const DEFAULT_QUANTITIES = [1, 2, 3, 4, 5, 10, 15, 20, 50, 100, 200, 300, 500];
-const UNIT_OPTIONS = ["個", "g", "ml", "本", "枚", "袋", "パック", "切", "束", "丁", "玉", "尾", "合"];
+const UNIT_OPTIONS = [
+  "個",
+  "g",
+  "ml",
+  "本",
+  "枚",
+  "袋",
+  "パック",
+  "切",
+  "束",
+  "丁",
+  "玉",
+  "尾",
+  "合",
+];
 
 export default function StockPage() {
   const router = useRouter();
@@ -85,11 +119,15 @@ export default function StockPage() {
   const [editQuantity, setEditQuantity] = useState("");
 
   // 現在選ばれている食材のプリセット情報
-  const currentPreset = PRESET_INGREDIENTS.find((p) => p.name === selectedPreset);
+  const currentPreset = PRESET_INGREDIENTS.find(
+    (p) => p.name === selectedPreset,
+  );
   const isCustom = selectedPreset === "__custom__";
   const currentName = isCustom ? customName : selectedPreset;
   const currentUnit = isCustom ? unit : currentPreset?.unit || "";
-  const currentQuantities = isCustom ? DEFAULT_QUANTITIES : currentPreset?.quantities || DEFAULT_QUANTITIES;
+  const currentQuantities = isCustom
+    ? DEFAULT_QUANTITIES
+    : currentPreset?.quantities || DEFAULT_QUANTITIES;
 
   // ── 認証 ──
   useEffect(() => {
@@ -133,9 +171,15 @@ export default function StockPage() {
     setError("");
     try {
       const res = await apiClient.post("/api/stocks", {
-        stock: { name: currentName, quantity: Number(quantity), unit: currentUnit },
+        stock: {
+          name: currentName,
+          quantity: Number(quantity),
+          unit: currentUnit,
+        },
       });
-      setStocks((prev) => [...prev, res.data].sort((a, b) => a.name.localeCompare(b.name)));
+      setStocks((prev) =>
+        [...prev, res.data].sort((a, b) => a.name.localeCompare(b.name)),
+      );
       // フォームリセット
       setSelectedPreset("");
       setCustomName("");
@@ -158,9 +202,7 @@ export default function StockPage() {
       const res = await apiClient.patch(`/api/stocks/${id}`, {
         stock: { quantity: Number(editQuantity) },
       });
-      setStocks((prev) =>
-        prev.map((s) => (s.id === id ? res.data : s)),
-      );
+      setStocks((prev) => prev.map((s) => (s.id === id ? res.data : s)));
       setEditingId(null);
       setEditQuantity("");
       showSuccess("数量を更新しました");
@@ -213,14 +255,16 @@ export default function StockPage() {
         <div
           className="absolute top-20 left-10 w-96 h-96 rounded-full opacity-10 blur-3xl animate-pulse"
           style={{
-            background: "radial-gradient(circle, var(--sage-300), transparent 70%)",
+            background:
+              "radial-gradient(circle, var(--sage-300), transparent 70%)",
             animationDuration: "8s",
           }}
         ></div>
         <div
           className="absolute bottom-32 right-20 w-80 h-80 rounded-full opacity-10 blur-3xl animate-pulse"
           style={{
-            background: "radial-gradient(circle, var(--terracotta-300), transparent 70%)",
+            background:
+              "radial-gradient(circle, var(--terracotta-300), transparent 70%)",
             animationDuration: "10s",
             animationDelay: "2s",
           }}
@@ -298,7 +342,9 @@ export default function StockPage() {
                   >
                     エラーが発生しました
                   </div>
-                  <p className="text-sm text-[var(--terracotta-600)]">{error}</p>
+                  <p className="text-sm text-[var(--terracotta-600)]">
+                    {error}
+                  </p>
                 </div>
               </div>
             </div>
@@ -310,7 +356,8 @@ export default function StockPage() {
               className="backdrop-blur-xl bg-gradient-to-br from-white/70 to-white/50
                        border border-[var(--gold-400)]/20 rounded-3xl p-8 shadow-xl"
               style={{
-                boxShadow: "0 12px 40px rgba(212, 175, 55, 0.12), 0 4px 16px rgba(0, 0, 0, 0.05)",
+                boxShadow:
+                  "0 12px 40px rgba(212, 175, 55, 0.12), 0 4px 16px rgba(0, 0, 0, 0.05)",
               }}
             >
               <h2
@@ -341,7 +388,20 @@ export default function StockPage() {
                     <option value="">-- 食材を選んでください --</option>
                     <optgroup label="🥩 肉・魚">
                       {PRESET_INGREDIENTS.filter((p) =>
-                        ["鶏もも肉", "鶏むね肉", "豚バラ肉", "豚こま肉", "牛肉", "ひき肉", "鮭", "サバ", "エビ", "ウインナー", "ベーコン", "ハム"].includes(p.name),
+                        [
+                          "鶏もも肉",
+                          "鶏むね肉",
+                          "豚バラ肉",
+                          "豚こま肉",
+                          "牛肉",
+                          "ひき肉",
+                          "鮭",
+                          "サバ",
+                          "エビ",
+                          "ウインナー",
+                          "ベーコン",
+                          "ハム",
+                        ].includes(p.name),
                       ).map((p) => (
                         <option key={p.name} value={p.name}>
                           {p.name}（{p.unit}）
@@ -350,7 +410,22 @@ export default function StockPage() {
                     </optgroup>
                     <optgroup label="🥬 野菜">
                       {PRESET_INGREDIENTS.filter((p) =>
-                        ["玉ねぎ", "にんじん", "じゃがいも", "キャベツ", "もやし", "トマト", "ほうれん草", "小松菜", "ピーマン", "きゅうり", "長ねぎ", "なす", "大根", "白菜"].includes(p.name),
+                        [
+                          "玉ねぎ",
+                          "にんじん",
+                          "じゃがいも",
+                          "キャベツ",
+                          "もやし",
+                          "トマト",
+                          "ほうれん草",
+                          "小松菜",
+                          "ピーマン",
+                          "きゅうり",
+                          "長ねぎ",
+                          "なす",
+                          "大根",
+                          "白菜",
+                        ].includes(p.name),
                       ).map((p) => (
                         <option key={p.name} value={p.name}>
                           {p.name}（{p.unit}）
@@ -368,7 +443,15 @@ export default function StockPage() {
                     </optgroup>
                     <optgroup label="🥚 卵・乳製品・大豆">
                       {PRESET_INGREDIENTS.filter((p) =>
-                        ["卵", "牛乳", "バター", "チーズ", "ヨーグルト", "豆腐", "納豆"].includes(p.name),
+                        [
+                          "卵",
+                          "牛乳",
+                          "バター",
+                          "チーズ",
+                          "ヨーグルト",
+                          "豆腐",
+                          "納豆",
+                        ].includes(p.name),
                       ).map((p) => (
                         <option key={p.name} value={p.name}>
                           {p.name}（{p.unit}）
@@ -386,7 +469,19 @@ export default function StockPage() {
                     </optgroup>
                     <optgroup label="🫙 調味料・油">
                       {PRESET_INGREDIENTS.filter((p) =>
-                        ["味噌", "醤油", "みりん", "料理酒", "砂糖", "塩", "サラダ油", "ごま油", "オリーブオイル", "マヨネーズ", "ケチャップ"].includes(p.name),
+                        [
+                          "味噌",
+                          "醤油",
+                          "みりん",
+                          "料理酒",
+                          "砂糖",
+                          "塩",
+                          "サラダ油",
+                          "ごま油",
+                          "オリーブオイル",
+                          "マヨネーズ",
+                          "ケチャップ",
+                        ].includes(p.name),
                       ).map((p) => (
                         <option key={p.name} value={p.name}>
                           {p.name}（{p.unit}）
@@ -423,7 +518,7 @@ export default function StockPage() {
                 )}
 
                 {/* 量と単位 */}
-                {(selectedPreset && selectedPreset !== "") && (
+                {selectedPreset && selectedPreset !== "" && (
                   <div className="grid grid-cols-2 gap-4 animate-fade-in">
                     {/* 量 */}
                     <div>
@@ -492,7 +587,9 @@ export default function StockPage() {
                 {/* 追加ボタン */}
                 <button
                   type="submit"
-                  disabled={submitting || !currentName || !quantity || !currentUnit}
+                  disabled={
+                    submitting || !currentName || !quantity || !currentUnit
+                  }
                   className="luxury-btn luxury-btn-primary w-full mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
