@@ -294,7 +294,7 @@ export default function StockPage() {
 
             <p
               className="text-xl text-[var(--warm-gray-500)] max-w-2xl mx-auto leading-relaxed text-center"
-              style={{ fontFamily: "var(--font-body)" }}
+              style={{ fontFamily: "var(--font-body)", textAlign: "center" }}
             >
               家族の冷蔵庫にある食材を管理しましょう。
               <br />

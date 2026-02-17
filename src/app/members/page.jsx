@@ -180,7 +180,7 @@ export default function CreateInvitePage() {
 
             <p
               className="text-xl text-[var(--warm-gray-500)] max-w-2xl mx-auto leading-relaxed text-center"
-              style={{ fontFamily: "var(--font-body)" }}
+              style={{ fontFamily: "var(--font-body)", textAlign: "center" }}
             >
               大切な家族をFamDishに招待しましょう。
               <br />
