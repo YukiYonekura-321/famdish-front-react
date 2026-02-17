@@ -178,14 +178,16 @@ export default function CreateInvitePage() {
               家族への招待
             </h1>
 
-            <p
-              className="text-xl text-[var(--warm-gray-500)] max-w-2xl mx-auto leading-relaxed text-center"
-              style={{ fontFamily: "var(--font-body)", textAlign: "center" }}
-            >
-              大切な家族をFamDishに招待しましょう。
-              <br />
-              あなただけの特別な招待リンクを生成します。
-            </p>
+            <div className="max-w-2xl mx-auto text-center">
+              <p
+                className="text-xl text-[var(--warm-gray-500)] leading-relaxed"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                大切な家族をFamDishに招待しましょう。
+                <br />
+                あなただけの特別な招待リンクを生成します。
+              </p>
+            </div>
 
             {/* Decorative line */}
             <div className="mt-8 flex items-center justify-center gap-3">

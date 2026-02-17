@@ -292,14 +292,16 @@ export default function StockPage() {
               冷蔵庫の中身
             </h1>
 
-            <p
-              className="text-xl text-[var(--warm-gray-500)] max-w-2xl mx-auto leading-relaxed text-center"
-              style={{ fontFamily: "var(--font-body)", textAlign: "center" }}
-            >
-              家族の冷蔵庫にある食材を管理しましょう。
-              <br />
-              在庫を共有して、無駄のない食生活を。
-            </p>
+            <div className="max-w-2xl mx-auto text-center">
+              <p
+                className="text-xl text-[var(--warm-gray-500)] leading-relaxed"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                家族の冷蔵庫にある食材を管理しましょう。
+                <br />
+                在庫を共有して、無駄のない食生活を。
+              </p>
+            </div>
 
             {/* Decorative line */}
             <div className="mt-8 flex items-center justify-center gap-3">
