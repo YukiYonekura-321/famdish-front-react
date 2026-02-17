@@ -32,6 +32,9 @@ export default function MobileAuthMenuItems({ onClick }) {
       <MobileNavLink href="/menus/familysuggestion" onClick={onClick}>
         🏠 わが家の献立
       </MobileNavLink>
+      <MobileNavLink href="/stock" onClick={onClick}>
+        🧊 冷蔵庫
+      </MobileNavLink>
       <li className="relative">
         <button
           type="button"

@@ -131,6 +131,10 @@ export function AuthHeader() {
                 わが家の献立
               </AuthNavLink>
 
+              <AuthNavLink href="/stock" icon="🧊">
+                冷蔵庫
+              </AuthNavLink>
+
               {/* My Page Dropdown - Ultra Luxury */}
               <div
                 className="relative group"
