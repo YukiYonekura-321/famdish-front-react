@@ -36,6 +36,13 @@ export default function MenuPage() {
   const [goodStatus, setGoodStatus] = useState({});
   const [goodCount, setGoodCount] = useState({});
 
+  // ── 制約条件 state ──
+  const [servings, setServings] = useState("");
+  const [budget, setBudget] = useState("");
+  const [cookingTime, setCookingTime] = useState("");
+  const [days, setDays] = useState("");
+  const [stocks, setStocks] = useState([]);
+
   // ── 料理担当者関連 state ──
   const [members, setMembers] = useState([]);
   const [todayCookId, setTodayCookId] = useState(null);
@@ -94,6 +101,21 @@ export default function MenuPage() {
     };
 
     fetchFamilyInfo();
+  }, []);
+
+  // ── 在庫データ取得 ──
+  useEffect(() => {
+    if (!auth.currentUser) return;
+    const fetchStocks = async () => {
+      try {
+        const res = await apiClient.get("/api/stocks");
+        setStocks(res.data || []);
+      } catch (e) {
+        console.error("在庫取得失敗:", e);
+        setStocks([]);
+      }
+    };
+    fetchStocks();
   }, []);
 
   // ── データ読み込み（likes + menus + good） ──
@@ -249,6 +271,17 @@ export default function MenuPage() {
     }
   };
 
+  // ── 制約条件をまとめる ──
+  const getConstraints = () => {
+    const c = {};
+    if (servings) c.servings = Number(servings);
+    if (budget) c.budget = Number(budget);
+    // eslint-disable-next-line camelcase
+    if (cookingTime) c.cooking_time = Number(cookingTime);
+    if (days) c.days = Number(days);
+    return c;
+  };
+
   // ── 献立提案（提案ボタン）──
   const handleFetchSuggestions = async (menuName) => {
     setSuggestionError("");
@@ -260,7 +293,7 @@ export default function MenuPage() {
       });
     }, 100);
     try {
-      await fetchSuggestions(menuName);
+      await fetchSuggestions(menuName, undefined, getConstraints());
     } catch (error) {
       if (error.status === 403) {
         setSuggestionError("今日の料理担当者ではありません");
@@ -315,6 +348,137 @@ export default function MenuPage() {
               {cookSelectMessage}
             </p>
           )}
+        </div>
+
+        {/* ─── 制約条件設定 ─── */}
+        <div className="luxury-card max-w-2xl mx-auto mb-12">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="text-2xl">⚙️</span>
+            <h2
+              className="text-xl font-medium text-[var(--foreground)]"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              AI提案の条件設定
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {/* 何人分か */}
+            <div>
+              <label className="luxury-label text-sm block mb-2">
+                👨‍👩‍👧‍👦 何人分
+              </label>
+              <select
+                value={servings}
+                onChange={(e) => setServings(e.target.value)}
+                className="luxury-select text-sm"
+              >
+                <option value="">指定なし</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  <option key={n} value={n}>
+                    {n}人分
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 希望予算 */}
+            <div>
+              <label className="luxury-label text-sm block mb-2">💰 予算</label>
+              <select
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                className="luxury-select text-sm"
+              >
+                <option value="">指定なし</option>
+                {[300, 500, 800, 1000, 1500, 2000, 2500, 3000, 4000, 5000].map(
+                  (n) => (
+                    <option key={n} value={n}>
+                      {n.toLocaleString()}円以内
+                    </option>
+                  ),
+                )}
+              </select>
+            </div>
+
+            {/* 希望調理時間 */}
+            <div>
+              <label className="luxury-label text-sm block mb-2">
+                ⏰ 調理時間
+              </label>
+              <select
+                value={cookingTime}
+                onChange={(e) => setCookingTime(e.target.value)}
+                className="luxury-select text-sm"
+              >
+                <option value="">指定なし</option>
+                {[10, 15, 20, 30, 45, 60, 90, 120].map((n) => (
+                  <option key={n} value={n}>
+                    {n}分以内
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 何日分提案するか */}
+            <div>
+              <label className="luxury-label text-sm block mb-2">
+                📅 提案期間
+              </label>
+              <select
+                value={days}
+                onChange={(e) => setDays(e.target.value)}
+                className="luxury-select text-sm"
+              >
+                <option value="">1日分</option>
+                {[2, 3, 4, 5, 6, 7].map((n) => (
+                  <option key={n} value={n}>
+                    {n}日分まとめて
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* 冷蔵庫の在庫表示 */}
+          <div className="border-t border-[var(--border)] pt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">🧊</span>
+              <span
+                className="text-sm font-medium text-[var(--warm-gray-600)]"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                冷蔵庫の在庫（AIが自動で考慮します）
+              </span>
+            </div>
+            {stocks.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {stocks.map((s) => (
+                  <span
+                    key={s.id}
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
+                             bg-[var(--sage-50)] text-[var(--sage-600)] border border-[var(--sage-200)]"
+                  >
+                    {s.name}
+                    <span className="text-[var(--sage-400)]">
+                      {s.quantity}
+                      {s.unit}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                在庫が登録されていません。
+                <a
+                  href="/stock"
+                  className="text-[var(--primary)] underline ml-1"
+                >
+                  冷蔵庫ページで登録する
+                </a>
+              </p>
+            )}
+          </div>
         </div>
 
         {/* ─── リクエスト作成フォーム ─── */}
@@ -518,19 +682,21 @@ export default function MenuPage() {
                 onRetry={async () => {
                   await saveFeedback(suggestions.id, "alt", "");
                   alert("別案を要求しました");
-                  fetchSuggestions(
-                    suggestions.suggest_field.requests,
-                    suggestions.id,
-                  );
+                  const sf = suggestions.suggest_field;
+                  const reqs = Array.isArray(sf)
+                    ? sf[0]?.requests
+                    : sf.requests;
+                  fetchSuggestions(reqs, suggestions.id, getConstraints());
                 }}
                 onNg={async () => {
                   const reason = prompt("NG 理由を入力してください（任意）:");
                   await saveFeedback(suggestions.id, "ng", reason || "");
                   alert("NG理由を送信しました");
-                  fetchSuggestions(
-                    suggestions.suggest_field.requests,
-                    suggestions.id,
-                  );
+                  const sf = suggestions.suggest_field;
+                  const reqs = Array.isArray(sf)
+                    ? sf[0]?.requests
+                    : sf.requests;
+                  fetchSuggestions(reqs, suggestions.id, getConstraints());
                 }}
               />
             </div>
