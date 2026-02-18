@@ -386,74 +386,52 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {/* ────── 【リクエストされたメニュー】選択 ────── */}
+        {/* ────── 【メニュー選択と提案取得】────── */}
         <div className="luxury-card max-w-2xl mx-auto mb-12">
           <label className="luxury-label text-center block mb-4">
-            【リクエストされたメニュー】
+            【提案を取得したいメニューを選択】
           </label>
-          <select
-            value={selectedMenuId}
-            onChange={(e) => setSelectedMenuId(e.target.value)}
-            className="luxury-select"
-          >
-            <option value="">─── メニューを選択 ───</option>
-            {menuList.map((menu) => (
-              <option key={menu.id} value={menu.id}>
-                {menu.name} ❤️{goodCount[menu.id] || 0}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* ────── メニュー一覧 ────── */}
-        <div className="divider-accent"></div>
-
-        <h2 className="luxury-title text-2xl">リクエストされたメニュー</h2>
-
-        <div className="grid grid-cols-1 gap-4 max-w-4xl mx-auto mb-12">
-          {menuList.map((m) => (
-            <div
-              key={m.id}
-              className="luxury-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          <div className="space-y-4">
+            <select
+              value={selectedMenuId}
+              onChange={(e) => setSelectedMenuId(e.target.value)}
+              className="luxury-select"
             >
-              <Link href={`/menus/${m.id}`} className="flex-1 min-w-0">
-                <div className="cursor-pointer group">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span
-                      className="text-lg font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    >
-                      {m.name}
-                    </span>
-                    <span className="text-sm text-muted font-medium">
-                      ❤️{goodCount[m.id] ?? 0}
-                    </span>
-                  </div>
-                  {m.member && (
-                    <div className="text-sm text-muted">
-                      提案者: {m.member.name}
-                    </div>
-                  )}
-                </div>
-              </Link>
+              <option value="">─── メニューを選択 ───</option>
+              {menuList.map((menu) => (
+                <option key={menu.id} value={menu.id}>
+                  {menu.name} ❤️{goodCount[menu.id] || 0}
+                </option>
+              ))}
+            </select>
 
-              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                <button
-                  className="luxury-btn luxury-btn-primary text-sm px-4 py-2"
-                  onClick={() => handleFetchSuggestions(m.name)}
-                >
-                  提案を取得
-                </button>
+            <button
+              onClick={() => {
+                if (selectedMenuId) {
+                  const id = Number(selectedMenuId);
+                  if (!Number.isNaN(id)) {
+                    const selectedMenu = menuList.find((m) => m.id === id);
+                    if (selectedMenu) {
+                      handleFetchSuggestions(selectedMenu.name);
+                    }
+                  }
+                } else {
+                  alert("メニューを選択してください");
+                }
+              }}
+              className="luxury-btn luxury-btn-primary w-full"
+            >
+              提案を取得
+            </button>
+          </div>
 
-                <Link
-                  href="/request"
-                  className="luxury-btn luxury-btn-outline text-sm px-4 py-2"
-                >
-                  編集・削除
-                </Link>
-              </div>
-            </div>
-          ))}
+          <p className="text-sm text-muted text-center mt-4">
+            リクエストの編集・削除は
+            <Link href="/request" className="text-[var(--primary)] underline">
+              リクエスト管理ページ
+            </Link>
+            で行えます。
+          </p>
         </div>
 
         {loading && <LoadingSpinner />}
