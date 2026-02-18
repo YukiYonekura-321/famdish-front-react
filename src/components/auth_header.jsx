@@ -124,6 +124,10 @@ export function AuthHeader() {
               </AuthNavLink>
 
               <AuthNavLink href="/menus" icon="📋">
+                メニュー提案
+              </AuthNavLink>
+
+              <AuthNavLink href="/request" icon="📝">
                 リクエスト
               </AuthNavLink>
 
