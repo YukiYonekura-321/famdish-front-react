@@ -182,7 +182,8 @@ export default function MenuPage() {
   };
 
   // ── 献立提案（提案ボタン）──
-  const handleFetchSuggestions = async (menuName) => {
+  // `requests` can be either a string (menu name) or an object (e.g. { menu_id })
+  const handleFetchSuggestions = async (requests) => {
     // スクロールして提案セクションまで移動
     setTimeout(() => {
       suggestionsRef.current?.scrollIntoView({
@@ -191,7 +192,7 @@ export default function MenuPage() {
       });
     }, 100);
     try {
-      await fetchSuggestions(menuName, undefined, getConstraints());
+      await fetchSuggestions(requests, undefined, getConstraints());
     } catch (error) {
       if (error.status === 403) {
         alert("今日の料理担当者ではありません");
@@ -412,16 +413,20 @@ export default function MenuPage() {
                   if (!Number.isNaN(id)) {
                     const selectedMenu = menuList.find((m) => m.id === id);
                     if (selectedMenu) {
-                      handleFetchSuggestions(selectedMenu.name);
+                      /* eslint-disable-next-line camelcase */
+                      handleFetchSuggestions({ menu_id: id });
                     }
                   }
                 } else {
-                  alert("メニューを選択してください");
+                  // 選択がない場合は在庫ベースの提案をリクエスト（空オブジェクトを送る）
+                  handleFetchSuggestions({});
                 }
               }}
               className="luxury-btn luxury-btn-primary w-full"
             >
-              提案を取得
+              {selectedMenuId
+                ? "提案を取得"
+                : "今ある在庫から家族の好みを元に提案"}
             </button>
           </div>
 
