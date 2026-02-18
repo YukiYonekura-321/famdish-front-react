@@ -41,6 +41,7 @@ export default function MenuPage() {
   const [budget, setBudget] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [days, setDays] = useState("");
+  const [selectedMenuId, setSelectedMenuId] = useState("");
   const [stocks, setStocks] = useState([]);
 
   // ── 料理担当者関連 state ──
@@ -481,7 +482,26 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {/* ─── リクエスト作成フォーム ─── */}
+        {/* ────── 【リクエストされたメニュー】選択 ────── */}
+        <div className="luxury-card max-w-2xl mx-auto mb-12">
+          <label className="luxury-label text-center block mb-4">
+            【リクエストされたメニュー】
+          </label>
+          <select
+            value={selectedMenuId}
+            onChange={(e) => setSelectedMenuId(e.target.value)}
+            className="luxury-select"
+          >
+            <option value="">─── メニューを選択 ───</option>
+            {menuList.map((menu) => (
+              <option key={menu.id} value={menu.id}>
+                {menu.name} ❤️{goodCount[menu.id] || 0}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* ────── リクエスト作成フォーム ────── */}
         <h1 className="luxury-title">食べたいものをリクエストしよう！</h1>
 
         <form
