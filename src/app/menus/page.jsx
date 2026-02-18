@@ -19,21 +19,11 @@ export default function MenuPage() {
   // ── 共通 state ──
   const router = useRouter();
   const suggestionsRef = useRef(null);
-  const menuListRef = useRef(null);
-
-  // ── 作成フォーム用 state ──
-  const [newMenu, setNewMenu] = useState("");
-  const [message, setMessage] = useState("");
-  const [likes, setLikes] = useState([]);
 
   // ── 一覧用 state ──
   const [menuList, setMenuList] = useState([]);
   const { loading, suggestions, fetchSuggestions } = useSuggestion();
   const { saveFeedback } = useFeedback();
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [editingValue, setEditingValue] = useState("");
-  const [goodStatus, setGoodStatus] = useState({});
   const [goodCount, setGoodCount] = useState({});
 
   // ── 制約条件 state ──
@@ -48,7 +38,6 @@ export default function MenuPage() {
   const [members, setMembers] = useState([]);
   const [todayCookId, setTodayCookId] = useState(null);
   const [cookSelectMessage, setCookSelectMessage] = useState("");
-  const [suggestionError, setSuggestionError] = useState("");
 
   // ── 認証 ──
   useEffect(() => {
@@ -119,20 +108,9 @@ export default function MenuPage() {
     fetchStocks();
   }, []);
 
-  // ── データ読み込み（likes + menus + good） ──
+  // ── データ読み込み（menus + good） ──
   useEffect(() => {
     if (!auth.currentUser) return;
-
-    // likes 一覧取得（作成フォーム用）
-    const fetchLikes = async () => {
-      try {
-        const res = await apiClient.get("/api/likes");
-        setLikes(res.data || []);
-      } catch (e) {
-        setLikes([]);
-        console.error("likes 取得失敗:", e);
-      }
-    };
 
     // メニュー一覧 + good チェック + count
     const loadMenus = async () => {
@@ -145,24 +123,11 @@ export default function MenuPage() {
             : [];
         setMenuList(menus);
 
-        const goodStatusMap = {};
         const goodCountMap = {};
         for (const m of menus) {
           try {
-            const goodRes = await apiClient.get("/api/goods/check", {
-              params: { menu_id: m.id },
-            });
-            goodStatusMap[m.id] = {
-              exists: goodRes.data.exists,
-              good_id: goodRes.data.good?.id || null,
-            };
-          } catch (err) {
-            console.error(`good チェック失敗 (menu_id: ${m.id}):`, err);
-            goodStatusMap[m.id] = { exists: false, good_id: null };
-          }
-
-          try {
             const countRes = await apiClient.get("/api/goods/count", {
+              /* eslint-disable-next-line camelcase */
               params: { menu_id: m.id },
             });
             goodCountMap[m.id] = Number(countRes.data.count) || 0;
@@ -171,94 +136,27 @@ export default function MenuPage() {
             goodCountMap[m.id] = 0;
           }
         }
-        setGoodStatus(goodStatusMap);
         setGoodCount(goodCountMap);
       } catch (error) {
         console.error("メニューの取得に失敗しました:", error);
       }
     };
 
-    fetchLikes();
     loadMenus();
   }, []);
 
   // ── メニュー作成 ──
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!auth.currentUser) {
-      alert("ログインしてください");
-      return;
-    }
-    try {
-      const res = await apiClient.post("/api/menus", {
-        menu: { name: newMenu },
-      });
-      setMessage(
-        `リクエスト成功 — ID: ${res.data.id}, 名前: ${res.data.name || res.data.menu}`,
-      );
-      setNewMenu("");
-      // 一覧を再読み込み
-      const listRes = await apiClient.get("/api/menus");
-      setMenuList(Array.isArray(listRes.data) ? listRes.data : []);
-      // メニューリストへ自動スクロール
-      setTimeout(() => {
-        if (menuListRef.current) {
-          menuListRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "end",
-          });
-        }
-      }, 100);
-    } catch (error) {
-      if (error.response) {
-        const errors = error.response.data.errors || [
-          "不明なエラーが発生しました",
-        ];
-        setMessage("リクエストに失敗しました:\n" + errors.join("\n"));
-      } else {
-        setMessage("リクエストに失敗しました: ネットワークエラー");
-      }
-    }
-  };
+  // 削除済み - /request ページへ移行
 
   // ── ハート（good）トグル ──
-  const handleToggleGood = async (menuId) => {
-    try {
-      if (goodStatus[menuId]?.exists) {
-        const goodId = goodStatus[menuId].good_id;
-        await apiClient.delete(`/api/goods/${goodId}`);
-        setGoodStatus((prev) => ({
-          ...prev,
-          [menuId]: { exists: false, good_id: null },
-        }));
-        setGoodCount((prev) => ({
-          ...prev,
-          [menuId]: Math.max((prev[menuId] || 0) - 1, 0),
-        }));
-      } else {
-        const res = await apiClient.post("/api/goods", {
-          good: { menu_id: menuId },
-        });
-        setGoodStatus((prev) => ({
-          ...prev,
-          [menuId]: { exists: true, good_id: res.data.id },
-        }));
-        setGoodCount((prev) => ({
-          ...prev,
-          [menuId]: (prev[menuId] || 0) + 1,
-        }));
-      }
-    } catch (err) {
-      console.error("good トグル失敗:", err);
-      alert("いいね操作に失敗しました");
-    }
-  };
+  // 削除済み - /request ページへ移行
 
   // ── 料理担当者選択 ──
   const handleSelectCook = async (memberId) => {
     try {
       setCookSelectMessage("");
       await apiClient.post("/api/families/assign_cook", {
+        /* eslint-disable-next-line camelcase */
         member_id: memberId,
       });
       setTodayCookId(memberId);
@@ -285,7 +183,6 @@ export default function MenuPage() {
 
   // ── 献立提案（提案ボタン）──
   const handleFetchSuggestions = async (menuName) => {
-    setSuggestionError("");
     // スクロールして提案セクションまで移動
     setTimeout(() => {
       suggestionsRef.current?.scrollIntoView({
@@ -297,9 +194,9 @@ export default function MenuPage() {
       await fetchSuggestions(menuName, undefined, getConstraints());
     } catch (error) {
       if (error.status === 403) {
-        setSuggestionError("今日の料理担当者ではありません");
+        alert("今日の料理担当者ではありません");
       } else {
-        setSuggestionError("提案取得に失敗しました");
+        alert("提案取得に失敗しました");
       }
     }
   };
@@ -324,6 +221,13 @@ export default function MenuPage() {
           >
             <span>🌍</span>
             <span>みんなの献立を参考にする</span>
+          </Link>
+          <Link
+            href="/request"
+            className="luxury-btn luxury-btn-secondary flex items-center gap-2"
+          >
+            <span>📝</span>
+            <span>リクエスト管理</span>
           </Link>
         </div>
 
@@ -501,62 +405,15 @@ export default function MenuPage() {
           </select>
         </div>
 
-        {/* ────── リクエスト作成フォーム ────── */}
-        <h1 className="luxury-title">食べたいものをリクエストしよう！</h1>
-
-        <form
-          onSubmit={handleSubmit}
-          className="luxury-card max-w-2xl mx-auto space-y-6 mb-12"
-        >
-          <label className="luxury-label">リクエスト内容</label>
-
-          <select
-            value={newMenu}
-            onChange={(e) => setNewMenu(e.target.value)}
-            className="luxury-select"
-          >
-            <option value="">選択してください</option>
-            {likes.map((like) => (
-              <option key={like.id} value={like.name}>
-                {like.name}
-              </option>
-            ))}
-          </select>
-
-          <p className="text-muted text-center text-sm">
-            または、テキストでリクエスト内容を入力してください
-          </p>
-
-          <input
-            type="text"
-            value={newMenu}
-            onChange={(e) => setNewMenu(e.target.value)}
-            className="luxury-input"
-            placeholder="例: カレーライス"
-          />
-
-          <button
-            type="submit"
-            className="luxury-btn luxury-btn-primary w-full sm:w-auto mx-auto block"
-          >
-            リクエストを送信
-          </button>
-        </form>
-
-        {message && (
-          <p className="text-center text-sm text-muted mb-6">{message}</p>
-        )}
-
-        {/* ─── メニュー一覧 ─── */}
+        {/* ────── メニュー一覧 ────── */}
         <div className="divider-accent"></div>
 
         <h2 className="luxury-title text-2xl">リクエストされたメニュー</h2>
 
-        <div className="grid grid-cols-1 gap-4 max-w-4xl mx-auto">
-          {menuList.map((m, index) => (
+        <div className="grid grid-cols-1 gap-4 max-w-4xl mx-auto mb-12">
+          {menuList.map((m) => (
             <div
               key={m.id}
-              ref={index === menuList.length - 1 ? menuListRef : null}
               className="luxury-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
             >
               <Link href={`/menus/${m.id}`} className="flex-1 min-w-0">
@@ -568,24 +425,8 @@ export default function MenuPage() {
                     >
                       {m.name}
                     </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleToggleGood(m.id);
-                      }}
-                      className="focus:outline-none transition-transform hover:scale-110"
-                    >
-                      {goodStatus[m.id]?.exists ? (
-                        <span className="text-2xl">❤️</span>
-                      ) : (
-                        <span className="text-2xl opacity-40 hover:opacity-70 transition-opacity">
-                          🤍
-                        </span>
-                      )}
-                    </button>
                     <span className="text-sm text-muted font-medium">
-                      {goodCount[m.id] ?? 0}
+                      ❤️{goodCount[m.id] ?? 0}
                     </span>
                   </div>
                   {m.member && (
@@ -604,88 +445,16 @@ export default function MenuPage() {
                   提案を取得
                 </button>
 
-                <button
+                <Link
+                  href="/request"
                   className="luxury-btn luxury-btn-outline text-sm px-4 py-2"
-                  onClick={() => {
-                    setEditingId(m.id);
-                    setEditingValue(m.name);
-                    setShowEditModal(true);
-                  }}
                 >
-                  編集
-                </button>
-
-                <button
-                  className="px-4 py-2 text-sm bg-[var(--terracotta-100)] text-[var(--terracotta-600)] rounded-full hover:bg-[var(--terracotta-200)] transition-colors font-medium"
-                  onClick={async () => {
-                    if (!confirm("本当に削除しますか？")) return;
-                    try {
-                      await apiClient.delete(`/api/menus/${m.id}`);
-                      setMenuList((prev) =>
-                        prev.filter((it) => it.id !== m.id),
-                      );
-                    } catch (err) {
-                      console.error("削除に失敗しました", err);
-                      alert("削除に失敗しました");
-                    }
-                  }}
-                >
-                  削除
-                </button>
+                  編集・削除
+                </Link>
               </div>
             </div>
           ))}
-          {suggestionError && (
-            <p className="text-sm text-[var(--secondary)] text-center">
-              {suggestionError}
-            </p>
-          )}
         </div>
-
-        {/* 編集モーダル */}
-        {showEditModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="luxury-card max-w-md w-full animate-scale-in">
-              <h2 className="luxury-label text-center mb-6">メニューを編集</h2>
-              <input
-                value={editingValue}
-                onChange={(e) => setEditingValue(e.target.value)}
-                className="luxury-input mb-6"
-              />
-              <div className="flex justify-end gap-3">
-                <button
-                  className="luxury-btn luxury-btn-ghost"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  キャンセル
-                </button>
-                <button
-                  className="luxury-btn luxury-btn-primary"
-                  onClick={async () => {
-                    try {
-                      await apiClient.patch(`/api/menus/${editingId}`, {
-                        menu: { name: editingValue },
-                      });
-                      setMenuList((prev) =>
-                        prev.map((it) =>
-                          it.id === editingId
-                            ? { ...it, name: editingValue }
-                            : it,
-                        ),
-                      );
-                      setShowEditModal(false);
-                    } catch (err) {
-                      console.error("更新に失敗しました", err);
-                      alert("更新に失敗しました");
-                    }
-                  }}
-                >
-                  保存
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {loading && <LoadingSpinner />}
 
