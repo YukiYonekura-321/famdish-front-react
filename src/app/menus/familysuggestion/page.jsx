@@ -3,7 +3,7 @@
 import { apiClient } from "@/app/lib/api";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { AuthHeader } from "../../../components/auth_header";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -20,14 +20,13 @@ export default function FamilySuggestionPage() {
   const [goodCount, setGoodCount] = useState({});
   const [selectedMenuId, setSelectedMenuId] = useState("");
 
-  // ── 制約条件 ──
-  const [servings, setServings] = useState("4");
+  // ── 各献立ごとの人数管理 ──
+  const [servingsMap, setServingsMap] = useState({});
 
   // ── レシピ説明用 ──
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [recipeData, setRecipeData] = useState(null);
-  const aiSuggestionsRef = useRef(null);
 
   // ── 認証 ──
   useEffect(() => {
@@ -97,7 +96,7 @@ export default function FamilySuggestionPage() {
   }, [usertoken]);
 
   // ── レシピ説明リクエスト ──
-  const handleFetchRecipe = async (dishName) => {
+  const handleFetchRecipe = async (dishName, numServings = 4) => {
     if (!dishName) {
       alert("料理するメニューを選んでください");
       return;
@@ -109,8 +108,9 @@ export default function FamilySuggestionPage() {
 
     try {
       const response = await apiClient.post("/api/recipes/explain", {
+        /* eslint-disable-next-line camelcase */
         dish_name: dishName,
-        servings: Number(servings),
+        servings: Number(numServings),
       });
 
       setRecipeData(response.data?.recipe);
@@ -129,13 +129,15 @@ export default function FamilySuggestionPage() {
 
     try {
       // バックエンドに保存（手順を含める）
-      await apiClient.post("/api/menus/save_recipe", {
+      /* eslint-disable camelcase */
+      await apiClient.post("/api/recipe/save_recipe", {
         dish_name: recipeData.dish_name,
         servings: recipeData.servings,
         missing_ingredients: recipeData.missing_ingredients,
         cooking_time: recipeData.cooking_time,
         steps: recipeData.steps,
       });
+      /* eslint-enable camelcase */
 
       alert("献立に追加しました！");
       setShowRecipeModal(false);
@@ -181,10 +183,10 @@ export default function FamilySuggestionPage() {
           </div>
         </div>
 
-        {/* ────── メニュー選択 ────── */}
+        {/* ────── メニュー選択 → 過去の献立に加える ────── */}
         <div className="luxury-card max-w-2xl mx-auto mb-8">
           <label className="luxury-label text-center block mb-4">
-            【料理するメニューを選択】
+            【メニューを過去の献立一覧に加える】
           </label>
           <div className="space-y-4">
             <select
@@ -195,43 +197,39 @@ export default function FamilySuggestionPage() {
               <option value="">─── メニューを選択 ───</option>
               {menuList.map((menu) => (
                 <option key={menu.id} value={menu.id}>
-                  {menu.name} ❤️{goodCount[menu.id] || 0}
+                  {menu.name}（提案者: {menu.member?.name || "不明"}）❤️
+                  {goodCount[menu.id] || 0}
                 </option>
               ))}
             </select>
 
-            <div className="space-y-2">
-              <label className="luxury-label text-sm block">何人分</label>
-              <select
-                value={servings}
-                onChange={(e) => setServings(e.target.value)}
-                className="luxury-select text-sm"
-              >
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option key={n} value={n}>
-                    {n}人分
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <button
-              onClick={() => {
-                if (selectedMenuId) {
-                  const id = Number(selectedMenuId);
-                  if (!Number.isNaN(id)) {
-                    const selectedMenu = menuList.find((m) => m.id === id);
-                    if (selectedMenu) {
-                      handleFetchRecipe(selectedMenu.name);
-                    }
-                  }
-                } else {
-                  alert("料理するメニューを選んでください");
+              onClick={async () => {
+                if (!selectedMenuId) {
+                  alert("メニューを選んでください");
+                  return;
+                }
+                const id = Number(selectedMenuId);
+                if (Number.isNaN(id)) return;
+                const selectedMenu = menuList.find((m) => m.id === id);
+                if (!selectedMenu) return;
+                try {
+                  await apiClient.post("/api/recipe/save_recipe", {
+                    /* eslint-disable-next-line camelcase */
+                    dish_name: selectedMenu.name,
+                    proposer: selectedMenu.member?.name,
+                  });
+                  alert("過去の献立一覧に追加しました！");
+                  setSelectedMenuId("");
+                  await fetchPastSuggestions();
+                } catch (error) {
+                  console.error("献立追加失敗:", error);
+                  alert("献立の追加に失敗しました");
                 }
               }}
               className="luxury-btn luxury-btn-primary w-full"
             >
-              このメニューの作り方をAIに提案してもらう
+              過去の献立一覧に加える
             </button>
           </div>
         </div>
@@ -343,25 +341,55 @@ export default function FamilySuggestionPage() {
           </div>
         ) : (
           <div className="max-w-2xl mx-auto flex flex-col gap-4 mb-12">
-            {pastSuggestions.map((s) => (
-              <div key={s.id} className="luxury-card">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-[var(--foreground)]">
-                      🍽️ {s.ai_raw_json?.title || "タイトルなし"}
-                    </h3>
+            {pastSuggestions.map((s) => {
+              const dishTitle = s.ai_raw_json?.title || "タイトルなし";
+              const currentServings = servingsMap[s.id] || "4";
+              return (
+                <div key={s.id} className="luxury-card">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-[var(--foreground)]">
+                        🍽️ {dishTitle}
+                      </h3>
+                    </div>
+                    <span className="text-xs text-muted whitespace-nowrap">
+                      {new Date(s.created_at).toLocaleDateString("ja-JP")}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted whitespace-nowrap">
-                    {new Date(s.created_at).toLocaleDateString("ja-JP")}
-                  </span>
+                  {s.ai_raw_json?.reason && (
+                    <p className="text-sm text-muted mt-3">
+                      💡 {s.ai_raw_json.reason}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-3 mt-4">
+                    <select
+                      value={currentServings}
+                      onChange={(e) =>
+                        setServingsMap((prev) => ({
+                          ...prev,
+                          [s.id]: e.target.value,
+                        }))
+                      }
+                      className="luxury-select text-sm w-24 shrink-0"
+                    >
+                      {[1, 2, 3, 4, 5, 6].map((n) => (
+                        <option key={n} value={n}>
+                          {n}人分
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() =>
+                        handleFetchRecipe(dishTitle, currentServings)
+                      }
+                      className="luxury-btn luxury-btn-primary flex-1 text-sm"
+                    >
+                      このメニューの作り方をAIに提案してもらう
+                    </button>
+                  </div>
                 </div>
-                {s.ai_raw_json?.reason && (
-                  <p className="text-sm text-muted mt-3">
-                    💡 {s.ai_raw_json.reason}
-                  </p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
