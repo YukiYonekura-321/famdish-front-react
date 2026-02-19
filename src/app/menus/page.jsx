@@ -20,18 +20,15 @@ export default function MenuPage() {
   const router = useRouter();
   const suggestionsRef = useRef(null);
 
-  // ── 一覧用 state ──
-  const [menuList, setMenuList] = useState([]);
+  // ── 提案用 hooks ──
   const { loading, suggestions, fetchSuggestions } = useSuggestion();
   const { saveFeedback } = useFeedback();
-  const [goodCount, setGoodCount] = useState({});
 
   // ── 制約条件 state ──
   const [servings, setServings] = useState("");
   const [budget, setBudget] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [days, setDays] = useState("");
-  const [selectedMenuId, setSelectedMenuId] = useState("");
   const [stocks, setStocks] = useState([]);
 
   // ── 料理担当者関連 state ──
@@ -108,47 +105,7 @@ export default function MenuPage() {
     fetchStocks();
   }, []);
 
-  // ── データ読み込み（menus + good） ──
-  useEffect(() => {
-    if (!auth.currentUser) return;
-
-    // メニュー一覧 + good チェック + count
-    const loadMenus = async () => {
-      try {
-        const res = await apiClient.get("/api/menus");
-        const menus = Array.isArray(res.data)
-          ? res.data
-          : res.data
-            ? [res.data]
-            : [];
-        setMenuList(menus);
-
-        const goodCountMap = {};
-        for (const m of menus) {
-          try {
-            const countRes = await apiClient.get("/api/goods/count", {
-              /* eslint-disable-next-line camelcase */
-              params: { menu_id: m.id },
-            });
-            goodCountMap[m.id] = Number(countRes.data.count) || 0;
-          } catch (err) {
-            console.error(`good count 取得失敗 (menu_id: ${m.id}):`, err);
-            goodCountMap[m.id] = 0;
-          }
-        }
-        setGoodCount(goodCountMap);
-      } catch (error) {
-        console.error("メニューの取得に失敗しました:", error);
-      }
-    };
-
-    loadMenus();
-  }, []);
-
-  // ── メニュー作成 ──
-  // 削除済み - /request ページへ移行
-
-  // ── ハート（good）トグル ──
+  // ── メニュー作成 / ハート（good）トグル ──
   // 削除済み - /request ページへ移行
 
   // ── 料理担当者選択 ──
@@ -387,48 +344,14 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {/* ────── 【メニュー選択と提案取得】────── */}
+        {/* ────── 【在庫ベースの提案取得】────── */}
         <div className="luxury-card max-w-2xl mx-auto mb-12">
-          <label className="luxury-label text-center block mb-4">
-            【提案を取得したいメニューを選択】
-          </label>
-          <div className="space-y-4">
-            <select
-              value={selectedMenuId}
-              onChange={(e) => setSelectedMenuId(e.target.value)}
-              className="luxury-select"
-            >
-              <option value="">─── メニューを選択 ───</option>
-              {menuList.map((menu) => (
-                <option key={menu.id} value={menu.id}>
-                  {menu.name} ❤️{goodCount[menu.id] || 0}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={() => {
-                if (selectedMenuId) {
-                  const id = Number(selectedMenuId);
-                  if (!Number.isNaN(id)) {
-                    const selectedMenu = menuList.find((m) => m.id === id);
-                    if (selectedMenu) {
-                      /* eslint-disable-next-line camelcase */
-                      handleFetchSuggestions({ menu_id: id });
-                    }
-                  }
-                } else {
-                  // 選択がない場合は在庫ベースの提案をリクエスト（空オブジェクトを送る）
-                  handleFetchSuggestions({});
-                }
-              }}
-              className="luxury-btn luxury-btn-primary w-full"
-            >
-              {selectedMenuId
-                ? "提案を取得"
-                : "今ある在庫から家族の好みを元に提案"}
-            </button>
-          </div>
+          <button
+            onClick={() => handleFetchSuggestions({})}
+            className="luxury-btn luxury-btn-primary w-full"
+          >
+            今ある在庫から家族の好みを元に提案
+          </button>
 
           <p className="text-sm text-muted text-center mt-4">
             リクエストの編集・削除は
