@@ -8,9 +8,6 @@ import { AuthHeader } from "../../../components/auth_header";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
-import { useSuggestion } from "@/hooks/useSuggestion";
-import { useFeedback } from "@/hooks/useFeedback";
-import SuggestionCard from "@/components/SuggestionCard";
 
 export default function FamilySuggestionPage() {
   const [usertoken, setUsertoken] = useState("");
@@ -18,31 +15,19 @@ export default function FamilySuggestionPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // ── AI提案用 ──
-  const aiSuggestionsRef = useRef(null);
-  const {
-    loading: aiLoading,
-    suggestions: aiSuggestions,
-    fetchSuggestions,
-  } = useSuggestion();
-  const { saveFeedback } = useFeedback();
-
   // ── メニュー選択用 ──
   const [menuList, setMenuList] = useState([]);
   const [goodCount, setGoodCount] = useState({});
   const [selectedMenuId, setSelectedMenuId] = useState("");
 
   // ── 制約条件 ──
-  const [servings, setServings] = useState("");
-  const [budget, setBudget] = useState("");
-  const [cookingTime, setCookingTime] = useState("");
-  const [days, setDays] = useState("");
-  const [stocks, setStocks] = useState([]);
+  const [servings, setServings] = useState("4");
 
-  // ── 料理担当者 ──
-  const [members, setMembers] = useState([]);
-  const [todayCookId, setTodayCookId] = useState(null);
-  const [cookSelectMessage, setCookSelectMessage] = useState("");
+  // ── レシピ説明用 ──
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [recipeLoading, setRecipeLoading] = useState(false);
+  const [recipeData, setRecipeData] = useState(null);
+  const aiSuggestionsRef = useRef(null);
 
   // ── 認証 ──
   useEffect(() => {
@@ -57,37 +42,6 @@ export default function FamilySuggestionPage() {
     });
     return () => unsubscribe();
   }, [router]);
-
-  // ── メンバー＆ファミリー情報取得 ──
-  useEffect(() => {
-    if (!auth.currentUser) return;
-    const fetch = async () => {
-      try {
-        const membersRes = await apiClient.get("/api/members");
-        setMembers(Array.isArray(membersRes.data) ? membersRes.data : []);
-        const familyRes = await apiClient.get("/api/families");
-        setTodayCookId(familyRes.data.today_cook_id || null);
-      } catch (error) {
-        console.error("ファミリー情報取得失敗:", error);
-      }
-    };
-    fetch();
-  }, []);
-
-  // ── 在庫取得 ──
-  useEffect(() => {
-    if (!auth.currentUser) return;
-    const fetchStocks = async () => {
-      try {
-        const res = await apiClient.get("/api/stocks");
-        setStocks(res.data || []);
-      } catch (e) {
-        console.error("在庫取得失敗:", e);
-        setStocks([]);
-      }
-    };
-    fetchStocks();
-  }, []);
 
   // ── メニュー一覧 + good count 取得 ──
   useEffect(() => {
@@ -142,52 +96,55 @@ export default function FamilySuggestionPage() {
     fetchPastSuggestions();
   }, [usertoken]);
 
-  // ── 料理担当者選択 ──
-  const handleSelectCook = async (memberId) => {
+  // ── レシピ説明リクエスト ──
+  const handleFetchRecipe = async (dishName) => {
+    if (!dishName) {
+      alert("料理するメニューを選んでください");
+      return;
+    }
+
+    setRecipeLoading(true);
+    setShowRecipeModal(true);
+    setRecipeData(null);
+
     try {
-      setCookSelectMessage("");
-      await apiClient.post("/api/families/assign_cook", {
-        /* eslint-disable-next-line camelcase */
-        member_id: memberId,
+      const response = await apiClient.post("/api/recipes/explain", {
+        dish_name: dishName,
+        servings: Number(servings),
       });
-      setTodayCookId(memberId);
-      setCookSelectMessage(
-        "料理担当者を設定しました（提案ボタンは担当者のみ有効です）",
-      );
-      setTimeout(() => setCookSelectMessage(""), 3000);
+
+      setRecipeData(response.data?.recipe);
     } catch (error) {
-      console.error("料理担当者設定失敗:", error);
-      setCookSelectMessage("料理担当者の設定に失敗しました");
+      console.error("レシピ説明取得失敗:", error);
+      alert("レシピ説明の取得に失敗しました");
+      setShowRecipeModal(false);
+    } finally {
+      setRecipeLoading(false);
     }
   };
 
-  // ── 制約条件 ──
-  const getConstraints = () => {
-    const c = {};
-    if (servings) c.servings = Number(servings);
-    if (budget) c.budget = Number(budget);
-    // eslint-disable-next-line camelcase
-    if (cookingTime) c.cooking_time = Number(cookingTime);
-    if (days) c.days = Number(days);
-    return c;
-  };
+  // ── レシピを過去の献立に追加 ──
+  const handleSaveRecipe = async () => {
+    if (!recipeData) return;
 
-  // ── 提案取得 ──
-  const handleFetchSuggestions = async (requests) => {
-    setTimeout(() => {
-      aiSuggestionsRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }, 100);
     try {
-      await fetchSuggestions(requests, undefined, getConstraints());
+      // バックエンドに保存（手順を含める）
+      await apiClient.post("/api/menus/save_recipe", {
+        dish_name: recipeData.dish_name,
+        servings: recipeData.servings,
+        missing_ingredients: recipeData.missing_ingredients,
+        cooking_time: recipeData.cooking_time,
+        steps: recipeData.steps,
+      });
+
+      alert("献立に追加しました！");
+      setShowRecipeModal(false);
+      setSelectedMenuId("");
+      // 過去の献立一覧をリロード
+      await fetchPastSuggestions();
     } catch (error) {
-      if (error.status === 403) {
-        alert("今日の料理担当者ではありません");
-      } else {
-        alert("提案取得に失敗しました");
-      }
+      console.error("献立保存失敗:", error);
+      alert("献立の保存に失敗しました");
     }
   };
 
@@ -204,9 +161,7 @@ export default function FamilySuggestionPage() {
             🏠 わが家の過去の献立
           </h1>
           <p className="text-sm text-muted text-center max-w-lg">
-            家族の中で過去に採用された献立の一覧です。
-            <br />
-            リクエストメニューを選んでAI提案を受け、「献立に追加」すると一覧に反映されます。
+            料理するメニューを選択して、AIに作り方を提案してもらいましょう。
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link
@@ -226,156 +181,10 @@ export default function FamilySuggestionPage() {
           </div>
         </div>
 
-        {/* ─── 料理担当者選択 ─── */}
+        {/* ────── メニュー選択 ────── */}
         <div className="luxury-card max-w-2xl mx-auto mb-8">
           <label className="luxury-label text-center block mb-4">
-            今日の料理担当者
-          </label>
-          <select
-            value={todayCookId || ""}
-            onChange={(e) => handleSelectCook(Number(e.target.value) || null)}
-            className="luxury-select"
-          >
-            <option value="">選択してください</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
-          {cookSelectMessage && (
-            <p className="text-sm text-[var(--primary)] mt-3 text-center">
-              {cookSelectMessage}
-            </p>
-          )}
-        </div>
-
-        {/* ─── 制約条件設定 ─── */}
-        <div className="luxury-card max-w-2xl mx-auto mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">⚙️</span>
-            <h2
-              className="text-xl font-medium text-[var(--foreground)]"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              AI提案の条件設定
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div>
-              <label className="luxury-label text-sm block mb-2">
-                👨‍👩‍👧‍👦 何人分
-              </label>
-              <select
-                value={servings}
-                onChange={(e) => setServings(e.target.value)}
-                className="luxury-select text-sm"
-              >
-                <option value="">指定なし</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <option key={n} value={n}>
-                    {n}人分
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="luxury-label text-sm block mb-2">💰 予算</label>
-              <select
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                className="luxury-select text-sm"
-              >
-                <option value="">指定なし</option>
-                {[300, 500, 800, 1000, 1500, 2000, 2500, 3000, 4000, 5000].map(
-                  (n) => (
-                    <option key={n} value={n}>
-                      {n.toLocaleString()}円以内
-                    </option>
-                  ),
-                )}
-              </select>
-            </div>
-            <div>
-              <label className="luxury-label text-sm block mb-2">
-                ⏰ 調理時間
-              </label>
-              <select
-                value={cookingTime}
-                onChange={(e) => setCookingTime(e.target.value)}
-                className="luxury-select text-sm"
-              >
-                <option value="">指定なし</option>
-                {[10, 15, 20, 30, 45, 60, 90, 120].map((n) => (
-                  <option key={n} value={n}>
-                    {n}分以内
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="luxury-label text-sm block mb-2">
-                📅 提案期間
-              </label>
-              <select
-                value={days}
-                onChange={(e) => setDays(e.target.value)}
-                className="luxury-select text-sm"
-              >
-                <option value="">1日分</option>
-                {[2, 3, 4, 5, 6, 7].map((n) => (
-                  <option key={n} value={n}>
-                    {n}日分まとめて
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* 冷蔵庫の在庫表示 */}
-          <div className="border-t border-[var(--border)] pt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-lg">🧊</span>
-              <span
-                className="text-sm font-medium text-[var(--warm-gray-600)]"
-                style={{ fontFamily: "var(--font-body)" }}
-              >
-                冷蔵庫の在庫（AIが自動で考慮します）
-              </span>
-            </div>
-            {stocks.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {stocks.map((s) => (
-                  <span
-                    key={s.id}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-[var(--sage-50)] text-[var(--sage-600)] border border-[var(--sage-200)]"
-                  >
-                    {s.name}
-                    <span className="text-[var(--sage-400)]">
-                      {s.quantity}
-                      {s.unit}
-                    </span>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted">
-                在庫が登録されていません。
-                <a
-                  href="/stock"
-                  className="text-[var(--primary)] underline ml-1"
-                >
-                  冷蔵庫ページで登録する
-                </a>
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* ────── メニュー選択と提案取得 ────── */}
-        <div className="luxury-card max-w-2xl mx-auto mb-8">
-          <label className="luxury-label text-center block mb-4">
-            【提案を取得したいメニューを選択】
+            【料理するメニューを選択】
           </label>
           <div className="space-y-4">
             <select
@@ -391,6 +200,21 @@ export default function FamilySuggestionPage() {
               ))}
             </select>
 
+            <div className="space-y-2">
+              <label className="luxury-label text-sm block">何人分</label>
+              <select
+                value={servings}
+                onChange={(e) => setServings(e.target.value)}
+                className="luxury-select text-sm"
+              >
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <option key={n} value={n}>
+                    {n}人分
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
               onClick={() => {
                 if (selectedMenuId) {
@@ -398,67 +222,107 @@ export default function FamilySuggestionPage() {
                   if (!Number.isNaN(id)) {
                     const selectedMenu = menuList.find((m) => m.id === id);
                     if (selectedMenu) {
-                      /* eslint-disable-next-line camelcase */
-                      handleFetchSuggestions({ menu_id: id });
+                      handleFetchRecipe(selectedMenu.name);
                     }
                   }
                 } else {
-                  handleFetchSuggestions({});
+                  alert("料理するメニューを選んでください");
                 }
               }}
               className="luxury-btn luxury-btn-primary w-full"
             >
-              {selectedMenuId
-                ? "提案を取得"
-                : "今ある在庫から家族の好みを元に提案"}
+              このメニューの作り方をAIに提案してもらう
             </button>
           </div>
-          <p className="text-sm text-muted text-center mt-4">
-            リクエストの編集・削除は
-            <Link href="/request" className="text-[var(--primary)] underline">
-              リクエスト管理ページ
-            </Link>
-            で行えます。
-          </p>
         </div>
 
-        {/* ── AI提案結果 ── */}
-        {aiLoading && <LoadingSpinner />}
+        {/* ────── レシピ説明モーダル ────── */}
+        {showRecipeModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {recipeLoading ? (
+                <div className="p-8 text-center">
+                  <LoadingSpinner />
+                  <p className="text-sm text-muted mt-4">レシピを取得中...</p>
+                </div>
+              ) : recipeData ? (
+                <div className="p-6 space-y-4">
+                  <h2 className="text-2xl font-bold text-[var(--foreground)]">
+                    {recipeData.dish_name}
+                  </h2>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted">人数：</span>
+                      <span className="font-medium">
+                        {recipeData.servings}人分
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted">調理時間：</span>
+                      <span className="font-medium">
+                        {recipeData.cooking_time}分
+                      </span>
+                    </div>
+                  </div>
 
-        <div ref={aiSuggestionsRef}>
-          {aiSuggestions && (
-            <div className="mt-4 grid gap-4 max-w-2xl mx-auto mb-12">
-              <SuggestionCard
-                suggestion={aiSuggestions.suggest_field}
-                onOk={async () => {
-                  await saveFeedback(aiSuggestions.id, "ok", "");
-                  alert("献立に追加しました！");
-                  // 過去の献立一覧をリロードして即反映
-                  await fetchPastSuggestions();
-                }}
-                onRetry={async () => {
-                  await saveFeedback(aiSuggestions.id, "alt", "");
-                  alert("別案を要求しました");
-                  const sf = aiSuggestions.suggest_field;
-                  const reqs = Array.isArray(sf)
-                    ? sf[0]?.requests
-                    : sf.requests;
-                  fetchSuggestions(reqs, aiSuggestions.id, getConstraints());
-                }}
-                onNg={async () => {
-                  const reason = prompt("NG 理由を入力してください（任意）:");
-                  await saveFeedback(aiSuggestions.id, "ng", reason || "");
-                  alert("NG理由を送信しました");
-                  const sf = aiSuggestions.suggest_field;
-                  const reqs = Array.isArray(sf)
-                    ? sf[0]?.requests
-                    : sf.requests;
-                  fetchSuggestions(reqs, aiSuggestions.id, getConstraints());
-                }}
-              />
+                  {recipeData.missing_ingredients &&
+                    recipeData.missing_ingredients.length > 0 && (
+                      <div>
+                        <h3 className="font-bold text-[var(--foreground)] mb-2">
+                          不足食材
+                        </h3>
+                        <ul className="space-y-1 text-sm text-muted">
+                          {recipeData.missing_ingredients.map((ing, idx) => (
+                            <li key={idx}>
+                              • {ing.name}：{ing.quantity}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                  {recipeData.steps && (
+                    <div>
+                      <h3 className="font-bold text-[var(--foreground)] mb-2">
+                        調理手順
+                      </h3>
+                      <ol className="space-y-2 text-sm text-muted list-decimal list-inside">
+                        {recipeData.steps.map((step) => (
+                          <li key={step.step}>{step.description}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => setShowRecipeModal(false)}
+                      className="flex-1 px-4 py-2 border border-[var(--border)] rounded-lg text-[var(--foreground)] hover:bg-[var(--card-bg)]"
+                    >
+                      キャンセル
+                    </button>
+                    <button
+                      onClick={handleSaveRecipe}
+                      className="flex-1 luxury-btn luxury-btn-primary"
+                    >
+                      保存
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-8 text-center">
+                  <p className="text-red-500">レシピの取得に失敗しました</p>
+                  <button
+                    onClick={() => setShowRecipeModal(false)}
+                    className="mt-4 luxury-btn luxury-btn-primary"
+                  >
+                    閉じる
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* ─── 過去の献立一覧 ─── */}
         <h2
@@ -474,7 +338,7 @@ export default function FamilySuggestionPage() {
           <div className="luxury-card max-w-xl mx-auto text-center py-8 mb-12">
             <p className="text-muted text-lg">まだ採用された献立がありません</p>
             <p className="text-sm text-muted mt-2">
-              上のボタンからAI提案を受けて、「献立に追加」を押すとここに表示されます。
+              上のボタンからAI提案を受けて、「保存」を押すとここに表示されます。
             </p>
           </div>
         ) : (
@@ -486,9 +350,6 @@ export default function FamilySuggestionPage() {
                     <h3 className="text-lg font-bold text-[var(--foreground)]">
                       🍽️ {s.ai_raw_json?.title || "タイトルなし"}
                     </h3>
-                    <p className="text-sm text-[var(--primary)] mt-1">
-                      リクエスト：{s.requests}
-                    </p>
                   </div>
                   <span className="text-xs text-muted whitespace-nowrap">
                     {new Date(s.created_at).toLocaleDateString("ja-JP")}
@@ -499,14 +360,6 @@ export default function FamilySuggestionPage() {
                     💡 {s.ai_raw_json.reason}
                   </p>
                 )}
-                <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted">
-                  {s.ai_raw_json?.time && (
-                    <span>⏱️ {s.ai_raw_json.time}分</span>
-                  )}
-                  {s.ai_raw_json?.ingredients && (
-                    <span>🥗 {s.ai_raw_json.ingredients.join("・")}</span>
-                  )}
-                </div>
               </div>
             ))}
           </div>
