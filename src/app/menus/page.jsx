@@ -140,7 +140,7 @@ export default function MenuPage() {
 
   // ── 献立提案（提案ボタン）──
   // `requests` can be either a string (menu name) or an object (e.g. { menu_id })
-  const handleFetchSuggestions = async (requests) => {
+  const handleFetchSuggestions = async () => {
     // スクロールして提案セクションまで移動
     setTimeout(() => {
       suggestionsRef.current?.scrollIntoView({
@@ -149,7 +149,7 @@ export default function MenuPage() {
       });
     }, 100);
     try {
-      await fetchSuggestions(requests, undefined, getConstraints());
+      await fetchSuggestions(undefined, undefined, getConstraints());
     } catch (error) {
       if (error.status === 403) {
         alert("今日の料理担当者ではありません");
@@ -347,7 +347,7 @@ export default function MenuPage() {
         {/* ────── 【在庫ベースの提案取得】────── */}
         <div className="luxury-card max-w-2xl mx-auto mb-12">
           <button
-            onClick={() => handleFetchSuggestions({})}
+            onClick={() => handleFetchSuggestions()}
             className="luxury-btn luxury-btn-primary w-full"
           >
             今ある在庫から家族の好みを元に提案
@@ -377,21 +377,13 @@ export default function MenuPage() {
                 onRetry={async () => {
                   await saveFeedback(suggestions.id, "alt", "");
                   alert("別案を要求しました");
-                  const sf = suggestions.suggest_field;
-                  const reqs = Array.isArray(sf)
-                    ? sf[0]?.requests
-                    : sf.requests;
-                  fetchSuggestions(reqs, suggestions.id, getConstraints());
+                  fetchSuggestions(undefined, suggestions.id, getConstraints());
                 }}
                 onNg={async () => {
                   const reason = prompt("NG 理由を入力してください（任意）:");
                   await saveFeedback(suggestions.id, "ng", reason || "");
                   alert("NG理由を送信しました");
-                  const sf = suggestions.suggest_field;
-                  const reqs = Array.isArray(sf)
-                    ? sf[0]?.requests
-                    : sf.requests;
-                  fetchSuggestions(reqs, suggestions.id, getConstraints());
+                  fetchSuggestions(undefined, suggestions.id, getConstraints());
                 }}
               />
             </div>
