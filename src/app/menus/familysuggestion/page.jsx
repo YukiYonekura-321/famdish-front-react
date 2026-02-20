@@ -379,7 +379,7 @@ export default function FamilySuggestionPage() {
               const isDetailLoading = recipeDetailLoading[s.id];
               return (
                 <div key={s.id} className="luxury-card">
-                  <div className="flex items-center gap-3 mt-4">
+                  <div className="flex flex-col gap-3 mt-4">
                     <select
                       value={currentServings}
                       onChange={(e) =>
@@ -388,7 +388,7 @@ export default function FamilySuggestionPage() {
                           [s.id]: e.target.value,
                         }))
                       }
-                      className="luxury-select text-sm w-24 shrink-0"
+                      className="luxury-select text-sm w-full"
                     >
                       {[1, 2, 3, 4, 5, 6].map((n) => (
                         <option key={n} value={n}>
@@ -400,7 +400,7 @@ export default function FamilySuggestionPage() {
                       onClick={() =>
                         handleFetchRecipe(dishTitle, currentServings)
                       }
-                      className="luxury-btn luxury-btn-primary flex-1 text-sm"
+                      className="luxury-btn luxury-btn-primary w-full text-sm"
                     >
                       このメニューの作り方をAIに提案してもらう
                     </button>
