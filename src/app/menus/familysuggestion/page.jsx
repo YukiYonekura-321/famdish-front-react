@@ -32,6 +32,7 @@ export default function FamilySuggestionPage() {
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [recipeData, setRecipeData] = useState(null);
+  const [currentRecipeId, setCurrentRecipeId] = useState(null);
 
   // ── 認証 ──
   useEffect(() => {
@@ -122,7 +123,11 @@ export default function FamilySuggestionPage() {
   }, [usertoken]);
 
   // ── レシピ説明リクエスト ──
-  const handleFetchRecipe = async (dishName, numServings = 4) => {
+  const handleFetchRecipe = async (
+    dishName,
+    numServings = 4,
+    recipeId = null,
+  ) => {
     if (!dishName) {
       alert("料理するメニューを選んでください");
       return;
@@ -131,6 +136,7 @@ export default function FamilySuggestionPage() {
     setRecipeLoading(true);
     setShowRecipeModal(true);
     setRecipeData(null);
+    setCurrentRecipeId(recipeId);
 
     try {
       const response = await apiClient.post("/api/recipes/explain", {
@@ -150,14 +156,13 @@ export default function FamilySuggestionPage() {
   };
 
   // ── レシピを過去の献立に追加 ──
-  const handleSaveRecipe = async () => {
+  const handleSaveRecipe = async (recipeId) => {
     if (!recipeData) return;
 
     try {
       // バックエンドに保存（手順を含める）
       /* eslint-disable camelcase */
-      await apiClient.post("/api/recipe/save_recipe", {
-        dish_name: recipeData.dish_name,
+      await apiClient.post(`/api/recipe/${recipeId}`, {
         servings: recipeData.servings,
         missing_ingredients: recipeData.missing_ingredients,
         cooking_time: recipeData.cooking_time,
@@ -350,7 +355,7 @@ export default function FamilySuggestionPage() {
                       キャンセル
                     </button>
                     <button
-                      onClick={handleSaveRecipe}
+                      onClick={() => handleSaveRecipe(currentRecipeId)}
                       className="flex-1 luxury-btn luxury-btn-primary"
                     >
                       保存
@@ -419,7 +424,7 @@ export default function FamilySuggestionPage() {
                     </select>
                     <button
                       onClick={() =>
-                        handleFetchRecipe(dishTitle, currentServings)
+                        handleFetchRecipe(dishTitle, currentServings, r.id)
                       }
                       className="luxury-btn luxury-btn-primary w-full text-sm"
                     >
