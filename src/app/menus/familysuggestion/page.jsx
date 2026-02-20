@@ -217,7 +217,7 @@ export default function FamilySuggestionPage() {
                   await apiClient.post("/api/recipe/save_recipe", {
                     /* eslint-disable-next-line camelcase */
                     dish_name: selectedMenu.name,
-                    proposer: selectedMenu.member?.name,
+                    proposer: selectedMenu.member?.id,
                   });
                   alert("過去の献立一覧に追加しました！");
                   setSelectedMenuId("");
