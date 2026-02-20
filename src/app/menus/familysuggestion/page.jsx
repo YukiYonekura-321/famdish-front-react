@@ -23,6 +23,11 @@ export default function FamilySuggestionPage() {
   // ── 各献立ごとの人数管理 ──
   const [servingsMap, setServingsMap] = useState({});
 
+  // ── 過去献立のレシピアコーディオン管理 ──
+  const [expandedRecipeId, setExpandedRecipeId] = useState(null);
+  const [recipeDetailMap, setRecipeDetailMap] = useState({});
+  const [recipeDetailLoading, setRecipeDetailLoading] = useState({});
+
   // ── レシピ説明用 ──
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [recipeLoading, setRecipeLoading] = useState(false);
@@ -147,6 +152,30 @@ export default function FamilySuggestionPage() {
     } catch (error) {
       console.error("献立保存失敗:", error);
       alert("献立の保存に失敗しました");
+    }
+  };
+
+  // ── 過去献立のレシピ詳細を取得（アコーディオン展開時） ──
+  const handleToggleRecipeDetail = async (suggestionId, recipeId) => {
+    if (expandedRecipeId === suggestionId) {
+      setExpandedRecipeId(null);
+      return;
+    }
+    setExpandedRecipeId(suggestionId);
+    if (recipeDetailMap[suggestionId] !== undefined) return;
+    if (!recipeId) {
+      setRecipeDetailMap((prev) => ({ ...prev, [suggestionId]: null }));
+      return;
+    }
+    setRecipeDetailLoading((prev) => ({ ...prev, [suggestionId]: true }));
+    try {
+      const res = await apiClient.get(`/api/recipes/${recipeId}`);
+      setRecipeDetailMap((prev) => ({ ...prev, [suggestionId]: res.data }));
+    } catch (error) {
+      console.error("レシピ詳細取得失敗:", error);
+      setRecipeDetailMap((prev) => ({ ...prev, [suggestionId]: null }));
+    } finally {
+      setRecipeDetailLoading((prev) => ({ ...prev, [suggestionId]: false }));
     }
   };
 
@@ -344,6 +373,10 @@ export default function FamilySuggestionPage() {
             {pastSuggestions.map((s) => {
               const dishTitle = s.ai_raw_json?.title || "タイトルなし";
               const currentServings = servingsMap[s.id] || "4";
+              const recipeId = s.recipe_id ?? s.id;
+              const isExpanded = expandedRecipeId === s.id;
+              const recipeDetail = recipeDetailMap[s.id];
+              const isDetailLoading = recipeDetailLoading[s.id];
               return (
                 <div key={s.id} className="luxury-card">
                   <div className="flex items-start justify-between gap-4">
@@ -361,6 +394,90 @@ export default function FamilySuggestionPage() {
                       💡 {s.ai_raw_json.reason}
                     </p>
                   )}
+
+                  {/* ── レシピ詳細アコーディオン ── */}
+                  <div className="mt-3 border-t border-[var(--border)] pt-3">
+                    <button
+                      onClick={() => handleToggleRecipeDetail(s.id, recipeId)}
+                      className="flex items-center justify-between w-full text-sm font-medium text-[var(--primary)] hover:opacity-80 transition-opacity"
+                    >
+                      <span>
+                        📖 保存済みレシピを{isExpanded ? "閉じる" : "見る"}
+                      </span>
+                      <span
+                        className="transition-transform duration-200"
+                        style={{
+                          display: "inline-block",
+                          transform: isExpanded
+                            ? "rotate(180deg)"
+                            : "rotate(0deg)",
+                        }}
+                      >
+                        ▼
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="mt-3">
+                        {isDetailLoading ? (
+                          <div className="py-4 text-center">
+                            <LoadingSpinner />
+                          </div>
+                        ) : recipeDetail ? (
+                          <div className="space-y-3 text-sm">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <span className="text-muted">人数：</span>
+                                <span className="font-medium">
+                                  {recipeDetail.servings}人分
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted">調理時間：</span>
+                                <span className="font-medium">
+                                  {recipeDetail.cooking_time}分
+                                </span>
+                              </div>
+                            </div>
+                            {recipeDetail.missing_ingredients &&
+                              recipeDetail.missing_ingredients.length > 0 && (
+                                <div>
+                                  <p className="font-medium text-[var(--foreground)] mb-1">
+                                    🛒 不足食材
+                                  </p>
+                                  <ul className="space-y-1 text-muted">
+                                    {recipeDetail.missing_ingredients.map(
+                                      (ing, idx) => (
+                                        <li key={idx}>
+                                          • {ing.name}：{ing.quantity}
+                                        </li>
+                                      ),
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+                            {recipeDetail.steps && (
+                              <div>
+                                <p className="font-medium text-[var(--foreground)] mb-1">
+                                  📝 調理手順
+                                </p>
+                                <ol className="space-y-1 text-muted list-decimal list-inside">
+                                  {recipeDetail.steps.map((step) => (
+                                    <li key={step.step}>{step.description}</li>
+                                  ))}
+                                </ol>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted py-2">
+                            保存済みレシピがありません。下のボタンからAIに提案してもらいましょう。
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex items-center gap-3 mt-4">
                     <select
                       value={currentServings}
