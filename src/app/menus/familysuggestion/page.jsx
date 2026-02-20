@@ -11,7 +11,7 @@ import Link from "next/link";
 
 export default function FamilySuggestionPage() {
   const [usertoken, setUsertoken] = useState("");
-  const [pastSuggestions, setPastSuggestions] = useState([]);
+  const [recipeList, setRecipeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -81,15 +81,36 @@ export default function FamilySuggestionPage() {
     loadMenus();
   }, []);
 
-  // ── 過去の献立取得 ──
+  // ── 過去の献立取得 → Recipeモデルへ登録 → Recipeモデルから一覧取得 ──
   const fetchPastSuggestions = async () => {
     setLoading(true);
     try {
+      // 1. suggestions/check から過去の献立を取得
       const res = await apiClient.get("/api/suggestions/check");
-      setPastSuggestions(Array.isArray(res.data) ? res.data : []);
+      const suggestions = Array.isArray(res.data) ? res.data : [];
+
+      // 2. 各suggestionのai_raw_json.title を Recipeモデルに登録（未登録のものだけ）
+      for (const s of suggestions) {
+        const title = s.ai_raw_json?.title;
+        const reason = s.ai_raw_json?.reason;
+        if (!title) continue;
+        try {
+          await apiClient.post("/api/recipes/save_recipe", {
+            dish_name: title,
+            reason: reason,
+          });
+        } catch (err) {
+          // 重複登録エラーは無視（既に登録済みの場合）
+          console.warn(`Recipe登録スキップ (${title}):`, err?.response?.status);
+        }
+      }
+
+      // 3. Recipeモデルから献立一覧を取得
+      const recipeRes = await apiClient.get("/api/recipes");
+      setRecipeList(Array.isArray(recipeRes.data) ? recipeRes.data : []);
     } catch (error) {
       console.error("家族の献立取得に失敗しました:", error);
-      setPastSuggestions([]);
+      setRecipeList([]);
     } finally {
       setLoading(false);
     }
@@ -361,7 +382,7 @@ export default function FamilySuggestionPage() {
 
         {loading ? (
           <LoadingSpinner />
-        ) : pastSuggestions.length === 0 ? (
+        ) : recipeList.length === 0 ? (
           <div className="luxury-card max-w-xl mx-auto text-center py-8 mb-12">
             <p className="text-muted text-lg">まだ採用された献立がありません</p>
             <p className="text-sm text-muted mt-2">
@@ -370,22 +391,22 @@ export default function FamilySuggestionPage() {
           </div>
         ) : (
           <div className="max-w-2xl mx-auto flex flex-col gap-4 mb-12">
-            {pastSuggestions.map((s) => {
-              const dishTitle = s.ai_raw_json?.title || "タイトルなし";
-              const currentServings = servingsMap[s.id] || "4";
-              const recipeId = s.recipe_id ?? s.id;
-              const isExpanded = expandedRecipeId === s.id;
-              const recipeDetail = recipeDetailMap[s.id];
-              const isDetailLoading = recipeDetailLoading[s.id];
+            {recipeList.map((r) => {
+              const dishTitle = r.dish_name || "タイトルなし";
+              const dishReason = r.reason || "";
+              const currentServings = servingsMap[r.id] || "4";
+              const isExpanded = expandedRecipeId === r.id;
+              const recipeDetail = recipeDetailMap[r.id];
+              const isDetailLoading = recipeDetailLoading[r.id];
               return (
-                <div key={s.id} className="luxury-card">
+                <div key={r.id} className="luxury-card">
                   <div className="flex flex-col gap-3 mt-4">
                     <select
                       value={currentServings}
                       onChange={(e) =>
                         setServingsMap((prev) => ({
                           ...prev,
-                          [s.id]: e.target.value,
+                          [r.id]: e.target.value,
                         }))
                       }
                       className="luxury-select text-sm w-full"
@@ -413,19 +434,17 @@ export default function FamilySuggestionPage() {
                       </h3>
                     </div>
                     <span className="text-xs text-muted whitespace-nowrap">
-                      {new Date(s.created_at).toLocaleDateString("ja-JP")}
+                      {r.created_at
+                        ? new Date(r.created_at).toLocaleDateString("ja-JP")
+                        : ""}
                     </span>
                   </div>
-                  {s.ai_raw_json?.reason && (
-                    <p className="text-sm text-muted mt-3">
-                      💡 {s.ai_raw_json.reason}
-                    </p>
-                  )}
+                  <p className="text-sm text-muted me-3">💡 {dishReason}</p>
 
                   {/* ── レシピ詳細アコーディオン ── */}
                   <div className="mt-3 border-t border-[var(--border)] pt-3">
                     <button
-                      onClick={() => handleToggleRecipeDetail(s.id, recipeId)}
+                      onClick={() => handleToggleRecipeDetail(r.id, r.id)}
                       className="flex items-center justify-between w-full text-sm font-medium text-[var(--primary)] hover:opacity-80 transition-opacity"
                     >
                       <span>
