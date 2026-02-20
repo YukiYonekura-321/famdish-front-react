@@ -379,6 +379,33 @@ export default function FamilySuggestionPage() {
               const isDetailLoading = recipeDetailLoading[s.id];
               return (
                 <div key={s.id} className="luxury-card">
+                  <div className="flex items-center gap-3 mt-4">
+                    <select
+                      value={currentServings}
+                      onChange={(e) =>
+                        setServingsMap((prev) => ({
+                          ...prev,
+                          [s.id]: e.target.value,
+                        }))
+                      }
+                      className="luxury-select text-sm w-24 shrink-0"
+                    >
+                      {[1, 2, 3, 4, 5, 6].map((n) => (
+                        <option key={n} value={n}>
+                          {n}人分
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() =>
+                        handleFetchRecipe(dishTitle, currentServings)
+                      }
+                      className="luxury-btn luxury-btn-primary flex-1 text-sm"
+                    >
+                      このメニューの作り方をAIに提案してもらう
+                    </button>
+                  </div>
+
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <h3 className="text-lg font-bold text-[var(--foreground)]">
@@ -416,33 +443,6 @@ export default function FamilySuggestionPage() {
                         ▼
                       </span>
                     </button>
-
-                    <div className="flex items-center gap-3 mt-4">
-                      <select
-                        value={currentServings}
-                        onChange={(e) =>
-                          setServingsMap((prev) => ({
-                            ...prev,
-                            [s.id]: e.target.value,
-                          }))
-                        }
-                        className="luxury-select text-sm w-24 shrink-0"
-                      >
-                        {[1, 2, 3, 4, 5, 6].map((n) => (
-                          <option key={n} value={n}>
-                            {n}人分
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() =>
-                          handleFetchRecipe(dishTitle, currentServings)
-                        }
-                        className="luxury-btn luxury-btn-primary flex-1 text-sm"
-                      >
-                        このメニューの作り方をAIに提案してもらう
-                      </button>
-                    </div>
 
                     {isExpanded && (
                       <div className="mt-3">
