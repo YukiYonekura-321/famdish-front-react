@@ -379,7 +379,7 @@ export default function MenuPage() {
                     const reason = suggestions.suggest_field?.reason;
                     if (title) {
                       /* eslint-disable camelcase */
-                      await apiClient.post("/api/recipes/save_recipe", {
+                      await apiClient.post("/api/recipe/save_recipe", {
                         dish_name: title,
                         reason: reason,
                       });
