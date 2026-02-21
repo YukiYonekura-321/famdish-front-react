@@ -373,20 +373,26 @@ export default function MenuPage() {
                   await saveFeedback(suggestions.id, "ok", "");
                   alert("採用しました");
 
-                  // Recipeモデルに登録
-                  try {
-                    const title = suggestions.suggest_field?.title;
-                    const reason = suggestions.suggest_field?.reason;
-                    if (title) {
+                  // Recipeモデルに登録（1日分: オブジェクト / 2日分以上: 配列）
+                  const field = suggestions.suggest_field;
+                  const items = Array.isArray(field) ? field : [field];
+                  for (const item of items) {
+                    const title = item?.title;
+                    const reason = item?.reason;
+                    if (!title) continue;
+                    try {
                       /* eslint-disable camelcase */
                       await apiClient.post("/api/recipe/save_recipe", {
                         dish_name: title,
                         reason: reason,
                       });
                       /* eslint-enable camelcase */
+                    } catch (err) {
+                      console.warn(
+                        `Recipe登録スキップ (${title}):`,
+                        err?.response?.status,
+                      );
                     }
-                  } catch (err) {
-                    console.warn("Recipe登録スキップ:", err?.response?.status);
                   }
 
                   router.push("/menus/familysuggestion");
