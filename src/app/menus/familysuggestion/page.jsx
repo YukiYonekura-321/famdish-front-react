@@ -86,7 +86,7 @@ export default function FamilySuggestionPage() {
   const fetchPastSuggestions = async () => {
     setLoading(true);
     try {
-      const recipeRes = await apiClient.get("/api/recipes");
+      const recipeRes = await apiClient.get("/api/recipes/family");
       setRecipeList(Array.isArray(recipeRes.data) ? recipeRes.data : []);
     } catch (error) {
       console.error("家族の献立取得に失敗しました:", error);

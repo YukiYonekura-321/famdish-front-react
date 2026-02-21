@@ -38,7 +38,7 @@ export default function AllSuggestionsPage() {
     const fetchAllSuggestions = async () => {
       setLoading(true);
       try {
-        const res = await apiClient.get("/api/suggestions");
+        const res = await apiClient.get("/api/recipes");
         const suggestionsData = Array.isArray(res.data) ? res.data : [];
         setSuggestions(suggestionsData);
 
@@ -157,7 +157,7 @@ export default function AllSuggestionsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-bold text-gray-800">
-                        🍽️ {s.ai_raw_json?.title || "タイトルなし"}
+                        🍽️ {s.dish_name || "タイトルなし"}
                       </h3>
                       <button
                         type="button"
@@ -174,9 +174,6 @@ export default function AllSuggestionsPage() {
                         {goodCount[s.id] ?? 0}
                       </span>
                     </div>
-                    <p className="text-sm text-blue-600 mt-1">
-                      リクエスト：{s.requests}
-                    </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">
@@ -188,19 +185,13 @@ export default function AllSuggestionsPage() {
                   </div>
                 </div>
 
-                {s.ai_raw_json?.reason && (
-                  <p className="text-sm text-gray-600 mt-3">
-                    💡 {s.ai_raw_json.reason}
-                  </p>
+                {s.reason && (
+                  <p className="text-sm text-gray-600 mt-3">💡 {s.reason}</p>
                 )}
 
                 <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
-                  {s.ai_raw_json?.time && (
-                    <span>⏱️ {s.ai_raw_json.time}分</span>
-                  )}
-                  {s.ai_raw_json?.ingredients && (
-                    <span>🥗 {s.ai_raw_json.ingredients.join("・")}</span>
-                  )}
+                  {s.cooking_time && <span>⏱️ {s.cooking_time}分</span>}
+                  {s.servings && <span>👥 {s.servings}人分</span>}
                 </div>
               </div>
             ))}
