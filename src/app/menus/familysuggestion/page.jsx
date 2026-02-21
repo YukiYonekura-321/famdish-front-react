@@ -86,27 +86,6 @@ export default function FamilySuggestionPage() {
   const fetchPastSuggestions = async () => {
     setLoading(true);
     try {
-      // 1. suggestions/check から過去の献立を取得
-      const res = await apiClient.get("/api/suggestions/check");
-      const suggestions = Array.isArray(res.data) ? res.data : [];
-
-      // 2. 各suggestionのai_raw_json.title を Recipeモデルに登録（未登録のものだけ）
-      for (const s of suggestions) {
-        const title = s.ai_raw_json?.title;
-        const reason = s.ai_raw_json?.reason;
-        if (!title) continue;
-        try {
-          await apiClient.post("/api/recipes/save_recipe", {
-            dish_name: title,
-            reason: reason,
-          });
-        } catch (err) {
-          // 重複登録エラーは無視（既に登録済みの場合）
-          console.warn(`Recipe登録スキップ (${title}):`, err?.response?.status);
-        }
-      }
-
-      // 3. Recipeモデルから献立一覧を取得
       const recipeRes = await apiClient.get("/api/recipes");
       setRecipeList(Array.isArray(recipeRes.data) ? recipeRes.data : []);
     } catch (error) {
