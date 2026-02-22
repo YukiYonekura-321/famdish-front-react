@@ -25,9 +25,7 @@ export default function MenuPage() {
   const { saveFeedback } = useFeedback();
 
   // ── 制約条件 state ──
-  const [servings, setServings] = useState("");
   const [budget, setBudget] = useState("");
-  const [cookingTime, setCookingTime] = useState("");
   const [days, setDays] = useState("");
   const [stocks, setStocks] = useState([]);
 
@@ -225,26 +223,7 @@ export default function MenuPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            {/* 何人分か */}
-            <div>
-              <label className="luxury-label text-sm block mb-2">
-                👨‍👩‍👧‍👦 何人分
-              </label>
-              <select
-                value={servings}
-                onChange={(e) => setServings(e.target.value)}
-                className="luxury-select text-sm"
-              >
-                <option value="">指定なし</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <option key={n} value={n}>
-                    {n}人分
-                  </option>
-                ))}
-              </select>
-            </div>
-
+          <div className="grid grid-cols-2 gap-4 mb-6">
             {/* 希望予算 */}
             <div>
               <label className="luxury-label text-sm block mb-2">💰 予算</label>
@@ -261,25 +240,6 @@ export default function MenuPage() {
                     </option>
                   ),
                 )}
-              </select>
-            </div>
-
-            {/* 希望調理時間 */}
-            <div>
-              <label className="luxury-label text-sm block mb-2">
-                ⏰ 調理時間
-              </label>
-              <select
-                value={cookingTime}
-                onChange={(e) => setCookingTime(e.target.value)}
-                className="luxury-select text-sm"
-              >
-                <option value="">指定なし</option>
-                {[10, 15, 20, 30, 45, 60, 90, 120].map((n) => (
-                  <option key={n} value={n}>
-                    {n}分以内
-                  </option>
-                ))}
               </select>
             </div>
 
