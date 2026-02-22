@@ -41,10 +41,7 @@ export function useSuggestion() {
     };
 
     // 制約パラメータを追加
-    if (constraints.servings) body.servings = constraints.servings;
     if (constraints.budget) body.budget = constraints.budget;
-    // eslint-disable-next-line camelcase
-    if (constraints.cooking_time) body.cooking_time = constraints.cooking_time;
     if (constraints.days) body.days = constraints.days;
 
     const res = await fetch(`${base}/api/suggestions`, {
