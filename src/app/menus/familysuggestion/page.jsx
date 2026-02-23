@@ -530,7 +530,12 @@ export default function FamilySuggestionPage() {
                   </div>
                   <p className="text-sm text-muted me-3">💡 {dishReason}</p>
                   <p className="text-sm text-muted me-3">
-                    👨‍🍳 調理者:{r.proposer ? (members.find((m) => m.id === r.proposer)?.name || "不明") : "未設定"}
+                    👨‍🍳 調理者:
+                    {}
+                    {r.proposer_id
+                      ? members.find((m) => m.id === r.proposer_id)?.name ||
+                        "不明"
+                      : "未設定"}
                   </p>
                   <div className="flex flex-col gap-3 mt-4">
                     <select

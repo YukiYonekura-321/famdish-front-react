@@ -15,6 +15,7 @@ export default function AllSuggestionsPage() {
   const [loading, setLoading] = useState(true);
   const [goodStatus, setGoodStatus] = useState({});
   const [goodCount, setGoodCount] = useState({});
+  const [members, setMembers] = useState([]);
   const router = useRouter();
 
   // ── 認証 ──
@@ -30,6 +31,20 @@ export default function AllSuggestionsPage() {
     });
     return () => unsubscribe();
   }, [router]);
+
+  // ── メンバー一覧取得 ──
+  useEffect(() => {
+    if (!auth.currentUser) return;
+    const fetchMembers = async () => {
+      try {
+        const res = await apiClient.get("/api/members/all");
+        setMembers(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.error("メンバー取得失敗:", error);
+      }
+    };
+    fetchMembers();
+  }, []);
 
   // ── 全家族の献立取得 ──
   useEffect(() => {
@@ -189,6 +204,13 @@ export default function AllSuggestionsPage() {
                 {s.reason && (
                   <p className="text-sm text-gray-600 mt-3">💡 {s.reason}</p>
                 )}
+                <p className="text-sm text-gray-600 mt-1">
+                  👨‍🍳 調理者:
+                  {s.proposer_id
+                    ? members.find((m) => m.id === s.proposer_id)?.name ||
+                      "不明"
+                    : "未設定"}
+                </p>
 
                 <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
                   {s.cooking_time && <span>⏱️ {s.cooking_time}分</span>}
