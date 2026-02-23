@@ -167,7 +167,7 @@ export default function MemberForm() {
             <span>リクエスト管理</span>
           </Link>
           <Link
-            href="/mypage/fridge"
+            href="/stock"
             className="luxury-btn luxury-btn-outline flex items-center justify-center gap-2"
           >
             <span>🧊</span>

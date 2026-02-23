@@ -14,7 +14,6 @@ export function AuthHeader() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [myPageOpen, setMyPageOpen] = useState(false);
-  const [displayName, setDisplayName] = useState("");
   const [familyName, setFamilyName] = useState("");
   const [scrolled, setScrolled] = useState(false);
 
@@ -33,15 +32,12 @@ export function AuthHeader() {
         try {
           const res = await apiClient.get("/api/members/me");
           const data = res?.data || {};
-          setDisplayName(data.username || "");
           setFamilyName(data.family_name || "");
         } catch (error) {
           console.error("メンバー取得失敗", error);
-          setDisplayName("");
           setFamilyName("");
         }
       } else {
-        setDisplayName("");
         setFamilyName("");
       }
     });
@@ -157,19 +153,6 @@ export function AuthHeader() {
                              flex items-center gap-2"
                   >
                     <span>⚙️ マイページ</span>
-                    {displayName && (
-                      <>
-                        <span className="text-[var(--gold-500)] font-light">
-                          —
-                        </span>
-                        <span
-                          className="text-[var(--gold-600)] font-medium"
-                          style={{ fontFamily: "var(--font-display)" }}
-                        >
-                          {displayName}
-                        </span>
-                      </>
-                    )}
                     <svg
                       className={`w-4 h-4 transition-transform duration-300 ${
                         myPageOpen ? "rotate-180" : ""
