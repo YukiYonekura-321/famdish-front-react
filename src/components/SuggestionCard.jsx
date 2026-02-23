@@ -117,6 +117,17 @@ export default function SuggestionCard({ suggestion, onOk, onRetry, onNg }) {
                       <span className="text-muted">分</span>
                     </div>
                   </div>
+                  <div>
+                    <span className="luxury-label text-base block mb-2">
+                      予算
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-medium text-[var(--secondary)]">
+                        {item.budget.toLocaleString()}
+                      </span>
+                      <span className="text-muted">円</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
