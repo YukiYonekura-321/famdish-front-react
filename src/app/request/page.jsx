@@ -375,6 +375,24 @@ export default function RequestPage() {
             </div>
           </div>
         )}
+
+        {/* ─── ナビゲーションリンク ─── */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
+          <Link
+            href="/menus"
+            className="luxury-btn luxury-btn-secondary flex items-center gap-2"
+          >
+            <span>🤖</span>
+            <span>メニュー提案ページへ移動</span>
+          </Link>
+          <Link
+            href="/menus/familysuggestion"
+            className="luxury-btn luxury-btn-outline flex items-center gap-2"
+          >
+            <span>🏠</span>
+            <span>我が家の献立ページへ戻る</span>
+          </Link>
+        </div>
       </div>
     </div>
   );
