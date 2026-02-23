@@ -6,6 +6,7 @@ import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { AuthHeader } from "@/components/auth_header";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function MemberForm() {
   const [usertoken, setUsertoken] = useState("");
@@ -155,6 +156,24 @@ export default function MemberForm() {
 
       <div className="luxury-container">
         <h1 className="luxury-title">メンバー情報</h1>
+
+        {/* ─── ナビゲーションボタン ─── */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8 max-w-2xl mx-auto">
+          <Link
+            href="/request"
+            className="luxury-btn luxury-btn-secondary flex items-center justify-center gap-2"
+          >
+            <span>📝</span>
+            <span>リクエスト管理</span>
+          </Link>
+          <Link
+            href="/mypage/fridge"
+            className="luxury-btn luxury-btn-outline flex items-center justify-center gap-2"
+          >
+            <span>🧊</span>
+            <span>冷蔵庫</span>
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
           {member.map((m, idx) => {
