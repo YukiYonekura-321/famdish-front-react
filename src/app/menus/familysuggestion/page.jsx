@@ -160,6 +160,18 @@ export default function FamilySuggestionPage() {
     }
   };
 
+  // ── レシピ削除 ──
+  const handleDeleteRecipe = async (recipeId, dishName) => {
+    if (!confirm(`「${dishName}」を献立一覧から削除しますか？`)) return;
+    try {
+      await apiClient.delete(`/api/recipes/${recipeId}`);
+      setRecipeList((prev) => prev.filter((r) => r.id !== recipeId));
+    } catch (error) {
+      console.error("レシピ削除失敗:", error);
+      alert("削除に失敗しました");
+    }
+  };
+
   // ── 過去献立のレシピ詳細を取得（アコーディオン展開時） ──
   const handleToggleRecipeDetail = async (suggestionId, recipeId) => {
     if (expandedRecipeId === suggestionId) {
@@ -426,11 +438,20 @@ export default function FamilySuggestionPage() {
                         🍽️ {dishTitle}
                       </h3>
                     </div>
-                    <span className="text-xs text-muted whitespace-nowrap">
-                      {r.created_at
-                        ? new Date(r.created_at).toLocaleDateString("ja-JP")
-                        : ""}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted whitespace-nowrap">
+                        {r.created_at
+                          ? new Date(r.created_at).toLocaleDateString("ja-JP")
+                          : ""}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteRecipe(r.id, dishTitle)}
+                        className="text-muted hover:text-red-500 transition-colors text-sm px-1"
+                        title="この献立を削除"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                   <p className="text-sm text-muted me-3">💡 {dishReason}</p>
 
