@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { apiClient } from "@/app/lib/api";
 import { AuthHeader } from "@/components/auth_header";
+import Link from "next/link";
 
 // ── よく使う食材の定義 ──
 // name: 食材名, unit: デフォルト単位, quantities: 選択可能な量
@@ -308,6 +309,24 @@ export default function StockPage() {
               <div className="w-16 h-px bg-gradient-to-r from-transparent to-[var(--gold-400)]"></div>
               <div className="w-2 h-2 rounded-full bg-[var(--gold-400)]"></div>
               <div className="w-16 h-px bg-gradient-to-l from-transparent to-[var(--gold-400)]"></div>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/menus"
+                className="luxury-btn luxury-btn-secondary flex items-center gap-2"
+              >
+                <span>🍽️</span>
+                <span>メニュー提案ページへ</span>
+              </Link>
+              <Link
+                href="/menus/familysuggestion"
+                className="luxury-btn luxury-btn-outline flex items-center gap-2"
+              >
+                <span>🏠</span>
+                <span>わが家の献立へ</span>
+              </Link>
             </div>
           </div>
 
