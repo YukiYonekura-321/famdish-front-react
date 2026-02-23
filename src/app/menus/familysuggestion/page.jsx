@@ -38,6 +38,7 @@ export default function FamilySuggestionPage() {
   const [members, setMembers] = useState([]);
   const [todayCookId, setTodayCookId] = useState(null);
   const [cookSelectMessage, setCookSelectMessage] = useState("");
+  const [myMemberId, setMyMemberId] = useState(null);
 
   // ── 認証 ──
   useEffect(() => {
@@ -99,6 +100,10 @@ export default function FamilySuggestionPage() {
           ? membersRes.data
           : [];
         setMembers(membersList);
+
+        // ログインユーザーのmember_id取得
+        const meRes = await apiClient.get("/api/members/me");
+        setMyMemberId(meRes.data?.member?.id || meRes.data?.id || null);
 
         // ファミリー情報取得（today_cook_id）
         const familyRes = await apiClient.get("/api/families");
@@ -340,6 +345,15 @@ export default function FamilySuggestionPage() {
                 if (!todayCookId) {
                   alert(
                     "料理担当者が設定されていません。上のドロップダウンから料理担当者を設定してください。",
+                  );
+                  return;
+                }
+                if (myMemberId && todayCookId !== myMemberId) {
+                  const cookName =
+                    members.find((m) => m.id === todayCookId)?.name ||
+                    "別のメンバー";
+                  alert(
+                    `献立一覧に加えられるのは本日の料理担当者（${cookName}）のみです。`,
                   );
                   return;
                 }
