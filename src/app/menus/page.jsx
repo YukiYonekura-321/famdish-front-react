@@ -310,14 +310,6 @@ export default function MenuPage() {
           >
             今ある在庫から家族の好みを元に提案
           </button>
-
-          <p className="text-sm text-muted text-center mt-4">
-            リクエストの編集・削除は
-            <Link href="/request" className="text-[var(--primary)] underline">
-              リクエスト管理ページ
-            </Link>
-            で行えます。
-          </p>
         </div>
 
         {loading && <LoadingSpinner />}

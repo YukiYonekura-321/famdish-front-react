@@ -194,7 +194,7 @@ export default function FamilySuggestionPage() {
             className="text-2xl font-medium text-[var(--foreground)]"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            🏠 わが家の過去の献立
+            🏠 わが家の献立
           </h1>
           <p className="text-sm text-muted text-center max-w-lg">
             料理するメニューを選択して、AIに作り方を提案してもらいましょう。
@@ -212,7 +212,7 @@ export default function FamilySuggestionPage() {
               className="luxury-btn luxury-btn-secondary flex items-center gap-2"
             >
               <span>🍽️</span>
-              <span>メニューページへ戻る</span>
+              <span>メニュー提案ページへ戻る</span>
             </Link>
           </div>
         </div>
@@ -220,7 +220,7 @@ export default function FamilySuggestionPage() {
         {/* ────── メニュー選択 → 過去の献立に加える ────── */}
         <div className="luxury-card max-w-2xl mx-auto mb-8">
           <label className="luxury-label text-center block mb-4">
-            【メニューを過去の献立一覧に加える】
+            【家族からのリクエストを献立一覧に加える】
           </label>
           <div className="space-y-4">
             <select
@@ -228,7 +228,7 @@ export default function FamilySuggestionPage() {
               onChange={(e) => setSelectedMenuId(e.target.value)}
               className="luxury-select"
             >
-              <option value="">─── メニューを選択 ───</option>
+              <option value="">─── 家族からのリクエストを選択 ───</option>
               {menuList.map((menu) => (
                 <option key={menu.id} value={menu.id}>
                   {menu.name}（提案者: {menu.member?.name || "不明"}）❤️
@@ -263,9 +263,16 @@ export default function FamilySuggestionPage() {
               }}
               className="luxury-btn luxury-btn-primary w-full"
             >
-              過去の献立一覧に加える
+              献立一覧に加える
             </button>
           </div>
+          <p className="text-sm text-muted text-center mt-4">
+            リクエストの編集・削除は
+            <Link href="/request" className="text-[var(--primary)] underline">
+              リクエスト管理ページ
+            </Link>
+            で行えます。
+          </p>
         </div>
 
         {/* ────── レシピ説明モーダル ────── */}
@@ -356,12 +363,12 @@ export default function FamilySuggestionPage() {
           </div>
         )}
 
-        {/* ─── 過去の献立一覧 ─── */}
+        {/* ─── 採用された献立一覧 ─── */}
         <h2
           className="text-xl font-medium text-[var(--foreground)] text-center mb-6"
           style={{ fontFamily: "var(--font-display)" }}
         >
-          📜 過去に採用された献立
+          📜 採用された献立
         </h2>
 
         {loading ? (
@@ -370,7 +377,7 @@ export default function FamilySuggestionPage() {
           <div className="luxury-card max-w-xl mx-auto text-center py-8 mb-12">
             <p className="text-muted text-lg">まだ採用された献立がありません</p>
             <p className="text-sm text-muted mt-2">
-              上のボタンからAI提案を受けて、「保存」を押すとここに表示されます。
+              上のボタンから家族からのリクエストを「献立一覧に加える」とここに表示されます。
             </p>
           </div>
         ) : (
@@ -515,7 +522,7 @@ export default function FamilySuggestionPage() {
 
         <div className="flex gap-4 mb-12 justify-center">
           <Link href="/menus" className="luxury-btn luxury-btn-secondary">
-            メニューページへ戻る
+            メニュー提案ページへ戻る
           </Link>
         </div>
       </div>
