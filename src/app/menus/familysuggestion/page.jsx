@@ -366,7 +366,7 @@ export default function FamilySuggestionPage() {
                   await apiClient.post("/api/recipe/save_recipe", {
                     /* eslint-disable-next-line camelcase */
                     dish_name: selectedMenu.name,
-                    proposer: selectedMenu.member?.id,
+                    proposer: todayCookId,
                     reason: `${proposerName}が提案した料理です`,
                   });
                   alert("過去の献立一覧に追加しました！");
@@ -529,6 +529,9 @@ export default function FamilySuggestionPage() {
                     </div>
                   </div>
                   <p className="text-sm text-muted me-3">💡 {dishReason}</p>
+                  <p className="text-sm text-muted me-3">
+                    👨‍🍳 調理者:{r.proposer ? (members.find((m) => m.id === r.proposer)?.name || "不明") : "未設定"}
+                  </p>
                   <div className="flex flex-col gap-3 mt-4">
                     <select
                       value={currentServings}

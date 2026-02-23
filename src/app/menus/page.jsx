@@ -357,6 +357,7 @@ export default function MenuPage() {
                       await apiClient.post("/api/recipe/save_recipe", {
                         dish_name: title,
                         reason: reason,
+                        proposer: todayCookId,
                       });
                       /* eslint-enable camelcase */
                     } catch (err) {
