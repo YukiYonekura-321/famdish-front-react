@@ -147,7 +147,7 @@ export default function MenuPage() {
       await fetchSuggestions(undefined, undefined, getConstraints());
     } catch (error) {
       if (error.status === 403) {
-        alert("今日の料理担当者ではありません");
+        alert("料理担当者ではありません。料理担当者を変更してください。");
       } else {
         console.error("提案取得エラー:", error);
         alert(`提案取得に失敗しました: ${error.message}`);
@@ -167,7 +167,7 @@ export default function MenuPage() {
             className="luxury-btn luxury-btn-secondary flex items-center gap-2"
           >
             <span>🏠</span>
-            <span>わが家の過去の献立</span>
+            <span>わが家の献立</span>
           </Link>
           <Link
             href="/menus/familysuggestion/suggestion"
@@ -183,30 +183,6 @@ export default function MenuPage() {
             <span>📝</span>
             <span>リクエスト管理</span>
           </Link>
-        </div>
-
-        {/* ─── 料理担当者選択 ─── */}
-        <div className="luxury-card max-w-2xl mx-auto mb-12">
-          <label className="luxury-label text-center block mb-4">
-            今日の料理担当者
-          </label>
-          <select
-            value={todayCookId || ""}
-            onChange={(e) => handleSelectCook(Number(e.target.value) || null)}
-            className="luxury-select"
-          >
-            <option value="">選択してください</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
-          {cookSelectMessage && (
-            <p className="text-sm text-[var(--primary)] mt-3 text-center">
-              {cookSelectMessage}
-            </p>
-          )}
         </div>
 
         {/* ─── 制約条件設定 ─── */}
@@ -300,6 +276,30 @@ export default function MenuPage() {
               </p>
             )}
           </div>
+        </div>
+
+        {/* ─── 料理担当者選択 ─── */}
+        <div className="luxury-card max-w-2xl mx-auto mb-12">
+          <label className="luxury-label text-center block mb-4">
+            今日の料理担当者
+          </label>
+          <select
+            value={todayCookId || ""}
+            onChange={(e) => handleSelectCook(Number(e.target.value) || null)}
+            className="luxury-select"
+          >
+            <option value="">選択してください</option>
+            {members.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+          {cookSelectMessage && (
+            <p className="text-sm text-[var(--primary)] mt-3 text-center">
+              {cookSelectMessage}
+            </p>
+          )}
         </div>
 
         {/* ────── 【在庫ベースの提案取得】────── */}

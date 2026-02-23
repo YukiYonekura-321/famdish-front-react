@@ -34,6 +34,11 @@ export default function FamilySuggestionPage() {
   const [recipeData, setRecipeData] = useState(null);
   const [currentRecipeId, setCurrentRecipeId] = useState(null);
 
+  // ── 料理担当者関連 state ──
+  const [members, setMembers] = useState([]);
+  const [todayCookId, setTodayCookId] = useState(null);
+  const [cookSelectMessage, setCookSelectMessage] = useState("");
+
   // ── 認証 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -80,6 +85,31 @@ export default function FamilySuggestionPage() {
       }
     };
     loadMenus();
+  }, []);
+
+  // ── メンバー一覧とファミリー情報取得 ──
+  useEffect(() => {
+    if (!auth.currentUser) return;
+
+    const fetchFamilyInfo = async () => {
+      try {
+        // メンバー一覧取得
+        const membersRes = await apiClient.get("/api/members");
+        const membersList = Array.isArray(membersRes.data)
+          ? membersRes.data
+          : [];
+        setMembers(membersList);
+
+        // ファミリー情報取得（today_cook_id）
+        const familyRes = await apiClient.get("/api/families");
+        const familyData = familyRes.data;
+        setTodayCookId(familyData.today_cook_id || null);
+      } catch (error) {
+        console.error("ファミリー情報取得失敗:", error);
+      }
+    };
+
+    fetchFamilyInfo();
   }, []);
 
   // ── 過去の献立取得 → Recipeモデルへ登録 → Recipeモデルから一覧取得 ──
@@ -172,6 +202,25 @@ export default function FamilySuggestionPage() {
     }
   };
 
+  // ── 料理担当者選択 ──
+  const handleSelectCook = async (memberId) => {
+    try {
+      setCookSelectMessage("");
+      await apiClient.post("/api/families/assign_cook", {
+        /* eslint-disable-next-line camelcase */
+        member_id: memberId,
+      });
+      setTodayCookId(memberId);
+      setCookSelectMessage(
+        "料理担当者を設定しました（献立の追加は担当者のみ可能です）",
+      );
+      setTimeout(() => setCookSelectMessage(""), 3000);
+    } catch (error) {
+      console.error("料理担当者設定失敗:", error);
+      setCookSelectMessage("料理担当者の設定に失敗しました");
+    }
+  };
+
   // ── 過去献立のレシピ詳細を取得（アコーディオン展開時） ──
   const handleToggleRecipeDetail = async (suggestionId, recipeId) => {
     if (expandedRecipeId === suggestionId) {
@@ -235,24 +284,63 @@ export default function FamilySuggestionPage() {
             【家族からのリクエストを献立一覧に加える】
           </label>
           <div className="space-y-4">
-            <select
-              value={selectedMenuId}
-              onChange={(e) => setSelectedMenuId(e.target.value)}
-              className="luxury-select"
-            >
-              <option value="">─── 家族からのリクエストを選択 ───</option>
-              {menuList.map((menu) => (
-                <option key={menu.id} value={menu.id}>
-                  {menu.name}（提案者: {menu.member?.name || "不明"}）❤️
-                  {goodCount[menu.id] || 0}
-                </option>
-              ))}
-            </select>
+            {/* ─── 料理担当者選択 ─── */}
+            <div>
+              <label className="luxury-label text-sm block mb-2">
+                きょうの料理担当者
+              </label>
+              <select
+                value={todayCookId || ""}
+                onChange={(e) => handleSelectCook(Number(e.target.value))}
+                className="luxury-select"
+              >
+                <option value="">─── 料理担当者を選択 ───</option>
+                {members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                    {todayCookId === member.id ? " ✓" : ""}
+                  </option>
+                ))}
+              </select>
+              {cookSelectMessage && (
+                <p className="text-sm mt-2 text-[var(--sage-600)]">
+                  {cookSelectMessage}
+                </p>
+              )}
+            </div>
+
+            {/* ─── メニュー選択 ─── */}
+            {/* ─── メニュー選択 ─── */}
+            <div>
+              <label className="luxury-label text-sm block mb-2">
+                家族からのリクエストを選択
+              </label>
+              <select
+                value={selectedMenuId}
+                onChange={(e) => setSelectedMenuId(e.target.value)}
+                className="luxury-select"
+              >
+                <option value="">─── 家族からのリクエストを選択 ───</option>
+                {menuList.map((menu) => (
+                  <option key={menu.id} value={menu.id}>
+                    {menu.name}（提案者: {menu.member?.name || "不明"}）❤️
+                    {goodCount[menu.id] || 0}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <button
               onClick={async () => {
                 if (!selectedMenuId) {
                   alert("メニューを選んでください");
+                  return;
+                }
+                // ── 料理担当者チェック ──
+                if (!todayCookId) {
+                  alert(
+                    "料理担当者が設定されていません。上のドロップダウンから料理担当者を設定してください。",
+                  );
                   return;
                 }
                 const id = Number(selectedMenuId);
