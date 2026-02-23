@@ -90,38 +90,6 @@ export default function ProfileStep3() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-8 sm:mb-10">
-                <div className="p-5 sm:p-6 rounded-xl bg-[var(--sage-50)] border border-[var(--sage-200)]">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 mb-4 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                    <span className="text-2xl sm:text-3xl">❤️</span>
-                  </div>
-                  <h4
-                    className="text-base sm:text-lg font-semibold text-[var(--foreground)] mb-2"
-                    style={{ fontFamily: "var(--font-display)" }}
-                  >
-                    好きなもの
-                  </h4>
-                  <p className="text-sm sm:text-base text-muted leading-relaxed">
-                    好きな食べ物や料理を選んでください
-                  </p>
-                </div>
-
-                <div className="p-5 sm:p-6 rounded-xl bg-[var(--terracotta-50)] border border-[var(--terracotta-200)]">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 mb-4 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                    <span className="text-2xl sm:text-3xl">🚫</span>
-                  </div>
-                  <h4
-                    className="text-base sm:text-lg font-semibold text-[var(--foreground)] mb-2"
-                    style={{ fontFamily: "var(--font-display)" }}
-                  >
-                    苦手なもの
-                  </h4>
-                  <p className="text-sm sm:text-base text-muted leading-relaxed">
-                    避けたい食材や料理を選んでください
-                  </p>
-                </div>
-              </div>
-
               <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
                 <button
                   type="button"

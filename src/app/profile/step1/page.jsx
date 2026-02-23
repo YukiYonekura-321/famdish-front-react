@@ -100,6 +100,35 @@ export default function ProfileStep1() {
                 </div>
               </div>
 
+              {/* CTA button */}
+              <div className="flex justify-center">
+                <button
+                  onClick={handleNext}
+                  className="w-full sm:w-auto group relative px-8 sm:px-12 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg text-white
+                           transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
+                           flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl min-h-[44px]"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%)",
+                  }}
+                >
+                  <span>はじめる</span>
+                  <svg
+                    className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </button>
+              </div>
+
               {/* Features */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8 sm:mb-10">
                 <div className="text-center p-4 sm:p-5 rounded-xl bg-[var(--sage-50)] border border-[var(--sage-200)]">
@@ -143,35 +172,6 @@ export default function ProfileStep1() {
                     シンプル設計
                   </p>
                 </div>
-              </div>
-
-              {/* CTA button */}
-              <div className="flex justify-center">
-                <button
-                  onClick={handleNext}
-                  className="w-full sm:w-auto group relative px-8 sm:px-12 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg text-white
-                           transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]
-                           flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl min-h-[44px]"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%)",
-                  }}
-                >
-                  <span>はじめる</span>
-                  <svg
-                    className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </button>
               </div>
             </div>
           </div>
