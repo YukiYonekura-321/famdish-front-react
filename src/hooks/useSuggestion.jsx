@@ -43,6 +43,7 @@ export function useSuggestion() {
     // 制約パラメータを追加
     if (constraints.budget) body.budget = constraints.budget;
     if (constraints.days) body.days = constraints.days;
+    if (constraints.cooking_time) body.cooking_time = constraints.cooking_time;
 
     const res = await fetch(`${base}/api/suggestions`, {
       method: "POST",

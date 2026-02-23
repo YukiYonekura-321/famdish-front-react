@@ -25,7 +25,9 @@ export default function MenuPage() {
   const { saveFeedback } = useFeedback();
 
   // ── 制約条件 state ──
+  const [constraintType, setConstraintType] = useState("budget"); // "budget" | "time"
   const [budget, setBudget] = useState("");
+  const [cookingTime, setCookingTime] = useState("");
   const [days, setDays] = useState("");
   const [stocks, setStocks] = useState([]);
 
@@ -130,11 +132,16 @@ export default function MenuPage() {
     }
   };
 
-  // ── 制約条件をまとめる ──
+  // ── 制約条件をまとめる（予算 or 調理時間は排他） ──
   const getConstraints = () => {
     const c = {};
-    if (budget) c.budget = Number(budget);
     if (days) c.days = Number(days);
+    if (constraintType === "budget" && budget) {
+      c.budget = Number(budget);
+    } else if (constraintType === "time" && cookingTime) {
+      // eslint-disable-next-line camelcase
+      c.cooking_time = Number(cookingTime);
+    }
     return c;
   };
 
@@ -202,24 +209,83 @@ export default function MenuPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {/* 希望予算 */}
+          <div className="space-y-4 mb-6">
+            {/* 予算 or 調理時間 切替 */}
             <div>
-              <label className="luxury-label text-sm block mb-2">💰 予算</label>
-              <select
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                className="luxury-select text-sm"
-              >
-                <option value="">指定なし</option>
-                {[300, 500, 800, 1000, 1500, 2000, 2500, 3000, 4000, 5000].map(
-                  (n) => (
-                    <option key={n} value={n}>
-                      {n.toLocaleString()}円以内
-                    </option>
-                  ),
-                )}
-              </select>
+              <label className="luxury-label text-sm block mb-3">
+                🎯 こだわり条件（どちらか一方を選択）
+              </label>
+              <div className="flex gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConstraintType("budget");
+                    setCookingTime("");
+                  }}
+                  className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 ${
+                    constraintType === "budget"
+                      ? "bg-[var(--sage-100)] border-[var(--sage-400)] text-[var(--sage-700)] shadow-sm"
+                      : "bg-white border-[var(--cream-200)] text-[var(--warm-gray-500)] hover:border-[var(--sage-300)]"
+                  }`}
+                >
+                  💰 予算で絞る
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConstraintType("time");
+                    setBudget("");
+                  }}
+                  className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 ${
+                    constraintType === "time"
+                      ? "bg-[var(--sage-100)] border-[var(--sage-400)] text-[var(--sage-700)] shadow-sm"
+                      : "bg-white border-[var(--cream-200)] text-[var(--warm-gray-500)] hover:border-[var(--sage-300)]"
+                  }`}
+                >
+                  ⏱️ 調理時間で絞る
+                </button>
+              </div>
+
+              {/* 選択した条件の入力欄 */}
+              {constraintType === "budget" ? (
+                <div>
+                  <label className="luxury-label text-sm block mb-2">
+                    💰 希望予算
+                  </label>
+                  <select
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    className="luxury-select text-sm"
+                  >
+                    <option value="">指定なし</option>
+                    {[
+                      300, 500, 800, 1000, 1500, 2000, 2500, 3000, 4000, 5000,
+                    ].map((n) => (
+                      <option key={n} value={n}>
+                        {n.toLocaleString()}円以内
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="luxury-label text-sm block mb-2">
+                    ⏱️ 希望調理時間
+                  </label>
+                  <select
+                    value={cookingTime}
+                    onChange={(e) => setCookingTime(e.target.value)}
+                    className="luxury-select text-sm"
+                  >
+                    <option value="">指定なし</option>
+                    {[10, 15, 20, 30, 45, 60, 90, 120].map((n) => (
+                      <option key={n} value={n}>
+                        {n}分以内
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             {/* 何日分提案するか */}
