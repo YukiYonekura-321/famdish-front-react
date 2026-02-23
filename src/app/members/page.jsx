@@ -567,10 +567,10 @@ export default function CreateInvitePage() {
                   新しいリンクを生成
                 </button>
                 <button
-                  onClick={() => router.push("/menus")}
+                  onClick={() => router.push("/members/index")}
                   className="luxury-btn luxury-btn-outline flex-1 text-lg"
                 >
-                  メニュー一覧へ
+                  メンバー一覧へ
                 </button>
               </div>
             </div>
