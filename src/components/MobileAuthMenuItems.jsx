@@ -26,11 +26,11 @@ export default function MobileAuthMenuItems({ onClick }) {
       <MobileNavLink href="/members/index" onClick={onClick}>
         👤 メンバー一覧
       </MobileNavLink>
-      <MobileNavLink href="/menus" onClick={onClick}>
-        📋 メニュー提案
-      </MobileNavLink>
       <MobileNavLink href="/request" onClick={onClick}>
         📝 リクエスト
+      </MobileNavLink>
+      <MobileNavLink href="/menus" onClick={onClick}>
+        📋 メニュー提案
       </MobileNavLink>
       <MobileNavLink href="/menus/familysuggestion" onClick={onClick}>
         🏠 わが家の献立

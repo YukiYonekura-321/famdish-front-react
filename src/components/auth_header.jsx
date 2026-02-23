@@ -119,12 +119,12 @@ export function AuthHeader() {
                 メンバー一覧
               </AuthNavLink>
 
-              <AuthNavLink href="/menus" icon="📋">
-                メニュー提案
-              </AuthNavLink>
-
               <AuthNavLink href="/request" icon="📝">
                 リクエスト
+              </AuthNavLink>
+
+              <AuthNavLink href="/menus" icon="📋">
+                メニュー提案
               </AuthNavLink>
 
               <AuthNavLink href="/menus/familysuggestion" icon="🏠">
