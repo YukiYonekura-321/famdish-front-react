@@ -16,6 +16,52 @@ export default function MemberForm() {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
+  // ─── 選択候補 ───
+  const likeCandidates = [
+    "カレー",
+    "ハンバーグ",
+    "唐揚げ",
+    "ラーメン",
+    "寿司",
+    "焼肉",
+    "オムライス",
+    "パスタ",
+    "ピザ",
+    "餃子",
+    "コロッケ",
+    "グラタン",
+    "うどん",
+    "とんかつ",
+    "焼きそば",
+    "チャーハン",
+    "肉じゃが",
+    "シチュー",
+    "たこ焼き",
+    "エビフライ",
+  ];
+  const dislikeCandidates = [
+    "ピーマン",
+    "にんじん",
+    "トマト",
+    "セロリ",
+    "なす",
+    "しいたけ",
+    "ネギ",
+    "ゴーヤ",
+    "パクチー",
+    "レバー",
+    "グリンピース",
+    "ほうれん草",
+    "玉ねぎ",
+    "魚全般",
+    "牛乳",
+    "チーズ",
+    "納豆",
+    "漬物",
+    "辛いもの",
+    "酸っぱいもの",
+  ];
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -147,6 +193,44 @@ export default function MemberForm() {
                 <label className="luxury-label text-sm flex items-center gap-1 mb-3">
                   <span>❤️</span> 好きなもの
                 </label>
+
+                {/* タグ選択 */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {likeCandidates.map((item) => {
+                    const selected = likes.includes(item);
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => {
+                          if (selected) {
+                            setLikes((prev) => prev.filter((l) => l !== item));
+                          } else {
+                            // 空の入力欄があればそこに入れる、なければ追加
+                            const emptyIdx = likes.findIndex((l) => l === "");
+                            if (emptyIdx !== -1) {
+                              const newLikes = [...likes];
+                              newLikes[emptyIdx] = item;
+                              setLikes(newLikes);
+                            } else {
+                              setLikes([...likes, item]);
+                            }
+                          }
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+                          selected
+                            ? "bg-[var(--primary)] text-white border-[var(--primary)]"
+                            : "bg-[var(--card)] text-muted border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                        }`}
+                      >
+                        {selected ? "✓ " : ""}
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* テキスト入力 */}
                 <div className="space-y-2">
                   {likes.map((like, idx) => (
                     <div key={idx} className="flex items-center gap-2">
@@ -188,6 +272,47 @@ export default function MemberForm() {
                 <label className="luxury-label text-sm flex items-center gap-1 mb-3">
                   <span>💔</span> 嫌いなもの
                 </label>
+
+                {/* タグ選択 */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {dislikeCandidates.map((item) => {
+                    const selected = dislikes.includes(item);
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => {
+                          if (selected) {
+                            setDislikes((prev) =>
+                              prev.filter((d) => d !== item),
+                            );
+                          } else {
+                            const emptyIdx = dislikes.findIndex(
+                              (d) => d === "",
+                            );
+                            if (emptyIdx !== -1) {
+                              const newDislikes = [...dislikes];
+                              newDislikes[emptyIdx] = item;
+                              setDislikes(newDislikes);
+                            } else {
+                              setDislikes([...dislikes, item]);
+                            }
+                          }
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+                          selected
+                            ? "bg-red-500 text-white border-red-500"
+                            : "bg-[var(--card)] text-muted border-[var(--border)] hover:border-red-400 hover:text-red-400"
+                        }`}
+                      >
+                        {selected ? "✓ " : ""}
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* テキスト入力 */}
                 <div className="space-y-2">
                   {dislikes.map((dislike, idx) => (
                     <div key={idx} className="flex items-center gap-2">
