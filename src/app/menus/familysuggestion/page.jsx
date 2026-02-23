@@ -184,6 +184,19 @@ export default function FamilySuggestionPage() {
       });
       /* eslint-enable camelcase */
 
+      // 保存したレシピ詳細をキャッシュに即反映（リロード不要にする）
+      /* eslint-disable camelcase */
+      setRecipeDetailMap((prev) => ({
+        ...prev,
+        [recipeId]: {
+          servings: recipeData.servings,
+          cooking_time: recipeData.cooking_time,
+          missing_ingredients: recipeData.missing_ingredients,
+          steps: recipeData.steps,
+        },
+      }));
+      /* eslint-enable camelcase */
+
       alert("献立に追加しました！");
       setShowRecipeModal(false);
       setSelectedMenuId("");
