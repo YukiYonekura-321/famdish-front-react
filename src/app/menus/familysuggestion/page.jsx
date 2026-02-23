@@ -555,10 +555,29 @@ export default function FamilySuggestionPage() {
                       ))}
                     </select>
                     <button
-                      onClick={() =>
-                        handleFetchRecipe(dishTitle, currentServings, r.id)
-                      }
-                      className="luxury-btn luxury-btn-primary w-full text-sm"
+                      onClick={() => {
+                        if (
+                          r.proposer_id &&
+                          myMemberId &&
+                          r.proposer_id !== myMemberId
+                        ) {
+                          const cookName =
+                            members.find((m) => m.id === r.proposer_id)?.name ||
+                            "担当者";
+                          alert(
+                            `この操作は調理者（${cookName}）のみ実行できます。`,
+                          );
+                          return;
+                        }
+                        handleFetchRecipe(dishTitle, currentServings, r.id);
+                      }}
+                      className={`w-full text-sm ${
+                        r.proposer_id &&
+                        myMemberId &&
+                        r.proposer_id !== myMemberId
+                          ? "luxury-btn luxury-btn-outline opacity-50 cursor-not-allowed"
+                          : "luxury-btn luxury-btn-primary"
+                      }`}
                     >
                       このメニューの作り方をAIに提案してもらう
                     </button>
