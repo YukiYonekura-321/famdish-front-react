@@ -146,15 +146,32 @@ export function AuthHeader() {
                            hover:bg-gradient-to-br from-[var(--cream-100)] to-[var(--cream-200)]
                            ml-2"
                   onClick={() => setMyPageOpen(!myPageOpen)}
+                  title="マイページ"
                 >
                   <span
                     className="relative z-10 font-medium text-[var(--foreground)]
                              transition-colors duration-300 group-hover:text-[var(--primary)]
                              flex items-center gap-2"
                   >
-                    <span>⚙️ マイページ</span>
+                    <span>⚙️</span>
+                    <span className="hidden lg:inline">マイページ</span>
                     <svg
-                      className={`w-4 h-4 transition-transform duration-300 ${
+                      className={`w-4 h-4 transition-transform duration-300 lg:hidden ${
+                        myPageOpen ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                    <svg
+                      className={`w-4 h-4 transition-transform duration-300 hidden lg:block ${
                         myPageOpen ? "rotate-180" : ""
                       }`}
                       fill="none"
@@ -290,6 +307,7 @@ function AuthNavLink({ href, children, icon }) {
       href={href}
       className="group relative px-4 py-2.5 rounded-full transition-all duration-300
                  hover:bg-gradient-to-br from-[var(--cream-100)] to-[var(--cream-200)]"
+      title={children}
     >
       <span
         className="relative z-10 font-medium text-[var(--foreground)]
@@ -297,7 +315,7 @@ function AuthNavLink({ href, children, icon }) {
                    flex items-center gap-1.5"
       >
         {icon && <span className="text-base">{icon}</span>}
-        <span>{children}</span>
+        <span className="hidden lg:inline">{children}</span>
       </span>
 
       {/* Ripple glow */}
