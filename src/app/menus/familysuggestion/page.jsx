@@ -405,6 +405,28 @@ export default function FamilySuggestionPage() {
               const isDetailLoading = recipeDetailLoading[r.id];
               return (
                 <div key={r.id} className="luxury-card">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-[var(--foreground)]">
+                        🍽️ {dishTitle}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted whitespace-nowrap">
+                        {r.created_at
+                          ? new Date(r.created_at).toLocaleDateString("ja-JP")
+                          : ""}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteRecipe(r.id, dishTitle)}
+                        className="text-muted hover:text-red-500 transition-colors text-sm px-1"
+                        title="この献立を削除"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted me-3">💡 {dishReason}</p>
                   <div className="flex flex-col gap-3 mt-4">
                     <select
                       value={currentServings}
@@ -431,29 +453,6 @@ export default function FamilySuggestionPage() {
                       このメニューの作り方をAIに提案してもらう
                     </button>
                   </div>
-
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-[var(--foreground)]">
-                        🍽️ {dishTitle}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted whitespace-nowrap">
-                        {r.created_at
-                          ? new Date(r.created_at).toLocaleDateString("ja-JP")
-                          : ""}
-                      </span>
-                      <button
-                        onClick={() => handleDeleteRecipe(r.id, dishTitle)}
-                        className="text-muted hover:text-red-500 transition-colors text-sm px-1"
-                        title="この献立を削除"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted me-3">💡 {dishReason}</p>
 
                   {/* ── レシピ詳細アコーディオン ── */}
                   <div className="mt-3 border-t border-[var(--border)] pt-3">
@@ -483,7 +482,10 @@ export default function FamilySuggestionPage() {
                           <div className="py-4 text-center">
                             <LoadingSpinner />
                           </div>
-                        ) : recipeDetail ? (
+                        ) : recipeDetail &&
+                          (recipeDetail.steps ||
+                            recipeDetail.servings ||
+                            recipeDetail.cooking_time) ? (
                           <div className="space-y-3 text-sm">
                             <div className="grid grid-cols-2 gap-2">
                               <div>
@@ -531,7 +533,7 @@ export default function FamilySuggestionPage() {
                           </div>
                         ) : (
                           <p className="text-sm text-muted py-2">
-                            保存済みレシピがありません。下のボタンからAIに提案してもらいましょう。
+                            保存済みレシピがありません。上のボタンからAIに提案してもらいましょう。
                           </p>
                         )}
                       </div>
