@@ -248,10 +248,12 @@ export default function FamilySuggestionPage() {
                 const selectedMenu = menuList.find((m) => m.id === id);
                 if (!selectedMenu) return;
                 try {
+                  const proposerName = selectedMenu.member?.name || "不明";
                   await apiClient.post("/api/recipe/save_recipe", {
                     /* eslint-disable-next-line camelcase */
                     dish_name: selectedMenu.name,
                     proposer: selectedMenu.member?.id,
+                    reason: `${proposerName}が提案した料理です`,
                   });
                   alert("過去の献立一覧に追加しました！");
                   setSelectedMenuId("");
