@@ -7,6 +7,7 @@ import { auth } from "@/app/lib/firebase";
 import { apiClient } from "@/app/lib/api";
 import { AuthHeader } from "@/components/auth_header";
 import { QRCodeCanvas } from "qrcode.react";
+import Link from "next/link";
 
 export default function CreateInvitePage() {
   const router = useRouter();
@@ -185,7 +186,7 @@ export default function CreateInvitePage() {
               >
                 大切な家族をFamDishに招待しましょう。
                 <br />
-                あなただけの特別な招待リンクを生成します。
+                家族への招待リンクを生成します。
               </p>
             </div>
 
@@ -194,6 +195,17 @@ export default function CreateInvitePage() {
               <div className="w-16 h-px bg-gradient-to-r from-transparent to-[var(--gold-400)]"></div>
               <div className="w-2 h-2 rounded-full bg-[var(--gold-400)]"></div>
               <div className="w-16 h-px bg-gradient-to-l from-transparent to-[var(--gold-400)]"></div>
+            </div>
+
+            {/* Navigation Link */}
+            <div className="mt-8">
+              <Link
+                href="/members/index"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--gold-50)] border border-[var(--gold-200)] text-[var(--gold-700)] hover:bg-[var(--gold-100)] transition-colors font-medium text-sm"
+              >
+                <span>👥</span>
+                <span>メンバー一覧を見る</span>
+              </Link>
             </div>
           </div>
 
