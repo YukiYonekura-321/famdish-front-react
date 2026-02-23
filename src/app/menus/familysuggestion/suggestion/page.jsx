@@ -41,43 +41,44 @@ export default function AllSuggestionsPage() {
         const res = await apiClient.get("/api/recipes");
         const suggestionsData = Array.isArray(res.data) ? res.data : [];
         setSuggestions(suggestionsData);
+        setLoading(false);
 
-        // 各献立の good ステータスと count を取得
-        const goodStatusMap = {};
-        const goodCountMap = {};
-        for (const s of suggestionsData) {
-          try {
-            const goodRes = await apiClient.get("/api/goods/check_suggestion", {
+        // good ステータスと count をバックグラウンドで並列取得し、順次反映
+        const promises = suggestionsData.map(async (s) => {
+          const result = { id: s.id, status: null, count: 0 };
+          const [statusRes, countRes] = await Promise.allSettled([
+            apiClient.get("/api/goods/check_suggestion", {
               params: { suggestion_id: s.id },
-            });
-            goodStatusMap[s.id] = {
-              exists: goodRes.data.exists,
-              good_id: goodRes.data.good?.id || null,
+            }),
+            apiClient.get("/api/goods/count_suggestion", {
+              params: { suggestion_id: s.id },
+            }),
+          ]);
+
+          if (statusRes.status === "fulfilled") {
+            result.status = {
+              exists: statusRes.value.data.exists,
+              good_id: statusRes.value.data.good?.id || null,
             };
-          } catch (err) {
-            console.error(`good チェック失敗 (suggestion_id: ${s.id}):`, err);
-            goodStatusMap[s.id] = { exists: false, good_id: null };
+          } else {
+            result.status = { exists: false, good_id: null };
           }
 
-          try {
-            const countRes = await apiClient.get(
-              "/api/goods/count_suggestion",
-              {
-                params: { suggestion_id: s.id },
-              },
-            );
-            goodCountMap[s.id] = Number(countRes.data.count) || 0;
-          } catch (err) {
-            console.error(`good count 取得失敗 (suggestion_id: ${s.id}):`, err);
-            goodCountMap[s.id] = 0;
+          if (countRes.status === "fulfilled") {
+            result.count = Number(countRes.value.data.count) || 0;
           }
-        }
-        setGoodStatus(goodStatusMap);
-        setGoodCount(goodCountMap);
+
+          // 1件ずつ即座にstateへ反映
+          setGoodStatus((prev) => ({ ...prev, [s.id]: result.status }));
+          setGoodCount((prev) => ({ ...prev, [s.id]: result.count }));
+
+          return result;
+        });
+
+        await Promise.allSettled(promises);
       } catch (error) {
         console.error("献立一覧の取得に失敗しました:", error);
         setSuggestions([]);
-      } finally {
         setLoading(false);
       }
     };
