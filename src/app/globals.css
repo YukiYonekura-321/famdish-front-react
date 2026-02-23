@@ -127,6 +127,71 @@ body {
   overflow-x: hidden;
 }
 
+/* ─── AUTO CONTRAST: 白背景・明るい背景で文字色をダークに強制 ─── */
+.bg-white,
+[class*="bg-white"],
+.surface-elevated,
+.luxury-card,
+.luxury-card-subtle,
+.luxury-card-glass,
+.ultra-card,
+.neuro-card {
+  color: var(--warm-gray-800);
+}
+
+.bg-white h1,
+.bg-white h2,
+.bg-white h3,
+.bg-white h4,
+.bg-white h5,
+.bg-white h6,
+[class*="bg-white"] h1,
+[class*="bg-white"] h2,
+[class*="bg-white"] h3,
+[class*="bg-white"] h4,
+[class*="bg-white"] h5,
+[class*="bg-white"] h6,
+.luxury-card h1,
+.luxury-card h2,
+.luxury-card h3,
+.luxury-card h4,
+.luxury-card h5,
+.luxury-card h6,
+.ultra-card h1,
+.ultra-card h2,
+.ultra-card h3,
+.ultra-card h4,
+.ultra-card h5,
+.ultra-card h6 {
+  color: var(--warm-gray-800);
+}
+
+.bg-white p,
+.bg-white span,
+.bg-white label,
+.bg-white li,
+[class*="bg-white"] p,
+[class*="bg-white"] span,
+[class*="bg-white"] label,
+[class*="bg-white"] li,
+.luxury-card p,
+.luxury-card span,
+.luxury-card label,
+.luxury-card li,
+.ultra-card p,
+.ultra-card span,
+.ultra-card label,
+.ultra-card li {
+  color: var(--warm-gray-700);
+}
+
+/* text-white を明示的に指定している場合は上書きしない */
+.text-white,
+[class*="text-white"],
+[class*="!text-white"] {
+  color: white !important;
+}
+
 /* Organic texture background */
 body::before {
   content: "";
@@ -258,6 +323,7 @@ p {
 
 .luxury-card {
   background: var(--surface-elevated);
+  color: var(--foreground);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 2rem;
@@ -296,6 +362,7 @@ p {
 
 .luxury-card-subtle {
   background: var(--surface);
+  color: var(--foreground);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1.5rem;
@@ -305,6 +372,7 @@ p {
 
 .luxury-card-glass {
   background: rgba(255, 255, 255, 0.7);
+  color: var(--foreground);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--radius-lg);
@@ -507,7 +575,7 @@ p {
   font-family: var(--font-body);
   font-size: 1.25rem;
   font-weight: 400;
-  color: var(--warm-gray-500);
+  color: var(--warm-gray-600);
   text-align: center;
   margin-bottom: 3rem;
   line-height: 1.6;
@@ -637,7 +705,7 @@ p {
    ═══════════════════════════════════════════════════════════════════ */
 
 .text-muted {
-  color: var(--muted);
+  color: var(--warm-gray-500);
 }
 
 .text-primary {
@@ -736,6 +804,7 @@ p {
     rgba(255, 255, 255, 0.95) 0%,
     rgba(255, 255, 255, 0.85) 100%
   );
+  color: var(--foreground);
   backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--radius-xl);
@@ -892,6 +961,7 @@ p {
 /* ─── NEUMORPHIC ELEMENTS - Soft depth ─── */
 .neuro-card {
   background: linear-gradient(145deg, var(--cream-50), var(--cream-200));
+  color: var(--foreground);
   border-radius: var(--radius-xl);
   padding: 2rem;
   box-shadow:
