@@ -128,10 +128,7 @@ export default function MenuPage() {
   // ── 制約条件をまとめる ──
   const getConstraints = () => {
     const c = {};
-    if (servings) c.servings = Number(servings);
     if (budget) c.budget = Number(budget);
-    // eslint-disable-next-line camelcase
-    if (cookingTime) c.cooking_time = Number(cookingTime);
     if (days) c.days = Number(days);
     return c;
   };
@@ -152,7 +149,8 @@ export default function MenuPage() {
       if (error.status === 403) {
         alert("今日の料理担当者ではありません");
       } else {
-        alert("提案取得に失敗しました");
+        console.error("提案取得エラー:", error);
+        alert(`提案取得に失敗しました: ${error.message}`);
       }
     }
   };
