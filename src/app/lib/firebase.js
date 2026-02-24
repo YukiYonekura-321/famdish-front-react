@@ -4,8 +4,7 @@
 import { initializeApp } from "firebase/app";
 // Firebaseの**認証機能（Authentication）**を使うための関数 getAuth をインポート
 import { getAuth } from "firebase/auth";
-
-import { setPersistence, browserLocalPersistence } from "firebase/auth";
+// import { setPersistence, browserLocalPersistence } from "firebase/auth";
 
 const firebaseConfig = {
   /* Firebaseの設定情報 */
@@ -25,10 +24,10 @@ const app = initializeApp(firebaseConfig);
 // 他のファイルで auth を使えば、ログイン・ログアウトなどの処理ができます
 export const auth = getAuth(app);
 
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("✅ Firebase persistence: local");
-  })
-  .catch((err) => {
-    console.error("❌ persistence error", err);
-  });
+// setPersistence(auth, browserLocalPersistence)
+//   .then(() => {
+//     console.log("✅ Firebase persistence: local");
+//   })
+//   .catch((err) => {
+//     console.error("❌ persistence error", err);
+//   });
