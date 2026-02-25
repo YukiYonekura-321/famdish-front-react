@@ -53,7 +53,7 @@ export default function LoginPage() {
     try {
       const result = await signInWithPopup(auth, provider);
       const additional = getAdditionalUserInfo(result); // 正規の取得方法
-      console.log("additionalUserInfo:", additional);
+      // console.log("additionalUserInfo:", additional);
       const isNewUser = additional?.isNewUser;
 
       // リダイレクト先を決定（redirect param があれば優先）
@@ -73,8 +73,8 @@ export default function LoginPage() {
           } else {
             targetPath = "/profile/step1";
           }
-        } catch (err) {
-          console.error("member/me check failed", err);
+        } catch {
+          // console.error("member/me check failed", err);
           targetPath = "/profile/step1";
         }
       }
@@ -94,13 +94,13 @@ export default function LoginPage() {
 
       router.replace(targetPath);
     } catch (error) {
-      console.log(error);
-      console.log(
-        error.code,
-        error.message,
-        error.credential,
-        error.customData,
-      );
+      // console.log(error);
+      // console.log(
+      //   error.code,
+      //   error.message,
+      //   error.credential,
+      //   error.customData,
+      // );
       alert(`エラー: ${error.code} ${error.message}`);
       if (error.code === "auth/account-exists-with-different-credential") {
         alert(
@@ -129,38 +129,6 @@ export default function LoginPage() {
     const provider = new GithubAuthProvider();
     await redirectTomyPageWhenLoginSuccess(provider);
   };
-  //   useEffect(() => {
-  //     redirect 結果の取得
-  //     getRedirectResult(auth)
-  //       .then((result) => {
-  //         console.log("getRedirectResult ->", result);
-  //         if (result?.user) {
-  //           console.log("✅ Redirect login success:", result.user);
-  //           // ログイン成功 → ページ遷移
-  //           router.replace("/members"); // 遷移先を適宜変更
-  //         } else {
-  //           console.log("ℹ️ No redirect result");
-  //         }
-  //       })
-  //       .catch((err) => console.error("❌ Redirect error", err));
-  //     const unsub = onAuthStateChanged(auth, (u) =>
-  //       console.log("onAuthStateChanged ->", u),
-  //     );
-  //     console.log("auth redirectUser:", auth.redirectUser);
-  //     console.log(
-  //       "localStorage redirect key:",
-  //       localStorage.getItem(
-  //         "firebase:redirectUser:AIzaSyAmSNvwCiw2fNXzH_yRzbxmb3bNpnHmeJQ:[DEFAULT]",
-  //       ),
-  //     );
-  //     console.log(
-  //       "localStorage auth key:",
-  //       localStorage.getItem(
-  //         "firebase:authUser:AIzaSyAmSNvwCiw2fNXzH_yRzbxmb3bNpnHmeJQ:[DEFAULT]",
-  //       ),
-  //     );
-  //     return () => unsub();
-  //   }, [router]);
 
   return (
     <div className="min-h-screen">
