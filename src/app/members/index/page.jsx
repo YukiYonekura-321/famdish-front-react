@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { apiClient } from "@/app/lib/api";
 import { auth } from "../../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -8,10 +8,105 @@ import { AuthHeader } from "@/components/auth_header";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+// ── ヘルパー関数 ──
+
+/** メンバーの所有権判定 */
+const checkOwnership = (member, currentUid) => {
+  const ownerUid = member.user?.firebase_uid || null;
+  return ownerUid ? currentUid === ownerUid : Boolean(currentUid);
+};
+
+/** Rails の nested_attributes 用に likes/dislikes を整形 */
+const buildNestedAttrs = (items, removedIds) => [
+  ...items.map((item) =>
+    item.id ? { id: item.id, name: item.name } : { name: item.name },
+  ),
+  ...removedIds.map((id) => ({ id, _destroy: true })),
+];
+
+// ── 編集リストコンポーネント（likes / dislikes 共通） ──
+
+function EditableList({ label, items, setItems, setRemovedIds }) {
+  const handleChange = (idx, value) => {
+    const updated = [...items];
+    updated[idx] = { ...items[idx], name: value };
+    setItems(updated);
+  };
+
+  const handleRemove = (idx) => {
+    const removed = items[idx];
+    if (removed?.id) setRemovedIds((prev) => [...prev, removed.id]);
+    setItems(items.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div>
+      <label className="luxury-label text-sm">{label}</label>
+      {items.map((item, idx) => (
+        <div key={`edit-${label}-${idx}`} className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={item.name}
+            onChange={(e) => handleChange(idx, e.target.value)}
+            className="luxury-input flex-1"
+          />
+          <button
+            type="button"
+            onClick={() => handleRemove(idx)}
+            className="px-4 py-2 bg-[var(--terracotta-100)] text-[var(--terracotta-600)] rounded-xl hover:bg-[var(--terracotta-200)] transition-colors font-medium text-sm"
+          >
+            削除
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => setItems([...items, { name: "" }])}
+        className="text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] font-medium"
+      >
+        + 追加
+      </button>
+    </div>
+  );
+}
+
+// ── バッジリストコンポーネント（カード内の表示用） ──
+
+function BadgeList({ items, memberId, variant, emptyText }) {
+  if (!items?.length) {
+    return <span className="text-muted text-sm">{emptyText}</span>;
+  }
+  return items.map((item) => (
+    <span
+      key={`${variant}-${memberId}-${item.id}`}
+      className={`luxury-badge luxury-badge-${variant}`}
+    >
+      {item.name}
+    </span>
+  ));
+}
+
+// ── メニューリストコンポーネント ──
+
+function MenuList({ member }) {
+  if (Array.isArray(member.menus) && member.menus.length > 0) {
+    return member.menus.map((menu) => (
+      <div key={`menu-${member.id}-${menu.id}`} className="text-base">
+        • {menu.name}
+      </div>
+    ));
+  }
+  if (member.menu?.name) {
+    return <div className="text-base">• {member.menu.name}</div>;
+  }
+  return <span className="text-muted text-sm">未提案</span>;
+}
+
+// ── メインコンポーネント ──
+
 export default function MemberForm() {
-  const [usertoken, setUsertoken] = useState("");
   const [currentUid, setCurrentUid] = useState(null);
-  const [member, setMember] = useState([]);
+  const [members, setMembers] = useState([]);
   const [editingMember, setEditingMember] = useState(null);
   const [editName, setEditName] = useState("");
   const [editLikes, setEditLikes] = useState([]);
@@ -21,49 +116,40 @@ export default function MemberForm() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
+  // ── メンバー一覧取得（共通） ──
+  const fetchMembers = useCallback(async () => {
+    try {
+      const res = await apiClient.get("/api/members");
+      setMembers(res.data);
+    } catch (error) {
+      console.error("メンバーの取得に失敗しました:", error);
+    }
+  }, []);
+
+  // ── 認証監視 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const token = await user.getIdToken();
-        setUsertoken(token);
         setCurrentUid(user.uid);
       } else {
-        setUsertoken("");
         setCurrentUid(null);
         router.replace("/login");
       }
     });
-
     return () => unsubscribe();
   }, [router]);
 
-  // トークンが変わったらメンバーを取得
+  // ── 認証後にメンバー取得 ──
   useEffect(() => {
-    if (!usertoken) return;
+    if (currentUid) fetchMembers();
+  }, [currentUid, fetchMembers]);
 
-    const loadMember = async () => {
-      try {
-        const res = await apiClient.get("/api/members");
-        console.log(res.data);
-        setMember(res.data);
-      } catch (error) {
-        console.error("メンバーの取得に失敗しました:", error);
-      }
-    };
-
-    loadMember();
-  }, [usertoken]);
-
-  // 編集モーダルを開く
+  // ── 編集モーダルを開く ──
   const handleEditOpen = (m) => {
-    const ownerUid = m.user?.firebase_uid || null;
-    const isOwner = ownerUid ? currentUid === ownerUid : Boolean(currentUid);
-
-    if (!isOwner) {
+    if (!checkOwnership(m, currentUid)) {
       alert("このメンバーを編集する権限がありません。");
       return;
     }
-
     setEditingMember(m);
     setEditName(m.name);
     setEditLikes(m.likes || []);
@@ -73,7 +159,7 @@ export default function MemberForm() {
     setIsModalOpen(true);
   };
 
-  // 編集モーダルを閉じる
+  // ── 編集モーダルを閉じる ──
   const handleEditClose = () => {
     setIsModalOpen(false);
     setEditingMember(null);
@@ -81,69 +167,42 @@ export default function MemberForm() {
     setRemovedDislikeIds([]);
   };
 
-  // 編集を保存
+  // ── 編集を保存 ──
   const handleEditSave = async () => {
     if (!editingMember) return;
-
     try {
-      // 残す項目＋削除マーク付きの既存項目をまとめて送る
-      const likesAttrs = [
-        ...editLikes.map((like) =>
-          like.id ? { id: like.id, name: like.name } : { name: like.name },
-        ),
-        ...removedLikeIds.map((id) => ({ id, _destroy: true })),
-      ];
-
-      const dislikesAttrs = [
-        ...editDislikes.map((dislike) =>
-          dislike.id
-            ? { id: dislike.id, name: dislike.name }
-            : { name: dislike.name },
-        ),
-        ...removedDislikeIds.map((id) => ({ id, _destroy: true })),
-      ];
-
+      /* eslint-disable camelcase */
       await apiClient.put(`/api/members/${editingMember.id}`, {
         member: {
           name: editName,
-          // eslint-disable-next-line camelcase
-          likes_attributes: likesAttrs,
-          // eslint-disable-next-line camelcase
-          dislikes_attributes: dislikesAttrs,
+          likes_attributes: buildNestedAttrs(editLikes, removedLikeIds),
+          dislikes_attributes: buildNestedAttrs(
+            editDislikes,
+            removedDislikeIds,
+          ),
         },
       });
+      /* eslint-enable camelcase */
       alert("更新しました");
       handleEditClose();
-      // メンバー情報を再取得
-      const res = await apiClient.get("/api/members");
-      setMember(res.data);
-      // 保存後リセット
-      setRemovedLikeIds([]);
-      setRemovedDislikeIds([]);
+      await fetchMembers();
     } catch (error) {
       console.error("更新に失敗しました:", error);
       alert("更新に失敗しました");
     }
   };
 
-  // 削除
+  // ── 削除 ──
   const handleDelete = async (m) => {
-    const ownerUid = m.user?.firebase_uid || null;
-    const isOwner = ownerUid ? currentUid === ownerUid : Boolean(currentUid);
-    if (!isOwner) {
+    if (!checkOwnership(m, currentUid)) {
       alert("このメンバーを削除する権限がありません。");
       return;
     }
-
-    const confirmed = confirm(`${m.name}さんを削除してよろしいですか？`);
-    if (!confirmed) return;
-
+    if (!confirm(`${m.name}さんを削除してよろしいですか？`)) return;
     try {
       await apiClient.delete(`/api/members/${m.id}`);
       alert("削除しました");
-      // メンバー情報を再取得
-      const res = await apiClient.get("/api/members");
-      setMember(res.data);
+      await fetchMembers();
     } catch (error) {
       console.error("削除に失敗しました:", error);
       alert("削除に失敗しました");
@@ -176,14 +235,10 @@ export default function MemberForm() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-          {member.map((m, idx) => {
-            const ownerUid = m.user?.firebase_uid || null;
-            const isOwner = ownerUid
-              ? currentUid === ownerUid
-              : Boolean(currentUid);
-
+          {members.map((m) => {
+            const isOwner = checkOwnership(m, currentUid);
             return (
-              <div key={`member-${idx}-${m.id}`} className="luxury-card">
+              <div key={m.id} className="luxury-card">
                 <h3
                   className="text-2xl font-medium mb-4 text-[var(--foreground)]"
                   style={{ fontFamily: "var(--font-display)" }}
@@ -197,18 +252,12 @@ export default function MemberForm() {
                       好きなもの
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {m.likes?.length > 0 ? (
-                        m.likes.map((like) => (
-                          <span
-                            key={`likes-${m.id}-${like.id}`}
-                            className="luxury-badge luxury-badge-primary"
-                          >
-                            {like.name}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-muted text-sm">未登録</span>
-                      )}
+                      <BadgeList
+                        items={m.likes}
+                        memberId={m.id}
+                        variant="primary"
+                        emptyText="未登録"
+                      />
                     </div>
                   </div>
 
@@ -217,18 +266,12 @@ export default function MemberForm() {
                       嫌いなもの
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {m.dislikes?.length > 0 ? (
-                        m.dislikes.map((dislike) => (
-                          <span
-                            key={`dislikes-${m.id}-${dislike.id}`}
-                            className="luxury-badge luxury-badge-secondary"
-                          >
-                            {dislike.name}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-muted text-sm">未登録</span>
-                      )}
+                      <BadgeList
+                        items={m.dislikes}
+                        memberId={m.id}
+                        variant="secondary"
+                        emptyText="未登録"
+                      />
                     </div>
                   </div>
 
@@ -237,22 +280,7 @@ export default function MemberForm() {
                       提案したメニュー
                     </div>
                     <div className="flex flex-col gap-2">
-                      {Array.isArray(m.menus) && m.menus.length > 0 ? (
-                        m.menus.map((menu) => (
-                          <div
-                            key={`menu-${m.id}-${menu.id}`}
-                            className="text-base"
-                          >
-                            • {menu.name}
-                          </div>
-                        ))
-                      ) : m.menu && m.menu.name ? (
-                        <div key={`menu-${m.id}`} className="text-base">
-                          • {m.menu.name}
-                        </div>
-                      ) : (
-                        <span className="text-muted text-sm">未提案</span>
-                      )}
+                      <MenuList member={m} />
                     </div>
                   </div>
                 </div>
@@ -283,7 +311,7 @@ export default function MemberForm() {
         </div>
       </div>
 
-      {/* 編集モーダル */}
+      {/* ── 編集モーダル ── */}
       {isModalOpen && editingMember && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in overflow-hidden">
           <div className="luxury-card max-w-md w-full max-h-[80vh] flex flex-col animate-scale-in">
@@ -302,87 +330,21 @@ export default function MemberForm() {
                 />
               </div>
 
-              <div>
-                <label className="luxury-label text-sm">好きなもの</label>
-                {editLikes?.map((like, idx) => (
-                  <div key={`edit-like-${idx}`} className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={like.name}
-                      onChange={(e) => {
-                        const newLikes = [...editLikes];
-                        newLikes[idx] = { ...like, name: e.target.value };
-                        setEditLikes(newLikes);
-                      }}
-                      className="luxury-input flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const removed = editLikes[idx];
-                        const newLikes = editLikes.filter((_, i) => i !== idx);
-                        if (removed?.id) {
-                          setRemovedLikeIds((prev) => [...prev, removed.id]);
-                        }
-                        setEditLikes(newLikes);
-                      }}
-                      className="px-4 py-2 bg-[var(--terracotta-100)] text-[var(--terracotta-600)] rounded-xl hover:bg-[var(--terracotta-200)] transition-colors font-medium text-sm"
-                    >
-                      削除
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setEditLikes([...editLikes, { name: "" }])}
-                  className="text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] font-medium"
-                >
-                  + 追加
-                </button>
-              </div>
+              <EditableList
+                label="好きなもの"
+                items={editLikes}
+                setItems={setEditLikes}
+                removedIds={removedLikeIds}
+                setRemovedIds={setRemovedLikeIds}
+              />
 
-              <div>
-                <label className="luxury-label text-sm">嫌いなもの</label>
-                {editDislikes?.map((dislike, idx) => (
-                  <div key={`edit-dislike-${idx}`} className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={dislike.name}
-                      onChange={(e) => {
-                        const newDislikes = [...editDislikes];
-                        newDislikes[idx] = { ...dislike, name: e.target.value };
-                        setEditDislikes(newDislikes);
-                      }}
-                      className="luxury-input flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const removed = editDislikes[idx];
-                        const newDislikes = editDislikes.filter(
-                          (_, i) => i !== idx,
-                        );
-                        if (removed?.id) {
-                          setRemovedDislikeIds((prev) => [...prev, removed.id]);
-                        }
-                        setEditDislikes(newDislikes);
-                      }}
-                      className="px-4 py-2 bg-[var(--terracotta-100)] text-[var(--terracotta-600)] rounded-xl hover:bg-[var(--terracotta-200)] transition-colors font-medium text-sm"
-                    >
-                      削除
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setEditDislikes([...editDislikes, { name: "" }])
-                  }
-                  className="text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] font-medium"
-                >
-                  + 追加
-                </button>
-              </div>
+              <EditableList
+                label="嫌いなもの"
+                items={editDislikes}
+                setItems={setEditDislikes}
+                removedIds={removedDislikeIds}
+                setRemovedIds={setRemovedDislikeIds}
+              />
             </div>
 
             <div className="flex gap-3 mt-8 flex-shrink-0">
