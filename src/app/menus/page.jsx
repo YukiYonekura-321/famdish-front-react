@@ -1,37 +1,122 @@
 "use client";
 
+import { useEffect, useState, useRef, useCallback } from "react";
+import { onAuthStateChanged, isSignInWithEmailLink } from "firebase/auth";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { apiClient } from "@/app/lib/api";
 import { auth } from "@/app/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { handleEmailSignIn } from "@/app/lib/email-signin";
 import { useSuggestion } from "@/hooks/useSuggestion";
 import { useFeedback } from "@/hooks/useFeedback";
 import SuggestionCard from "@/components/SuggestionCard";
 import { AuthHeader } from "@/components/auth_header";
-import { useRouter } from "next/navigation";
-import React, { useRef } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { handleEmailSignIn } from "@/app/lib/email-signin";
-import { isSignInWithEmailLink } from "firebase/auth";
+
+// ── 定数 ──
+
+const BUDGET_OPTIONS = [
+  300, 500, 800, 1000, 1500, 2000, 2500, 3000, 4000, 5000,
+];
+const COOKING_TIME_OPTIONS = [10, 15, 20, 30, 45, 60, 90, 120];
+const DAYS_OPTIONS = [2, 3, 4, 5, 6, 7];
+
+const NAV_LINKS = [
+  {
+    href: "/menus/familysuggestion",
+    icon: "🏠",
+    label: "わが家の献立",
+    variant: "secondary",
+  },
+  {
+    href: "/menus/familysuggestion/suggestion",
+    icon: "🌍",
+    label: "みんなの献立を参考にする",
+    variant: "outline",
+  },
+  {
+    href: "/request",
+    icon: "📝",
+    label: "リクエスト管理",
+    variant: "secondary",
+  },
+];
+
+// ── サブコンポーネント ──
+
+/** 制約タイプ切替ボタン */
+function ConstraintToggle({ constraintType, onSelect }) {
+  const types = [
+    { key: "budget", icon: "💰", label: "予算で絞る" },
+    { key: "time", icon: "⏱️", label: "調理時間で絞る" },
+  ];
+  return (
+    <div className="flex gap-2 mb-4">
+      {types.map(({ key, icon, label }) => (
+        <button
+          key={key}
+          type="button"
+          onClick={() => onSelect(key)}
+          className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 ${
+            constraintType === key
+              ? "bg-[var(--sage-100)] border-[var(--sage-400)] text-[var(--sage-700)] shadow-sm"
+              : "bg-white border-[var(--cream-200)] text-[var(--warm-gray-500)] hover:border-[var(--sage-300)]"
+          }`}
+        >
+          {icon} {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** 在庫バッジ一覧 */
+function StockBadges({ stocks }) {
+  if (stocks.length === 0) {
+    return (
+      <p className="text-sm text-muted">
+        在庫が登録されていません。
+        <Link href="/stock" className="text-[var(--primary)] underline ml-1">
+          冷蔵庫ページで登録する
+        </Link>
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-wrap gap-2">
+      {stocks.map((s) => (
+        <span
+          key={s.id}
+          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
+                     bg-[var(--sage-50)] text-[var(--sage-600)] border border-[var(--sage-200)]"
+        >
+          {s.name}
+          <span className="text-[var(--sage-400)]">
+            {s.quantity}
+            {s.unit}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ── メインコンポーネント ──
 
 export default function MenuPage() {
-  // ── 共通 state ──
   const router = useRouter();
   const suggestionsRef = useRef(null);
 
-  // ── 提案用 hooks ──
+  // ── hooks ──
   const { loading, suggestions, fetchSuggestions } = useSuggestion();
   const { saveFeedback } = useFeedback();
 
-  // ── 制約条件 state ──
-  const [constraintType, setConstraintType] = useState("budget"); // "budget" | "time"
+  // ── state ──
+  const [constraintType, setConstraintType] = useState("budget");
   const [budget, setBudget] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [days, setDays] = useState("");
   const [stocks, setStocks] = useState([]);
-
-  // ── 料理担当者関連 state ──
   const [members, setMembers] = useState([]);
   const [todayCookId, setTodayCookId] = useState(null);
   const [cookSelectMessage, setCookSelectMessage] = useState("");
@@ -40,85 +125,51 @@ export default function MenuPage() {
   // ── 認証 ──
   useEffect(() => {
     let unsubscribe;
-
     const runEmailSignIn = async () => {
       if (isSignInWithEmailLink(auth, window.location.href)) {
         try {
           await handleEmailSignIn();
-        } catch (error) {
-          console.error("Email sign in failed:", error);
+        } catch (e) {
+          console.error("Email sign in failed:", e);
         }
-        return; // メール処理後は早期終了
+        return;
       }
-
-      // メール処理がない場合のみ認証チェック
-      unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          router.replace("/login");
-        }
+      unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (!user) router.replace("/login");
       });
     };
-
     runEmailSignIn();
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
+    return () => unsubscribe?.();
   }, [router]);
 
-  // ── メンバー一覧とファミリー情報取得 ──
+  // ── 初期データ取得（メンバー・ファミリー・在庫を一括） ──
   useEffect(() => {
     if (!auth.currentUser) return;
-
-    const fetchFamilyInfo = async () => {
+    const fetchInitialData = async () => {
       try {
-        // メンバー一覧取得
-        const membersRes = await apiClient.get("/api/members");
-        const membersList = Array.isArray(membersRes.data)
-          ? membersRes.data
-          : [];
-        setMembers(membersList);
-
-        // ログインユーザーのmember_id取得
-        const meRes = await apiClient.get("/api/members/me");
+        const [membersRes, meRes, familyRes, stocksRes] = await Promise.all([
+          apiClient.get("/api/members"),
+          apiClient.get("/api/members/me"),
+          apiClient.get("/api/families"),
+          apiClient.get("/api/stocks"),
+        ]);
+        setMembers(Array.isArray(membersRes.data) ? membersRes.data : []);
         setMyMemberId(meRes.data?.member?.id || meRes.data?.id || null);
-
-        // ファミリー情報取得（today_cook_id）
-        const familyRes = await apiClient.get("/api/families");
-        const familyData = familyRes.data;
-        setTodayCookId(familyData.today_cook_id || null);
+        setTodayCookId(familyRes.data?.today_cook_id || null);
+        setStocks(stocksRes.data || []);
       } catch (error) {
-        console.error("ファミリー情報取得失敗:", error);
+        console.error("初期データ取得失敗:", error);
       }
     };
-
-    fetchFamilyInfo();
+    fetchInitialData();
   }, []);
-
-  // ── 在庫データ取得 ──
-  useEffect(() => {
-    if (!auth.currentUser) return;
-    const fetchStocks = async () => {
-      try {
-        const res = await apiClient.get("/api/stocks");
-        setStocks(res.data || []);
-      } catch (e) {
-        console.error("在庫取得失敗:", e);
-        setStocks([]);
-      }
-    };
-    fetchStocks();
-  }, []);
-
-  // ── メニュー作成 / ハート（good）トグル ──
-  // 削除済み - /request ページへ移行
 
   // ── 料理担当者選択 ──
-  const handleSelectCook = async (memberId) => {
+  const handleSelectCook = useCallback(async (memberId) => {
     try {
       setCookSelectMessage("");
+      /* eslint-disable-next-line camelcase */
       await apiClient.post("/api/families/assign_cook", {
-        /* eslint-disable-next-line camelcase */
         member_id: memberId,
       });
       setTodayCookId(memberId);
@@ -130,25 +181,29 @@ export default function MenuPage() {
       console.error("料理担当者設定失敗:", error);
       setCookSelectMessage("料理担当者の設定に失敗しました");
     }
-  };
+  }, []);
 
   // ── 制約条件をまとめる（予算 or 調理時間は排他） ──
-  const getConstraints = () => {
+  const getConstraints = useCallback(() => {
     const c = {};
     if (days) c.days = Number(days);
     if (constraintType === "budget" && budget) {
       c.budget = Number(budget);
     } else if (constraintType === "time" && cookingTime) {
-      // eslint-disable-next-line camelcase
-      c.cooking_time = Number(cookingTime);
+      c.cooking_time = Number(cookingTime); // eslint-disable-line camelcase
     }
     return c;
-  };
+  }, [days, constraintType, budget, cookingTime]);
 
-  // ── 献立提案（提案ボタン）──
-  // `requests` can be either a string (menu name) or an object (e.g. { menu_id })
-  const handleFetchSuggestions = async () => {
-    // スクロールして提案セクションまで移動
+  // ── 制約タイプ切替ハンドラ ──
+  const handleConstraintTypeChange = useCallback((type) => {
+    setConstraintType(type);
+    if (type === "budget") setCookingTime("");
+    else setBudget("");
+  }, []);
+
+  // ── 献立提案 ──
+  const handleFetchSuggestions = useCallback(async () => {
     setTimeout(() => {
       suggestionsRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -161,40 +216,83 @@ export default function MenuPage() {
       if (error.status === 403) {
         alert("料理担当者ではありません。料理担当者を変更してください。");
       } else {
-        console.error("提案取得エラー:", error);
         alert(`提案取得に失敗しました: ${error.message}`);
       }
     }
-  };
+  }, [fetchSuggestions, getConstraints]);
+
+  // ── 提案を採用（レシピ登録 → 遷移） ──
+  const handleAcceptSuggestion = useCallback(async () => {
+    if (!todayCookId) {
+      alert("料理担当者が設定されていません。料理担当者を設定してください。");
+      return;
+    }
+    if (myMemberId && todayCookId !== myMemberId) {
+      const cookName =
+        members.find((m) => m.id === todayCookId)?.name || "別のメンバー";
+      alert(
+        `献立一覧に加えられるのは本日の料理担当者（${cookName}）のみです。`,
+      );
+      return;
+    }
+
+    await saveFeedback(suggestions.id, "ok", "");
+    alert("採用しました");
+
+    const field = suggestions.suggest_field;
+    const items = Array.isArray(field) ? field : [field];
+    for (const item of items) {
+      if (!item?.title) continue;
+      try {
+        /* eslint-disable camelcase */
+        await apiClient.post("/api/recipe/save_recipe", {
+          dish_name: item.title,
+          reason: item.reason,
+          proposer: todayCookId,
+        });
+        /* eslint-enable camelcase */
+      } catch (err) {
+        console.warn(
+          `Recipe登録スキップ (${item.title}):`,
+          err?.response?.status,
+        );
+      }
+    }
+    router.push("/menus/familysuggestion");
+  }, [todayCookId, myMemberId, members, suggestions, saveFeedback, router]);
+
+  // ── 別案要求 ──
+  const handleRetry = useCallback(async () => {
+    await saveFeedback(suggestions.id, "alt", "");
+    alert("別案を要求しました");
+    fetchSuggestions(undefined, suggestions.id, getConstraints());
+  }, [suggestions, saveFeedback, fetchSuggestions, getConstraints]);
+
+  // ── NG送信 ──
+  const handleNg = useCallback(async () => {
+    const reason = prompt("NG 理由を入力してください（任意）:");
+    await saveFeedback(suggestions.id, "ng", reason || "");
+    alert("NG理由を送信しました");
+    fetchSuggestions(undefined, suggestions.id, getConstraints());
+  }, [suggestions, saveFeedback, fetchSuggestions, getConstraints]);
 
   return (
     <div className="luxury-page">
       <AuthHeader />
 
       <div className="luxury-container mt-8">
-        {/* ─── 過去の献立リンク ─── */}
+        {/* ─── ナビゲーション ─── */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          <Link
-            href="/menus/familysuggestion"
-            className="luxury-btn luxury-btn-secondary flex items-center gap-2"
-          >
-            <span>🏠</span>
-            <span>わが家の献立</span>
-          </Link>
-          <Link
-            href="/menus/familysuggestion/suggestion"
-            className="luxury-btn luxury-btn-outline flex items-center gap-2"
-          >
-            <span>🌍</span>
-            <span>みんなの献立を参考にする</span>
-          </Link>
-          <Link
-            href="/request"
-            className="luxury-btn luxury-btn-secondary flex items-center gap-2"
-          >
-            <span>📝</span>
-            <span>リクエスト管理</span>
-          </Link>
+          {NAV_LINKS.map(({ href, icon, label, variant }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`luxury-btn luxury-btn-${variant} flex items-center gap-2`}
+            >
+              <span>{icon}</span>
+              <span>{label}</span>
+            </Link>
+          ))}
         </div>
 
         {/* ─── 制約条件設定 ─── */}
@@ -210,43 +308,15 @@ export default function MenuPage() {
           </div>
 
           <div className="space-y-4 mb-6">
-            {/* 予算 or 調理時間 切替 */}
             <div>
               <label className="luxury-label text-sm block mb-3">
                 🎯 こだわり条件（どちらか一方を選択）
               </label>
-              <div className="flex gap-2 mb-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setConstraintType("budget");
-                    setCookingTime("");
-                  }}
-                  className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 ${
-                    constraintType === "budget"
-                      ? "bg-[var(--sage-100)] border-[var(--sage-400)] text-[var(--sage-700)] shadow-sm"
-                      : "bg-white border-[var(--cream-200)] text-[var(--warm-gray-500)] hover:border-[var(--sage-300)]"
-                  }`}
-                >
-                  💰 予算で絞る
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setConstraintType("time");
-                    setBudget("");
-                  }}
-                  className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 ${
-                    constraintType === "time"
-                      ? "bg-[var(--sage-100)] border-[var(--sage-400)] text-[var(--sage-700)] shadow-sm"
-                      : "bg-white border-[var(--cream-200)] text-[var(--warm-gray-500)] hover:border-[var(--sage-300)]"
-                  }`}
-                >
-                  ⏱️ 調理時間で絞る
-                </button>
-              </div>
+              <ConstraintToggle
+                constraintType={constraintType}
+                onSelect={handleConstraintTypeChange}
+              />
 
-              {/* 選択した条件の入力欄 */}
               {constraintType === "budget" ? (
                 <div>
                   <label className="luxury-label text-sm block mb-2">
@@ -258,9 +328,7 @@ export default function MenuPage() {
                     className="luxury-select text-sm"
                   >
                     <option value="">指定なし</option>
-                    {[
-                      300, 500, 800, 1000, 1500, 2000, 2500, 3000, 4000, 5000,
-                    ].map((n) => (
+                    {BUDGET_OPTIONS.map((n) => (
                       <option key={n} value={n}>
                         {n.toLocaleString()}円以内
                       </option>
@@ -278,7 +346,7 @@ export default function MenuPage() {
                     className="luxury-select text-sm"
                   >
                     <option value="">指定なし</option>
-                    {[10, 15, 20, 30, 45, 60, 90, 120].map((n) => (
+                    {COOKING_TIME_OPTIONS.map((n) => (
                       <option key={n} value={n}>
                         {n}分以内
                       </option>
@@ -288,7 +356,6 @@ export default function MenuPage() {
               )}
             </div>
 
-            {/* 何日分提案するか */}
             <div>
               <label className="luxury-label text-sm block mb-2">
                 📅 提案期間
@@ -299,7 +366,7 @@ export default function MenuPage() {
                 className="luxury-select text-sm"
               >
                 <option value="">1日分</option>
-                {[2, 3, 4, 5, 6, 7].map((n) => (
+                {DAYS_OPTIONS.map((n) => (
                   <option key={n} value={n}>
                     {n}日分まとめて
                   </option>
@@ -319,33 +386,7 @@ export default function MenuPage() {
                 冷蔵庫の在庫（AIが自動で考慮します）
               </span>
             </div>
-            {stocks.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {stocks.map((s) => (
-                  <span
-                    key={s.id}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
-                             bg-[var(--sage-50)] text-[var(--sage-600)] border border-[var(--sage-200)]"
-                  >
-                    {s.name}
-                    <span className="text-[var(--sage-400)]">
-                      {s.quantity}
-                      {s.unit}
-                    </span>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted">
-                在庫が登録されていません。
-                <a
-                  href="/stock"
-                  className="text-[var(--primary)] underline ml-1"
-                >
-                  冷蔵庫ページで登録する
-                </a>
-              </p>
-            )}
+            <StockBadges stocks={stocks} />
           </div>
         </div>
 
@@ -373,10 +414,10 @@ export default function MenuPage() {
           )}
         </div>
 
-        {/* ────── 【在庫ベースの提案取得】────── */}
+        {/* ─── 提案取得ボタン ─── */}
         <div className="luxury-card max-w-2xl mx-auto mb-12">
           <button
-            onClick={() => handleFetchSuggestions()}
+            onClick={handleFetchSuggestions}
             className="luxury-btn luxury-btn-primary w-full"
           >
             今ある在庫から家族の好みを元に提案
@@ -390,63 +431,9 @@ export default function MenuPage() {
             <div className="mt-4 grid gap-4">
               <SuggestionCard
                 suggestion={suggestions.suggest_field}
-                onOk={async () => {
-                  // ── 料理担当者チェック ──
-                  if (!todayCookId) {
-                    alert(
-                      "料理担当者が設定されていません。料理担当者を設定してください。",
-                    );
-                    return;
-                  }
-                  if (myMemberId && todayCookId !== myMemberId) {
-                    const cookName =
-                      members.find((m) => m.id === todayCookId)?.name ||
-                      "別のメンバー";
-                    alert(
-                      `献立一覧に加えられるのは本日の料理担当者（${cookName}）のみです。`,
-                    );
-                    return;
-                  }
-
-                  await saveFeedback(suggestions.id, "ok", "");
-                  alert("採用しました");
-
-                  // Recipeモデルに登録（1日分: オブジェクト / 2日分以上: 配列）
-                  const field = suggestions.suggest_field;
-                  const items = Array.isArray(field) ? field : [field];
-                  for (const item of items) {
-                    const title = item?.title;
-                    const reason = item?.reason;
-                    if (!title) continue;
-                    try {
-                      /* eslint-disable camelcase */
-                      await apiClient.post("/api/recipe/save_recipe", {
-                        dish_name: title,
-                        reason: reason,
-                        proposer: todayCookId,
-                      });
-                      /* eslint-enable camelcase */
-                    } catch (err) {
-                      console.warn(
-                        `Recipe登録スキップ (${title}):`,
-                        err?.response?.status,
-                      );
-                    }
-                  }
-
-                  router.push("/menus/familysuggestion");
-                }}
-                onRetry={async () => {
-                  await saveFeedback(suggestions.id, "alt", "");
-                  alert("別案を要求しました");
-                  fetchSuggestions(undefined, suggestions.id, getConstraints());
-                }}
-                onNg={async () => {
-                  const reason = prompt("NG 理由を入力してください（任意）:");
-                  await saveFeedback(suggestions.id, "ng", reason || "");
-                  alert("NG理由を送信しました");
-                  fetchSuggestions(undefined, suggestions.id, getConstraints());
-                }}
+                onOk={handleAcceptSuggestion}
+                onRetry={handleRetry}
+                onNg={handleNg}
               />
             </div>
           )}
