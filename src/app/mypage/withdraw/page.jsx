@@ -1,41 +1,52 @@
 "use client";
 
+import { useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
 import { AuthHeader } from "@/components/auth_header";
 import { deleteUser } from "@/app/lib/delete-user";
-import { auth } from "@/app/lib/firebase";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
-// LoginPage というReactコンポーネントを定義
-// ボタンを表示して、クリックすると login 関数が呼ばれ、Googleログイン開始
-export default function MyPage() {
+export default function WithdrawPage() {
   const router = useRouter();
 
+  // ── 認証 ──
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         router.replace("/login");
       }
     });
-
-    return () => unsubscribe(); // コンポーネントアンマウント時に監視解除
+    return () => unsubscribe();
   }, [router]);
 
+  // ── 退会処理 ──
+  const handleWithdraw = useCallback(() => {
+    deleteUser();
+  }, []);
+
   return (
-    <div className="relative w-full min-h-screen p-8">
+    <div className="luxury-page">
       <AuthHeader />
-      <div className="relative w-full min-h-screen p-8">
-        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-10 flex-col text-center space-y-8">
-          <h2 className="text-2xl font-bold drop-shadow-lg">退会</h2>
-          <p>メールアドレス、連携状態が破棄されます</p>
-          <button
-            className="px-4 py-2 inline-block bg-sky-500 opacity-80 hover:opacity-100 transition duration-1000 rounded-md"
-            onClick={() => {
-              deleteUser();
-            }}
+
+      <div className="luxury-container flex flex-col items-center gap-6 min-h-[70vh] justify-center">
+        <div className="text-center space-y-6">
+          <h1
+            className="text-3xl font-medium text-[var(--foreground)]"
+            style={{ fontFamily: "var(--font-display)" }}
           >
-            退会
+            ⚠️ 退会
+          </h1>
+          <p className="text-sm text-muted">
+            メールアドレス、連携状態が破棄されます。
+            <br />
+            この操作は取り消せません。
+          </p>
+          <button
+            onClick={handleWithdraw}
+            className="luxury-btn bg-red-500 hover:bg-red-600 text-white"
+          >
+            退会する
           </button>
         </div>
       </div>
