@@ -117,7 +117,7 @@ export default function AllSuggestionsPage() {
           }));
         } else {
           const res = await apiClient.post("/api/goods/create_suggestion", {
-            params: { suggestion_id: suggestionId },
+            suggestion_id: suggestionId,
           });
 
           setGoodStatus((prev) => ({
