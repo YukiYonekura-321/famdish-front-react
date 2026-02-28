@@ -168,7 +168,7 @@ export default function MenuPage() {
   const handleSelectCook = useCallback(async (memberId) => {
     try {
       setCookSelectMessage("");
-      /* eslint-disable-next-line camelcase */
+
       await apiClient.post("/api/families/assign_cook", {
         member_id: memberId,
       });
@@ -245,7 +245,7 @@ export default function MenuPage() {
       if (!item?.title) continue;
       try {
         /* eslint-disable camelcase */
-        await apiClient.post("/api/recipe/save_recipe", {
+        await apiClient.post("/api/recipes", {
           dish_name: item.title,
           reason: item.reason,
           proposer: todayCookId,
