@@ -220,7 +220,7 @@ export default function FamilySuggestionPage() {
     if (!recipeData || !currentRecipeId) return;
     try {
       /* eslint-disable camelcase */
-      await apiClient.post(`/api/recipes/${currentRecipeId}`, {
+      await apiClient.put(`/api/recipes/${currentRecipeId}`, {
         servings: recipeData.servings,
         missing_ingredients: recipeData.missing_ingredients,
         cooking_time: recipeData.cooking_time,
