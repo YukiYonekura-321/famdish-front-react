@@ -1,23 +1,24 @@
 "use client";
 
-import { Header } from "../components/header";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Header } from "@/components/header";
 
-const bgImages = [
+const BG_IMAGES = [
   "/32997476_m.jpg",
   "/istockphoto-480432438-612x612.jpg",
   "/istockphoto-1442729474-612x612.jpg",
 ];
 
-export default function LootPage() {
+const SLIDE_INTERVAL_MS = 5000;
+
+export default function HomePage() {
   const [bgIndex, setBgIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setBgIndex((prev) => (prev + 1) % bgImages.length);
-    }, 5000); // 5秒ごとに切り替え
-
+      setBgIndex((prev) => (prev + 1) % BG_IMAGES.length);
+    }, SLIDE_INTERVAL_MS);
     return () => clearInterval(interval);
   }, []);
 
@@ -27,9 +28,9 @@ export default function LootPage() {
 
       <div className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
         {/* 背景画像のスライドショー */}
-        {bgImages.map((img, idx) => (
+        {BG_IMAGES.map((img, idx) => (
           <div
-            key={idx}
+            key={img}
             className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-[2000ms] ease-in-out"
             style={{
               backgroundImage: `url(${img})`,
@@ -37,7 +38,7 @@ export default function LootPage() {
               transform: idx === bgIndex ? "scale(1.05)" : "scale(1)",
               transition: "opacity 2s ease-in-out, transform 8s ease-out",
             }}
-          ></div>
+          />
         ))}
 
         {/* オーガニックグラデーションオーバーレイ */}
@@ -53,7 +54,7 @@ export default function LootPage() {
               )
             `,
           }}
-        ></div>
+        />
 
         {/* メインコンテンツ */}
         <div className="relative z-10 flex flex-col items-center text-center px-6 md:px-8 max-w-4xl mx-auto">
@@ -64,7 +65,7 @@ export default function LootPage() {
             食卓で家族は繋がる
           </h1>
 
-          <div className="w-20 h-1 bg-gradient-to-r from-transparent via-[var(--gold-400)] to-transparent mb-8 animate-fade-in stagger-1"></div>
+          <div className="w-20 h-1 bg-gradient-to-r from-transparent via-[var(--gold-400)] to-transparent mb-8 animate-fade-in stagger-1" />
 
           <h2
             className="text-2xl md:text-4xl font-light !text-white mb-12 tracking-wide animate-fade-in-up stagger-2 drop-shadow-lg"
@@ -89,8 +90,8 @@ export default function LootPage() {
           </p>
 
           <Link
-            className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl"
             href="/sign-in"
+            className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl"
           >
             今すぐ無料で始める
           </Link>
