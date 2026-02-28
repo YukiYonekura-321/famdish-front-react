@@ -366,7 +366,6 @@ export default function FamilySuggestionPage() {
         await Promise.all(
           menus.map(async (m) => {
             try {
-              /* eslint-disable-next-line camelcase */
               const countRes = await apiClient.get("/api/goods/count", {
                 params: { menu_id: m.id },
               });
@@ -392,7 +391,7 @@ export default function FamilySuggestionPage() {
   const handleSelectCook = useCallback(async (memberId) => {
     try {
       setCookSelectMessage("");
-      /* eslint-disable-next-line camelcase */
+
       await apiClient.post("/api/families/assign_cook", {
         member_id: memberId,
       });
@@ -436,7 +435,7 @@ export default function FamilySuggestionPage() {
     try {
       const proposerName = selectedMenu.member?.name || "不明";
       /* eslint-disable camelcase */
-      await apiClient.post("/api/recipe/save_recipe", {
+      await apiClient.post("/api/recipes", {
         dish_name: selectedMenu.name,
         proposer: todayCookId,
         reason: `${proposerName}が提案した料理です`,
@@ -472,7 +471,6 @@ export default function FamilySuggestionPage() {
       setCurrentRecipeId(recipeId);
 
       try {
-        /* eslint-disable-next-line camelcase */
         const res = await apiClient.post("/api/recipes/explain", {
           dish_name: dishName,
           servings: Number(numServings),
@@ -494,7 +492,7 @@ export default function FamilySuggestionPage() {
     if (!recipeData || !currentRecipeId) return;
     try {
       /* eslint-disable camelcase */
-      await apiClient.post(`/api/recipe/${currentRecipeId}`, {
+      await apiClient.post(`/api/recipes/${currentRecipeId}`, {
         servings: recipeData.servings,
         missing_ingredients: recipeData.missing_ingredients,
         cooking_time: recipeData.cooking_time,
