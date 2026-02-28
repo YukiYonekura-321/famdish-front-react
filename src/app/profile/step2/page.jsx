@@ -3,10 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { apiClient } from "@/app/lib/api";
-import { ProgressBar } from "@/components/ProgressBar";
-import { BackArrow, ForwardArrow } from "@/components/ProfileNavArrows";
+import { auth } from "@/shared/lib/firebase";
+import { apiClient } from "@/shared/lib/api";
+import { ProgressBar } from "@/features/profile/components/ProgressBar";
+import { BackArrow, ForwardArrow } from "@/features/profile/components/ProfileNavArrows";
 
 // ── 定数 ──
 

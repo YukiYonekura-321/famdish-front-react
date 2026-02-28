@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Header } from "@/components/header";
+import { Header } from "@/shared/components/header";
 
 const BG_IMAGES = [
   "/32997476_m.jpg",

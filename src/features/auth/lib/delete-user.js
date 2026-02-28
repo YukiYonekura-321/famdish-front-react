@@ -1,5 +1,5 @@
-import { getProvider } from "@/app/lib/provider-utils";
-import { auth } from "@/app/lib/firebase";
+import { getProvider } from "@/features/auth/lib/provider-utils";
+import { auth } from "@/shared/lib/firebase";
 import { reauthenticateWithPopup } from "firebase/auth";
 
 export const deleteUser = async () => {

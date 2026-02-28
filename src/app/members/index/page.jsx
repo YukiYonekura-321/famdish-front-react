@@ -1,106 +1,19 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { apiClient } from "@/app/lib/api";
-import { auth } from "../../lib/firebase";
+import { apiClient } from "@/shared/lib/api";
+import { auth } from "@/shared/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { AuthHeader } from "@/components/auth_header";
+import { AuthHeader } from "@/shared/components/auth_header";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-// ── ヘルパー関数 ──
-
-/** メンバーの所有権判定 */
-const checkOwnership = (member, currentUid) => {
-  const ownerUid = member.user?.firebase_uid || null;
-  return ownerUid ? currentUid === ownerUid : Boolean(currentUid);
-};
-
-/** Rails の nested_attributes 用に likes/dislikes を整形 */
-const buildNestedAttrs = (items, removedIds) => [
-  ...items.map((item) =>
-    item.id ? { id: item.id, name: item.name } : { name: item.name },
-  ),
-  ...removedIds.map((id) => ({ id, _destroy: true })),
-];
-
-// ── 編集リストコンポーネント（likes / dislikes 共通） ──
-
-function EditableList({ label, items, setItems, setRemovedIds }) {
-  const handleChange = (idx, value) => {
-    const updated = [...items];
-    updated[idx] = { ...items[idx], name: value };
-    setItems(updated);
-  };
-
-  const handleRemove = (idx) => {
-    const removed = items[idx];
-    if (removed?.id) setRemovedIds((prev) => [...prev, removed.id]);
-    setItems(items.filter((_, i) => i !== idx));
-  };
-
-  return (
-    <div>
-      <label className="luxury-label text-sm">{label}</label>
-      {items.map((item, idx) => (
-        <div key={`edit-${label}-${idx}`} className="flex gap-2 mb-3">
-          <input
-            type="text"
-            value={item.name}
-            onChange={(e) => handleChange(idx, e.target.value)}
-            className="luxury-input flex-1"
-          />
-          <button
-            type="button"
-            onClick={() => handleRemove(idx)}
-            className="px-4 py-2 bg-[var(--terracotta-100)] text-[var(--terracotta-600)] rounded-xl hover:bg-[var(--terracotta-200)] transition-colors font-medium text-sm"
-          >
-            削除
-          </button>
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={() => setItems([...items, { name: "" }])}
-        className="text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] font-medium"
-      >
-        + 追加
-      </button>
-    </div>
-  );
-}
-
-// ── バッジリストコンポーネント（カード内の表示用） ──
-
-function BadgeList({ items, memberId, variant, emptyText }) {
-  if (!items?.length) {
-    return <span className="text-muted text-sm">{emptyText}</span>;
-  }
-  return items.map((item) => (
-    <span
-      key={`${variant}-${memberId}-${item.id}`}
-      className={`luxury-badge luxury-badge-${variant}`}
-    >
-      {item.name}
-    </span>
-  ));
-}
-
-// ── メニューリストコンポーネント ──
-
-function MenuList({ member }) {
-  if (Array.isArray(member.menus) && member.menus.length > 0) {
-    return member.menus.map((menu) => (
-      <div key={`menu-${member.id}-${menu.id}`} className="text-base">
-        • {menu.name}
-      </div>
-    ));
-  }
-  if (member.menu?.name) {
-    return <div className="text-base">• {member.menu.name}</div>;
-  }
-  return <span className="text-muted text-sm">未提案</span>;
-}
+import {
+  checkOwnership,
+  buildNestedAttrs,
+} from "@/features/member/lib/helpers";
+import { EditableList } from "@/features/member/components/EditableList";
+import { BadgeList } from "@/features/member/components/BadgeList";
+import { MenuList } from "@/features/member/components/MenuList";
 
 // ── メインコンポーネント ──
 

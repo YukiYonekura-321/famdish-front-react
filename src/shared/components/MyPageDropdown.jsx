@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import ChevronIcon from "@/components/ChevronIcon";
-import DropdownLink from "@/components/DropdownLink";
-import { MYPAGE_LINKS } from "@/components/nav-items";
+import ChevronIcon from "@/shared/components/ChevronIcon";
+import DropdownLink from "@/shared/components/DropdownLink";
+import { MYPAGE_LINKS } from "@/shared/components/nav-items";
 
 export default function MyPageDropdown({ onLogout }) {
   const [open, setOpen] = useState(false);

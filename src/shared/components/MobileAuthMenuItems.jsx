@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import MobileNavLink from "@/components/MobileNavLink";
-import { NAV_ITEMS, MYPAGE_LINKS } from "@/components/nav-items";
+import MobileNavLink from "@/shared/components/MobileNavLink";
+import { NAV_ITEMS, MYPAGE_LINKS } from "@/shared/components/nav-items";
 
 export default function MobileAuthMenuItems({ onClick, onLogout }) {
   const [open, setOpen] = useState(false);

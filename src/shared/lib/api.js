@@ -1,5 +1,5 @@
 import axios from "axios";
-import { auth } from "@/app/lib/firebase";
+import { auth } from "@/shared/lib/firebase";
 
 // 決定する baseURL を先に計算
 const baseURL = process.env.NEXT_PUBLIC_API_URL || "";

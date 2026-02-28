@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { apiClient } from "@/app/lib/api";
+import { apiClient } from "@/shared/lib/api";
 
 export function useSuggestion() {
   const [loading, setLoading] = useState(false);

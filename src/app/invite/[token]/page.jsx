@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { apiClient } from "@/app/lib/api";
-import { Header } from "@/components/header";
+import { auth } from "@/shared/lib/firebase";
+import { apiClient } from "@/shared/lib/api";
+import { Header } from "@/shared/components/header";
 
 export default function InvitePage() {
   const params = useParams();

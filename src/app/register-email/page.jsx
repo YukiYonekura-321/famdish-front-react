@@ -8,17 +8,10 @@ import {
   signOut,
   verifyBeforeUpdateEmail,
 } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { apiClient } from "@/app/lib/api";
-import { Header } from "@/components/header";
-
-// redirectParam を含むログインURLを生成するヘルパー
-function buildLoginUrl(redirectParam, extras = "") {
-  const base = redirectParam
-    ? `/login?redirect=${encodeURIComponent(redirectParam)}`
-    : "/login";
-  return extras ? `${base}${extras}` : base;
-}
+import { auth } from "@/shared/lib/firebase";
+import { apiClient } from "@/shared/lib/api";
+import { Header } from "@/shared/components/header";
+import { buildLoginUrl } from "@/features/auth/lib/redirect-utils";
 
 export default function RegisterEmailPage() {
   const router = useRouter();

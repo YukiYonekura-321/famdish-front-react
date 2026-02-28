@@ -8,8 +8,8 @@ import {
   onAuthStateChanged,
   sendSignInLinkToEmail,
 } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { Header } from "@/components/header";
+import { auth } from "@/shared/lib/firebase";
+import { Header } from "@/shared/components/header";
 
 export default function RecoveryPage() {
   const router = useRouter();

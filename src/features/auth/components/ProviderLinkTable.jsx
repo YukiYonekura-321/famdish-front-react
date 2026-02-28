@@ -1,7 +1,7 @@
 "use client";
 
-import { PROVIDERS } from "@/app/lib/providers";
-import { useProviderLink } from "@/hooks/useProviderLink";
+import { PROVIDERS } from "@/features/auth/lib/providers";
+import { useProviderLink } from "@/features/auth/hooks/useProviderLink";
 
 export function ProviderLinkTable({ user }) {
   const {

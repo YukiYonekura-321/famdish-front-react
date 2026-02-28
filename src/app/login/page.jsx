@@ -10,27 +10,13 @@ import {
   //   onAuthStateChanged,
   getAdditionalUserInfo,
 } from "firebase/auth";
-import { apiClient } from "@/app/lib/api";
+import { apiClient } from "@/shared/lib/api";
 import { useState, useEffect } from "react";
-import { auth } from "@/app/lib/firebase";
+import { auth } from "@/shared/lib/firebase";
 import { useRouter } from "next/navigation";
-import { Header } from "@/components/header";
+import { Header } from "@/shared/components/header";
 import Link from "next/link";
-
-// リダイレクト先がアプリ内の安全なパスか検証
-const isValidRedirectPath = (path) => {
-  if (!path) return false;
-  // 外部 URL や プロトコル付きは拒否
-  if (
-    path.startsWith("http://") ||
-    path.startsWith("https://") ||
-    path.startsWith("//")
-  ) {
-    return false;
-  }
-  // アプリ内パス（/で始まる）のみ許可
-  return path.startsWith("/");
-};
+import { isValidRedirectPath } from "@/features/auth/lib/redirect-utils";
 
 export default function LoginPage() {
   const router = useRouter();

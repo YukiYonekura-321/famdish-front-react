@@ -1,6 +1,6 @@
 import { signInWithEmailLink } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { getLinkedProviderIds } from "@/app/lib/provider-utils";
+import { auth } from "@/shared/lib/firebase";
+import { getLinkedProviderIds } from "@/features/auth/lib/provider-utils";
 
 export const handleEmailSignIn = async () => {
   const email = window.prompt("確認のためメールアドレスを入力してください");

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { linkWithPopup, unlink } from "firebase/auth";
-import { getLinkedProviderIds } from "@/app/lib/provider-utils";
+import { getLinkedProviderIds } from "@/features/auth/lib/provider-utils";
 
 /**
  * ソーシャルプロバイダの連携/解除ロジックを管理するカスタムフック

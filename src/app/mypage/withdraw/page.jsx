@@ -3,9 +3,9 @@
 import { useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { AuthHeader } from "@/components/auth_header";
-import { deleteUser } from "@/app/lib/delete-user";
+import { auth } from "@/shared/lib/firebase";
+import { AuthHeader } from "@/shared/components/auth_header";
+import { deleteUser } from "@/features/auth/lib/delete-user";
 
 export default function WithdrawPage() {
   const router = useRouter();

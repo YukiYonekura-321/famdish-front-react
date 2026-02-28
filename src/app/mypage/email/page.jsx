@@ -7,9 +7,9 @@ import {
   reauthenticateWithPopup,
 } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { getProvider } from "@/app/lib/provider-utils";
-import { auth } from "@/app/lib/firebase";
-import { AuthHeader } from "@/components/auth_header";
+import { getProvider } from "@/features/auth/lib/provider-utils";
+import { auth } from "@/shared/lib/firebase";
+import { AuthHeader } from "@/shared/components/auth_header";
 
 // ── メインコンポーネント ──
 

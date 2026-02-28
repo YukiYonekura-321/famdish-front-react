@@ -4,10 +4,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { onAuthStateChanged, isSignInWithEmailLink } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { apiClient } from "@/app/lib/api";
-import { AuthHeader } from "@/components/auth_header";
-import { handleEmailSignIn } from "@/app/lib/email-signin";
+import { auth } from "@/shared/lib/firebase";
+import { apiClient } from "@/shared/lib/api";
+import { AuthHeader } from "@/shared/components/auth_header";
+import { handleEmailSignIn } from "@/features/auth/lib/email-signin";
 
 export default function RequestPage() {
   const router = useRouter();

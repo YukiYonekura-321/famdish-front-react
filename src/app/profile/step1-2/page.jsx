@@ -7,17 +7,15 @@ import {
   verifyBeforeUpdateEmail,
   reauthenticateWithPopup,
 } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { getProvider } from "@/app/lib/provider-utils";
-import { apiClient } from "@/app/lib/api";
-import { ProgressBar } from "@/components/ProgressBar";
-import { BackArrow, ForwardArrow } from "@/components/ProfileNavArrows";
-
-// ── 定数 ──
-
-const TOTAL_STEPS = 7;
-const CONFIRM_MSG = (email) =>
-  `${email}に確認メールを送りました。\n(他のユーザーにより登録済みのメールアドレスの場合は送信されません)`;
+import { auth } from "@/shared/lib/firebase";
+import { getProvider } from "@/features/auth/lib/provider-utils";
+import { apiClient } from "@/shared/lib/api";
+import { ProgressBar } from "@/features/profile/components/ProgressBar";
+import {
+  BackArrow,
+  ForwardArrow,
+} from "@/features/profile/components/ProfileNavArrows";
+import { TOTAL_STEPS, CONFIRM_MSG } from "@/features/profile/constants";
 
 // ── メインコンポーネント ──
 

@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { AuthHeader } from "@/components/auth_header";
-import { ProviderLinkTable } from "@/components/ProviderLinkTable";
+import { auth } from "@/shared/lib/firebase";
+import { AuthHeader } from "@/shared/components/auth_header";
+import { ProviderLinkTable } from "@/features/auth/components/ProviderLinkTable";
 
 export default function SocialPage() {
   const router = useRouter();

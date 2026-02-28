@@ -4,102 +4,22 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { onAuthStateChanged, isSignInWithEmailLink } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { apiClient } from "@/app/lib/api";
-import { auth } from "@/app/lib/firebase";
-import { handleEmailSignIn } from "@/app/lib/email-signin";
-import { useSuggestion } from "@/hooks/useSuggestion";
-import { useFeedback } from "@/hooks/useFeedback";
-import SuggestionCard from "@/components/SuggestionCard";
-import { AuthHeader } from "@/components/auth_header";
-import LoadingSpinner from "@/components/LoadingSpinner";
-
-// ── 定数 ──
-
-const BUDGET_OPTIONS = [
-  300, 500, 800, 1000, 1500, 2000, 2500, 3000, 4000, 5000,
-];
-const COOKING_TIME_OPTIONS = [10, 15, 20, 30, 45, 60, 90, 120];
-const DAYS_OPTIONS = [2, 3, 4, 5, 6, 7];
-
-const NAV_LINKS = [
-  {
-    href: "/menus/familysuggestion",
-    icon: "🏠",
-    label: "わが家の献立",
-    variant: "secondary",
-  },
-  {
-    href: "/menus/familysuggestion/suggestion",
-    icon: "🌍",
-    label: "みんなの献立を参考にする",
-    variant: "outline",
-  },
-  {
-    href: "/request",
-    icon: "📝",
-    label: "リクエスト管理",
-    variant: "secondary",
-  },
-];
-
-// ── サブコンポーネント ──
-
-/** 制約タイプ切替ボタン */
-function ConstraintToggle({ constraintType, onSelect }) {
-  const types = [
-    { key: "budget", icon: "💰", label: "予算で絞る" },
-    { key: "time", icon: "⏱️", label: "調理時間で絞る" },
-  ];
-  return (
-    <div className="flex gap-2 mb-4">
-      {types.map(({ key, icon, label }) => (
-        <button
-          key={key}
-          type="button"
-          onClick={() => onSelect(key)}
-          className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 ${
-            constraintType === key
-              ? "bg-[var(--sage-100)] border-[var(--sage-400)] text-[var(--sage-700)] shadow-sm"
-              : "bg-white border-[var(--cream-200)] text-[var(--warm-gray-500)] hover:border-[var(--sage-300)]"
-          }`}
-        >
-          {icon} {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/** 在庫バッジ一覧 */
-function StockBadges({ stocks }) {
-  if (stocks.length === 0) {
-    return (
-      <p className="text-sm text-muted">
-        在庫が登録されていません。
-        <Link href="/stock" className="text-[var(--primary)] underline ml-1">
-          冷蔵庫ページで登録する
-        </Link>
-      </p>
-    );
-  }
-  return (
-    <div className="flex flex-wrap gap-2">
-      {stocks.map((s) => (
-        <span
-          key={s.id}
-          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
-                     bg-[var(--sage-50)] text-[var(--sage-600)] border border-[var(--sage-200)]"
-        >
-          {s.name}
-          <span className="text-[var(--sage-400)]">
-            {s.quantity}
-            {s.unit}
-          </span>
-        </span>
-      ))}
-    </div>
-  );
-}
+import { apiClient } from "@/shared/lib/api";
+import { auth } from "@/shared/lib/firebase";
+import { handleEmailSignIn } from "@/features/auth/lib/email-signin";
+import { useSuggestion } from "@/features/menu/hooks/useSuggestion";
+import { useFeedback } from "@/features/menu/hooks/useFeedback";
+import SuggestionCard from "@/features/menu/components/SuggestionCard";
+import { AuthHeader } from "@/shared/components/auth_header";
+import LoadingSpinner from "@/shared/components/LoadingSpinner";
+import {
+  BUDGET_OPTIONS,
+  COOKING_TIME_OPTIONS,
+  DAYS_OPTIONS,
+  MENU_NAV_LINKS,
+} from "@/features/menu/constants";
+import { ConstraintToggle } from "@/features/menu/components/ConstraintToggle";
+import { StockBadges } from "@/features/menu/components/StockBadges";
 
 // ── メインコンポーネント ──
 
@@ -283,7 +203,7 @@ export default function MenuPage() {
       <div className="luxury-container mt-8">
         {/* ─── ナビゲーション ─── */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          {NAV_LINKS.map(({ href, icon, label, variant }) => (
+          {MENU_NAV_LINKS.map(({ href, icon, label, variant }) => (
             <Link
               key={href}
               href={href}

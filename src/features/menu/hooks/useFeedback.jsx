@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { apiClient } from "@/app/lib/api";
+import { apiClient } from "@/shared/lib/api";
 
 export function useFeedback() {
   const saveFeedback = useCallback(

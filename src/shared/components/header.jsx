@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import HamburgerButton from "@/components/HamburgerButton";
-import MobileMenuItems from "@/components/MobileMenuItems";
+import HamburgerButton from "@/shared/components/HamburgerButton";
+import MobileMenuItems from "@/shared/components/MobileMenuItems";
 
 const NAV_LINK_CLASS =
   "px-5 py-2.5 text-[var(--foreground)] hover:text-[var(--primary)] transition-all duration-300 font-medium rounded-full hover:bg-[var(--surface)]";

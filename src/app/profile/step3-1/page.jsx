@@ -3,38 +3,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { apiClient } from "@/app/lib/api";
-import { ProgressBar } from "@/components/ProgressBar";
-import { BackArrow, ForwardArrow } from "@/components/ProfileNavArrows";
-import { CheckBadge } from "@/components/Badges";
-
-// ── 定数 ──
-
-const TOTAL_STEPS = 7;
-
-const OPTIONS = [
-  "唐揚げ",
-  "カレーライス",
-  "ラーメン",
-  "餃子",
-  "肉じゃが",
-  "ハンバーグ",
-  "焼き肉",
-  "すき焼き",
-  "天ぷら",
-  "お寿司",
-  "焼き魚",
-  "親子丼",
-  "オムライス",
-  "焼きそば",
-  "チキン南蛮",
-  "チャーハン",
-  "麻婆豆腐",
-  "鍋料理",
-  "グラタン",
-  "お好み焼き",
-];
+import { auth } from "@/shared/lib/firebase";
+import { apiClient } from "@/shared/lib/api";
+import { ProgressBar } from "@/features/profile/components/ProgressBar";
+import {
+  BackArrow,
+  ForwardArrow,
+} from "@/features/profile/components/ProfileNavArrows";
+import { CheckBadge } from "@/features/profile/components/Badges";
+import { TOTAL_STEPS, LIKE_OPTIONS } from "@/features/profile/constants";
 
 // ── メインコンポーネント ──
 
@@ -106,7 +83,7 @@ export default function ProfileStep3Part1() {
               <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
                 {/* Options grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                  {OPTIONS.map((opt) => {
+                  {LIKE_OPTIONS.map((opt) => {
                     const isSelected = selected.includes(opt);
                     return (
                       <button

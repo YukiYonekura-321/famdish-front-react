@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { apiClient } from "@/app/lib/api";
-import { NAV_ITEMS } from "@/components/nav-items";
-import AuthNavLink from "@/components/AuthNavLink";
-import MyPageDropdown from "@/components/MyPageDropdown";
-import HamburgerButton from "@/components/HamburgerButton";
-import MobileAuthMenuItems from "@/components/MobileAuthMenuItems";
+import { auth } from "@/shared/lib/firebase";
+import { apiClient } from "@/shared/lib/api";
+import { NAV_ITEMS } from "@/shared/components/nav-items";
+import AuthNavLink from "@/shared/components/AuthNavLink";
+import MyPageDropdown from "@/shared/components/MyPageDropdown";
+import HamburgerButton from "@/shared/components/HamburgerButton";
+import MobileAuthMenuItems from "@/shared/components/MobileAuthMenuItems";
 
 export function AuthHeader() {
   const router = useRouter();

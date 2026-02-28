@@ -3,71 +3,12 @@
 import { useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { apiClient } from "@/app/lib/api";
-import { ProgressBar } from "@/components/ProgressBar";
-
-// ── 定数 ──
-
-const TOTAL_STEPS = 7;
-
-const FEATURES = [
-  {
-    icon: "🏠",
-    title: "家族向け",
-    desc: "ご家族みんなの好みに対応",
-    bg: "bg-[var(--sage-50)]",
-    border: "border-[var(--sage-200)]",
-  },
-  {
-    icon: "🎯",
-    title: "パーソナライズ",
-    desc: "あなたの好みにぴったり合う",
-    bg: "bg-[var(--terracotta-50)]",
-    border: "border-[var(--terracotta-200)]",
-  },
-  {
-    icon: "✨",
-    title: "簡単・便利",
-    desc: "すぐに使えるシンプル設計",
-    bg: "bg-[var(--gold-50)]",
-    border: "border-[var(--gold-200)]",
-  },
-];
-
-// ── サブコンポーネント ──
-
-function FeatureCard({ icon, title, desc, bg, border }) {
-  return (
-    <div className={`text-center p-4 sm:p-5 rounded-xl ${bg} border ${border}`}>
-      <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 rounded-xl bg-white flex items-center justify-center shadow-sm">
-        <span className="text-2xl sm:text-3xl">{icon}</span>
-      </div>
-      <h4 className="text-sm sm:text-base font-semibold text-[var(--foreground)] mb-1">
-        {title}
-      </h4>
-      <p className="text-xs sm:text-sm text-muted">{desc}</p>
-    </div>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg
-      className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M13 7l5 5m0 0l-5 5m5-5H6"
-      />
-    </svg>
-  );
-}
+import { auth } from "@/shared/lib/firebase";
+import { apiClient } from "@/shared/lib/api";
+import { ProgressBar } from "@/features/profile/components/ProgressBar";
+import { TOTAL_STEPS, STEP1_FEATURES } from "@/features/profile/constants";
+import { FeatureCard } from "@/features/profile/components/FeatureCard";
+import { ArrowIcon } from "@/features/profile/components/ArrowIcon";
 
 // ── メインコンポーネント ──
 
@@ -164,7 +105,7 @@ export default function ProfileStep1() {
 
               {/* Features */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8 sm:mb-10">
-                {FEATURES.map((f) => (
+                {STEP1_FEATURES.map((f) => (
                   <FeatureCard key={f.title} {...f} />
                 ))}
               </div>

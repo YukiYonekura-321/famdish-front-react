@@ -1,36 +1,13 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient } from "@/app/lib/api";
+import { apiClient } from "@/shared/lib/api";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/app/lib/firebase";
-import { ProgressBar } from "@/components/ProgressBar";
-import { BackArrow } from "@/components/ProfileNavArrows";
-import { XBadge } from "@/components/Badges";
-
-const TOTAL_STEPS = 7;
-const OPTIONS = [
-  "にんじん",
-  "ピーマン",
-  "トマト",
-  "納豆",
-  "辛いもの",
-  "苦いもの",
-  "生魚",
-  "シーフード",
-  "チーズ",
-  "卵料理",
-  "揚げ物",
-  "味の濃い物",
-  "香辛料",
-  "豆腐",
-  "海藻",
-  "レバー",
-  "内臓系",
-  "きのこ",
-  "牛肉",
-  "豚肉",
-];
+import { auth } from "@/shared/lib/firebase";
+import { ProgressBar } from "@/features/profile/components/ProgressBar";
+import { BackArrow } from "@/features/profile/components/ProfileNavArrows";
+import { XBadge } from "@/features/profile/components/Badges";
+import { TOTAL_STEPS, DISLIKE_OPTIONS } from "@/features/profile/constants";
 
 export default function ProfileStep3Part2() {
   const router = useRouter();
@@ -149,7 +126,7 @@ export default function ProfileStep3Part2() {
 
               <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                  {OPTIONS.map((opt) => {
+                  {DISLIKE_OPTIONS.map((opt) => {
                     const isSelected = selected.includes(opt);
                     return (
                       <button
