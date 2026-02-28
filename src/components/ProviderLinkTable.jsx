@@ -1,76 +1,85 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { PROVIDERS } from "@/app/lib/providers";
-import { getLinkedProviderIds } from "@/app/lib/provider-utils";
-import { linkWithPopup, unlink } from "firebase/auth";
+import { useProviderLink } from "@/hooks/useProviderLink";
 
 export function ProviderLinkTable({ user }) {
-  const [linkedProviders, setLinkedProviders] = useState([]);
-  const canUnlink = linkedProviders.length > 1;
-
-  useEffect(() => {
-    console.log(`ユーザー${user}`);
-    if (!user) return;
-    setLinkedProviders(getLinkedProviderIds(user));
-  }, [user]);
-
-  const linkProvider = async (provider) => {
-    try {
-      await linkWithPopup(user, provider);
-      await user.reload();
-      setLinkedProviders(getLinkedProviderIds(user));
-    } catch (e) {
-      alert(e.message);
-    }
-  };
-
-  const unlinkProvider = async (providerId) => {
-    try {
-      await unlink(user, providerId);
-      await user.reload();
-      setLinkedProviders(getLinkedProviderIds(user));
-    } catch (e) {
-      alert(e.message);
-    }
-  };
+  const {
+    linkedProviders,
+    canUnlink,
+    error,
+    processing,
+    linkProvider,
+    unlinkProvider,
+  } = useProviderLink(user);
 
   return (
-    <table className="w-full table-auto">
-      <tbody>
+    <div className="space-y-4">
+      {/* エラーメッセージ */}
+      {error && (
+        <div className="backdrop-blur-xl bg-gradient-to-br from-[var(--terracotta-50)] to-white/80 border border-[var(--terracotta-300)] rounded-2xl p-4 animate-scale-in">
+          <div className="flex items-start gap-3">
+            <span className="text-lg">⚠️</span>
+            <p className="text-sm text-[var(--terracotta-600)]">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* プロバイダ一覧 */}
+      <div className="divide-y divide-[var(--border)]">
         {PROVIDERS.map(({ id, name, provider }) => {
           const isLinked = linkedProviders.includes(id);
           return (
-            <tr key={id} className="border-b">
-              <th className="text-left px-4 py-2">{name}</th>
-              <td className="px-4 py-2 text-center w-28">
-                {isLinked ? "連携" : "未連携"}
-              </td>
-              <td className="px-4 py-2">
-                <div className="flex items-center gap-3">
-                  {isLinked ? (
-                    canUnlink && (
-                      <button
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                        onClick={() => unlinkProvider(id)}
-                      >
-                        解除
-                      </button>
-                    )
-                  ) : (
+            <div
+              key={id}
+              className="flex items-center justify-between py-4 px-2"
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className="font-medium text-[var(--foreground)]"
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
+                  {name}
+                </span>
+                <span
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                    isLinked
+                      ? "bg-[var(--sage-100)] text-[var(--sage-600)]"
+                      : "bg-[var(--warm-gray-100)] text-[var(--warm-gray-500)]"
+                  }`}
+                >
+                  {isLinked ? "連携済み" : "未連携"}
+                </span>
+              </div>
+
+              <div>
+                {isLinked ? (
+                  canUnlink && (
                     <button
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                      onClick={() => linkProvider(provider)}
+                      disabled={processing}
+                      onClick={() => unlinkProvider(id)}
+                      className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--warm-gray-300)]
+                               text-[var(--warm-gray-600)] hover:bg-[var(--warm-gray-100)]
+                               transition-colors duration-200 disabled:opacity-50"
                     >
-                      連携
+                      解除
                     </button>
-                  )}
-                </div>
-              </td>
-            </tr>
+                  )
+                ) : (
+                  <button
+                    disabled={processing}
+                    onClick={() => linkProvider(provider)}
+                    className="px-4 py-2 text-sm font-medium rounded-xl bg-[var(--sage-500)] text-white
+                             hover:bg-[var(--sage-600)] transition-colors duration-200 disabled:opacity-50"
+                  >
+                    連携する
+                  </button>
+                )}
+              </div>
+            </div>
           );
         })}
-      </tbody>
-    </table>
+      </div>
+    </div>
   );
 }
