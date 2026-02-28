@@ -1,10 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/app/lib/api";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
+import { ProgressBar } from "@/components/ProgressBar";
+import { BackArrow } from "@/components/ProfileNavArrows";
+import { XBadge } from "@/components/Badges";
 
+const TOTAL_STEPS = 7;
 const OPTIONS = [
   "にんじん",
   "ピーマン",
@@ -28,104 +32,97 @@ const OPTIONS = [
   "豚肉",
 ];
 
-export default function ProfileStep3_2() {
+export default function ProfileStep3Part2() {
   const router = useRouter();
   const [selected, setSelected] = useState([]);
-  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) router.replace("/login");
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
       try {
         const res = await apiClient.get("/api/members/me");
         if (res?.data?.username) router.replace("/menus");
-      } catch (error) {
-        console.error("Failed to fetch user data", error);
+      } catch (err) {
+        console.error("Failed to fetch user data", err);
       }
     });
     return () => unsubscribe();
   }, [router]);
 
-  const toggle = (opt) => {
-    setSelected((prev) => {
-      const exists = prev.includes(opt);
-      return exists ? prev.filter((p) => p !== opt) : [...prev, opt];
-    });
-  };
+  const toggle = useCallback((opt) => {
+    setSelected((prev) =>
+      prev.includes(opt) ? prev.filter((p) => p !== opt) : [...prev, opt],
+    );
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleBack = useCallback(() => {
+    router.push("/profile/step3-1");
+  }, [router]);
 
-    const displayName = sessionStorage.getItem("profile_display_name") || "";
-    const familyId = sessionStorage.getItem("invited_family_id") || null;
-    const familyName =
-      sessionStorage.getItem("profile_family_name") || "Default Family";
-    const likes = JSON.parse(sessionStorage.getItem("profile_likes") || "[]");
-    const dislikes = selected;
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      setError("");
 
-    try {
-      const requestBody = {
-        member: {
-          name: displayName,
-          likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
-          dislikes_attributes: dislikes
-            .filter((d) => d)
-            .map((d) => ({ name: d })),
-        },
-      };
+      const displayName = sessionStorage.getItem("profile_display_name") || "";
+      const familyId = sessionStorage.getItem("invited_family_id") || null;
+      const familyName =
+        sessionStorage.getItem("profile_family_name") || "Default Family";
+      const likes = JSON.parse(sessionStorage.getItem("profile_likes") || "[]");
+      const dislikes = selected;
 
-      if (familyId) {
-        requestBody.family_id = familyId;
-      } else {
-        requestBody.family = {
-          name: familyName || "Default Family",
+      try {
+        const requestBody = {
+          member: {
+            name: displayName,
+            // eslint-disable-next-line camelcase
+            likes_attributes: likes.filter((l) => l).map((l) => ({ name: l })),
+            // eslint-disable-next-line camelcase
+            dislikes_attributes: dislikes
+              .filter((d) => d)
+              .map((d) => ({ name: d })),
+          },
         };
-      }
 
-      const res = await apiClient.post("/api/members", requestBody);
-      setMessage(`作成成功ID: ${res.data.id}`);
-      sessionStorage.removeItem("profile_display_name");
-      sessionStorage.removeItem("profile_family_name");
-      sessionStorage.removeItem("profile_likes");
-      sessionStorage.removeItem("from_invitation");
-      sessionStorage.removeItem("invited_family_name");
-      sessionStorage.removeItem("invited_family_id");
-      router.push("/menus");
-    } catch (error) {
-      setIsSubmitting(false);
-      if (error.response) {
-        const errors = error.response.data.errors || [
-          error.response.data.error,
-        ];
-        setMessage(`エラー: ${errors.join(", ")}`);
-      } else {
-        setMessage("通信エラーが発生しました");
+        if (familyId) {
+          // eslint-disable-next-line camelcase
+          requestBody.family_id = familyId;
+        } else {
+          requestBody.family = { name: familyName || "Default Family" };
+        }
+
+        await apiClient.post("/api/members", requestBody);
+        sessionStorage.removeItem("profile_display_name");
+        sessionStorage.removeItem("profile_family_name");
+        sessionStorage.removeItem("profile_likes");
+        sessionStorage.removeItem("from_invitation");
+        sessionStorage.removeItem("invited_family_name");
+        sessionStorage.removeItem("invited_family_id");
+        router.push("/menus");
+      } catch (err) {
+        setIsSubmitting(false);
+        if (err.response) {
+          const errors = err.response.data.errors || [err.response.data.error];
+          setError(`エラー: ${errors.join(", ")}`);
+        } else {
+          setError("通信エラーが発生しました");
+        }
       }
-    }
-  };
+    },
+    [selected, router],
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--cream-50)] via-white to-[var(--sage-50)]">
       <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 py-28 sm:py-32">
         <div className="fixed top-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4 sm:px-6 z-10">
-          <div className="bg-white/80 backdrop-blur-sm rounded-full p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs sm:text-sm font-medium text-[var(--primary)]">
-                プロフィール登録
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-[var(--primary)]">
-                最終ステップ • 7/7
-              </span>
-            </div>
-            <div className="h-2 bg-[var(--cream-100)] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[var(--sage-400)] to-[var(--sage-500)] transition-all duration-500 ease-out"
-                style={{ width: "100%" }}
-              ></div>
-            </div>
-          </div>
+          <ProgressBar current={7} total={TOTAL_STEPS} />
         </div>
 
         <div className="w-full max-w-4xl">
@@ -167,23 +164,7 @@ export default function ProfileStep3_2() {
                                      : "bg-white border-2 border-[var(--cream-200)] hover:border-[var(--terracotta-300)]"
                                  }`}
                       >
-                        {isSelected && (
-                          <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[var(--secondary)] flex items-center justify-center">
-                            <svg
-                              className="w-3 h-3 text-white"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={3}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </div>
-                        )}
+                        {isSelected && <XBadge />}
                         <span
                           className={
                             isSelected
@@ -223,48 +204,22 @@ export default function ProfileStep3_2() {
                   </div>
                 </div>
 
-                {message && (
-                  <div
-                    className={`rounded-xl p-4 text-center ${
-                      message.includes("エラー")
-                        ? "bg-red-50 border-2 border-red-200"
-                        : "bg-[var(--sage-50)] border border-[var(--sage-200)]"
-                    }`}
-                  >
-                    <p
-                      className={`text-sm ${
-                        message.includes("エラー")
-                          ? "text-red-600"
-                          : "text-[var(--primary)]"
-                      }`}
-                    >
-                      {message}
-                    </p>
+                {error && (
+                  <div className="rounded-xl p-4 text-center bg-red-50 border-2 border-red-200">
+                    <p className="text-sm text-red-600">{error}</p>
                   </div>
                 )}
 
                 <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-2">
                   <button
                     type="button"
-                    onClick={() => router.push("/profile/step3-1")}
+                    onClick={handleBack}
                     disabled={isSubmitting}
                     className="w-full sm:flex-1 px-6 py-3 sm:py-4 rounded-xl font-medium text-[var(--foreground)]
                              bg-[var(--cream-100)] hover:bg-[var(--cream-200)] border-2 border-[var(--cream-200)]
                              transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M11 17l-5-5m0 0l5-5m-5 5h12"
-                      />
-                    </svg>
+                    <BackArrow />
                     <span>戻る</span>
                   </button>
 
