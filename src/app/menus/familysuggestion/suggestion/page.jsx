@@ -165,7 +165,7 @@ export default function AllSuggestionsPage() {
       try {
         if (goodStatus[suggestionId]?.exists) {
           const goodId = goodStatus[suggestionId].good_id;
-          await apiClient.delete(`/api/goods/destroy_suggestion/${goodId}`);
+          await apiClient.delete(`/api/goods/${goodId}/destroy_suggestion`);
           /* eslint-disable camelcase */
           setGoodStatus((prev) => ({
             ...prev,
@@ -177,11 +177,10 @@ export default function AllSuggestionsPage() {
             [suggestionId]: Math.max((prev[suggestionId] || 0) - 1, 0),
           }));
         } else {
-          /* eslint-disable-next-line camelcase */
           const res = await apiClient.post("/api/goods/create_suggestion", {
             params: { suggestion_id: suggestionId },
           });
-          /* eslint-disable-next-line camelcase */
+
           setGoodStatus((prev) => ({
             ...prev,
             [suggestionId]: { exists: true, good_id: res.data.id },
