@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { apiClient } from "@/app/lib/api";
 import { AuthHeader } from "@/components/auth_header";
-import Link from "next/link";
 
 // ── よく使う食材の定義 ──
-// name: 食材名, unit: デフォルト単位, quantities: 選択可能な量
 const PRESET_INGREDIENTS = [
   { name: "卵", unit: "個", quantities: [1, 2, 3, 4, 5, 6, 8, 10, 12] },
   { name: "牛乳", unit: "ml", quantities: [100, 200, 300, 500, 1000] },
@@ -83,7 +82,68 @@ const PRESET_INGREDIENTS = [
   { name: "ハム", unit: "枚", quantities: [2, 3, 4, 5, 6, 8] },
 ];
 
-// カスタム食材用のデフォルト量選択肢
+// カテゴリ定義（select の optgroup に対応）
+const INGREDIENT_CATEGORIES = [
+  {
+    label: "🥩 肉・魚",
+    names: [
+      "鶏もも肉",
+      "鶏むね肉",
+      "豚バラ肉",
+      "豚こま肉",
+      "牛肉",
+      "ひき肉",
+      "鮭",
+      "サバ",
+      "エビ",
+      "ウインナー",
+      "ベーコン",
+      "ハム",
+    ],
+  },
+  {
+    label: "🥬 野菜",
+    names: [
+      "玉ねぎ",
+      "にんじん",
+      "じゃがいも",
+      "キャベツ",
+      "もやし",
+      "トマト",
+      "ほうれん草",
+      "小松菜",
+      "ピーマン",
+      "きゅうり",
+      "長ねぎ",
+      "なす",
+      "大根",
+      "白菜",
+    ],
+  },
+  { label: "🍄 きのこ", names: ["しめじ", "えのき"] },
+  {
+    label: "🥚 卵・乳製品・大豆",
+    names: ["卵", "牛乳", "バター", "チーズ", "ヨーグルト", "豆腐", "納豆"],
+  },
+  { label: "🍚 主食・粉類", names: ["米", "パン", "小麦粉", "片栗粉"] },
+  {
+    label: "🫙 調味料・油",
+    names: [
+      "味噌",
+      "醤油",
+      "みりん",
+      "料理酒",
+      "砂糖",
+      "塩",
+      "サラダ油",
+      "ごま油",
+      "オリーブオイル",
+      "マヨネーズ",
+      "ケチャップ",
+    ],
+  },
+];
+
 const DEFAULT_QUANTITIES = [1, 2, 3, 4, 5, 10, 15, 20, 50, 100, 200, 300, 500];
 const UNIT_OPTIONS = [
   "個",
@@ -100,6 +160,10 @@ const UNIT_OPTIONS = [
   "尾",
   "合",
 ];
+
+// ── 共通スタイル ──
+const inputClassName =
+  "w-full px-4 py-3 rounded-2xl border border-[var(--border)] bg-white/80 backdrop-blur-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--sage-400)] focus:border-transparent transition-all duration-300";
 
 export default function StockPage() {
   const router = useRouter();
@@ -119,6 +183,9 @@ export default function StockPage() {
   const [editingId, setEditingId] = useState(null);
   const [editQuantity, setEditQuantity] = useState("");
 
+  // ── 削除確認 ──
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
   // 現在選ばれている食材のプリセット情報
   const currentPreset = PRESET_INGREDIENTS.find(
     (p) => p.name === selectedPreset,
@@ -130,19 +197,8 @@ export default function StockPage() {
     ? DEFAULT_QUANTITIES
     : currentPreset?.quantities || DEFAULT_QUANTITIES;
 
-  // ── 認証 ──
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
-      fetchStocks();
-    });
-    return () => unsubscribe();
-  }, [router]);
-
-  const fetchStocks = async () => {
+  // ── データ取得 ──
+  const fetchStocks = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiClient.get("/api/stocks");
@@ -153,95 +209,114 @@ export default function StockPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const showSuccess = (msg) => {
+  const showSuccess = useCallback((msg) => {
     setSuccessMessage(msg);
     setTimeout(() => setSuccessMessage(""), 3000);
-  };
+  }, []);
+
+  // ── 認証 ──
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+      fetchStocks();
+    });
+    return () => unsubscribe();
+  }, [router, fetchStocks]);
 
   // ── 追加 ──
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    if (!currentName || !quantity || !currentUnit) {
-      setError("食材名・量・単位をすべて入力してください");
-      return;
-    }
+  const handleAdd = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!currentName || !quantity || !currentUnit) {
+        setError("食材名・量・単位をすべて入力してください");
+        return;
+      }
 
-    setSubmitting(true);
-    setError("");
-    try {
-      const res = await apiClient.post("/api/stocks", {
-        stock: {
-          name: currentName,
-          quantity: Number(quantity),
-          unit: currentUnit,
-        },
-      });
-      setStocks((prev) =>
-        [...prev, res.data].sort((a, b) => a.name.localeCompare(b.name)),
-      );
-      // フォームリセット
-      setSelectedPreset("");
-      setCustomName("");
-      setQuantity("");
-      setUnit("");
-      showSuccess(`${res.data.name} を追加しました`);
-    } catch (err) {
-      console.error("追加エラー:", err);
-      setError(err.response?.data?.error || "食材の追加に失敗しました");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+      setSubmitting(true);
+      setError("");
+      try {
+        const res = await apiClient.post("/api/stocks", {
+          stock: {
+            name: currentName,
+            quantity: Number(quantity),
+            unit: currentUnit,
+          },
+        });
+        setStocks((prev) =>
+          [...prev, res.data].sort((a, b) => a.name.localeCompare(b.name)),
+        );
+        setSelectedPreset("");
+        setCustomName("");
+        setQuantity("");
+        setUnit("");
+        showSuccess(`${res.data.name} を追加しました`);
+      } catch (err) {
+        console.error("追加エラー:", err);
+        setError(err.response?.data?.error || "食材の追加に失敗しました");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [currentName, quantity, currentUnit, showSuccess],
+  );
 
   // ── 更新 ──
-  const handleUpdate = async (id) => {
-    if (!editQuantity) return;
-    setError("");
-    try {
-      const res = await apiClient.patch(`/api/stocks/${id}`, {
-        stock: { quantity: Number(editQuantity) },
-      });
-      setStocks((prev) => prev.map((s) => (s.id === id ? res.data : s)));
-      setEditingId(null);
-      setEditQuantity("");
-      showSuccess("数量を更新しました");
-    } catch (err) {
-      console.error("更新エラー:", err);
-      setError(err.response?.data?.error || "更新に失敗しました");
-    }
-  };
+  const handleUpdate = useCallback(
+    async (id) => {
+      if (!editQuantity) return;
+      setError("");
+      try {
+        const res = await apiClient.patch(`/api/stocks/${id}`, {
+          stock: { quantity: Number(editQuantity) },
+        });
+        setStocks((prev) => prev.map((s) => (s.id === id ? res.data : s)));
+        setEditingId(null);
+        setEditQuantity("");
+        showSuccess("数量を更新しました");
+      } catch (err) {
+        console.error("更新エラー:", err);
+        setError(err.response?.data?.error || "更新に失敗しました");
+      }
+    },
+    [editQuantity, showSuccess],
+  );
 
   // ── 削除 ──
-  const handleDelete = async (id, name) => {
-    if (!confirm(`「${name}」を削除しますか？`)) return;
+  const handleDelete = useCallback(async () => {
+    if (!deleteTarget) return;
     setError("");
     try {
-      await apiClient.delete(`/api/stocks/${id}`);
-      setStocks((prev) => prev.filter((s) => s.id !== id));
-      showSuccess(`${name} を削除しました`);
+      await apiClient.delete(`/api/stocks/${deleteTarget.id}`);
+      setStocks((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+      showSuccess(`${deleteTarget.name} を削除しました`);
     } catch (err) {
       console.error("削除エラー:", err);
       setError(err.response?.data?.error || "削除に失敗しました");
+    } finally {
+      setDeleteTarget(null);
     }
-  };
+  }, [deleteTarget, showSuccess]);
 
-  // プリセット変更時に単位を自動セット
-  const handlePresetChange = (value) => {
+  // プリセット変更
+  const handlePresetChange = useCallback((value) => {
     setSelectedPreset(value);
     setQuantity("");
     if (value === "__custom__") {
       setCustomName("");
       setUnit("");
     }
-  };
+  }, []);
 
   return (
     <div className="min-h-screen overflow-hidden">
       <AuthHeader />
 
-      {/* Ambient background with organic shapes */}
+      {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute inset-0 opacity-40"
@@ -252,7 +327,7 @@ export default function StockPage() {
               radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.05), transparent 70%)
             `,
           }}
-        ></div>
+        />
         <div
           className="absolute top-20 left-10 w-96 h-96 rounded-full opacity-10 blur-3xl animate-pulse"
           style={{
@@ -260,7 +335,7 @@ export default function StockPage() {
               "radial-gradient(circle, var(--sage-300), transparent 70%)",
             animationDuration: "8s",
           }}
-        ></div>
+        />
         <div
           className="absolute bottom-32 right-20 w-80 h-80 rounded-full opacity-10 blur-3xl animate-pulse"
           style={{
@@ -269,7 +344,7 @@ export default function StockPage() {
             animationDuration: "10s",
             animationDelay: "2s",
           }}
-        ></div>
+        />
       </div>
 
       <div className="relative luxury-page pt-32 pb-20">
@@ -306,9 +381,9 @@ export default function StockPage() {
 
             {/* Decorative line */}
             <div className="mt-8 flex items-center justify-center gap-3">
-              <div className="w-16 h-px bg-gradient-to-r from-transparent to-[var(--gold-400)]"></div>
-              <div className="w-2 h-2 rounded-full bg-[var(--gold-400)]"></div>
-              <div className="w-16 h-px bg-gradient-to-l from-transparent to-[var(--gold-400)]"></div>
+              <div className="w-16 h-px bg-gradient-to-r from-transparent to-[var(--gold-400)]" />
+              <div className="w-2 h-2 rounded-full bg-[var(--gold-400)]" />
+              <div className="w-16 h-px bg-gradient-to-l from-transparent to-[var(--gold-400)]" />
             </div>
 
             {/* Navigation Links */}
@@ -332,10 +407,7 @@ export default function StockPage() {
 
           {/* Success Message */}
           {successMessage && (
-            <div
-              className="max-w-2xl mx-auto mb-8 backdrop-blur-xl bg-gradient-to-br from-[var(--sage-50)] to-white/80
-                       border-2 border-[var(--sage-300)] rounded-3xl p-6 animate-scale-in"
-            >
+            <div className="max-w-2xl mx-auto mb-8 backdrop-blur-xl bg-gradient-to-br from-[var(--sage-50)] to-white/80 border-2 border-[var(--sage-300)] rounded-3xl p-6 animate-scale-in">
               <div className="flex items-center gap-4">
                 <span className="text-2xl">✅</span>
                 <p
@@ -350,10 +422,7 @@ export default function StockPage() {
 
           {/* Error Message */}
           {error && (
-            <div
-              className="max-w-2xl mx-auto mb-8 backdrop-blur-xl bg-gradient-to-br from-[var(--terracotta-50)] to-white/80
-                       border-2 border-[var(--terracotta-300)] rounded-3xl p-6 animate-scale-in"
-            >
+            <div className="max-w-2xl mx-auto mb-8 backdrop-blur-xl bg-gradient-to-br from-[var(--terracotta-50)] to-white/80 border-2 border-[var(--terracotta-300)] rounded-3xl p-6 animate-scale-in">
               <div className="flex items-start gap-4">
                 <span className="text-2xl">⚠️</span>
                 <div>
@@ -374,8 +443,7 @@ export default function StockPage() {
           {/* ────────── 食材追加フォーム ────────── */}
           <div className="max-w-2xl mx-auto mb-16 animate-fade-in-up stagger-1">
             <div
-              className="backdrop-blur-xl bg-gradient-to-br from-white/70 to-white/50
-                       border border-[var(--gold-400)]/20 rounded-3xl p-8 shadow-xl"
+              className="backdrop-blur-xl bg-gradient-to-br from-white/70 to-white/50 border border-[var(--gold-400)]/20 rounded-3xl p-8 shadow-xl"
               style={{
                 boxShadow:
                   "0 12px 40px rgba(212, 175, 55, 0.12), 0 4px 16px rgba(0, 0, 0, 0.05)",
@@ -400,122 +468,28 @@ export default function StockPage() {
                   <select
                     value={selectedPreset}
                     onChange={(e) => handlePresetChange(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl border border-[var(--border)]
-                             bg-white/80 backdrop-blur-sm text-[var(--foreground)]
-                             focus:outline-none focus:ring-2 focus:ring-[var(--sage-400)] focus:border-transparent
-                             transition-all duration-300"
+                    className={inputClassName}
                     style={{ fontFamily: "var(--font-body)" }}
                   >
                     <option value="">-- 食材を選んでください --</option>
-                    <optgroup label="🥩 肉・魚">
-                      {PRESET_INGREDIENTS.filter((p) =>
-                        [
-                          "鶏もも肉",
-                          "鶏むね肉",
-                          "豚バラ肉",
-                          "豚こま肉",
-                          "牛肉",
-                          "ひき肉",
-                          "鮭",
-                          "サバ",
-                          "エビ",
-                          "ウインナー",
-                          "ベーコン",
-                          "ハム",
-                        ].includes(p.name),
-                      ).map((p) => (
-                        <option key={p.name} value={p.name}>
-                          {p.name}（{p.unit}）
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="🥬 野菜">
-                      {PRESET_INGREDIENTS.filter((p) =>
-                        [
-                          "玉ねぎ",
-                          "にんじん",
-                          "じゃがいも",
-                          "キャベツ",
-                          "もやし",
-                          "トマト",
-                          "ほうれん草",
-                          "小松菜",
-                          "ピーマン",
-                          "きゅうり",
-                          "長ねぎ",
-                          "なす",
-                          "大根",
-                          "白菜",
-                        ].includes(p.name),
-                      ).map((p) => (
-                        <option key={p.name} value={p.name}>
-                          {p.name}（{p.unit}）
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="🍄 きのこ">
-                      {PRESET_INGREDIENTS.filter((p) =>
-                        ["しめじ", "えのき"].includes(p.name),
-                      ).map((p) => (
-                        <option key={p.name} value={p.name}>
-                          {p.name}（{p.unit}）
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="🥚 卵・乳製品・大豆">
-                      {PRESET_INGREDIENTS.filter((p) =>
-                        [
-                          "卵",
-                          "牛乳",
-                          "バター",
-                          "チーズ",
-                          "ヨーグルト",
-                          "豆腐",
-                          "納豆",
-                        ].includes(p.name),
-                      ).map((p) => (
-                        <option key={p.name} value={p.name}>
-                          {p.name}（{p.unit}）
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="🍚 主食・粉類">
-                      {PRESET_INGREDIENTS.filter((p) =>
-                        ["米", "パン", "小麦粉", "片栗粉"].includes(p.name),
-                      ).map((p) => (
-                        <option key={p.name} value={p.name}>
-                          {p.name}（{p.unit}）
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="🫙 調味料・油">
-                      {PRESET_INGREDIENTS.filter((p) =>
-                        [
-                          "味噌",
-                          "醤油",
-                          "みりん",
-                          "料理酒",
-                          "砂糖",
-                          "塩",
-                          "サラダ油",
-                          "ごま油",
-                          "オリーブオイル",
-                          "マヨネーズ",
-                          "ケチャップ",
-                        ].includes(p.name),
-                      ).map((p) => (
-                        <option key={p.name} value={p.name}>
-                          {p.name}（{p.unit}）
-                        </option>
-                      ))}
-                    </optgroup>
+                    {INGREDIENT_CATEGORIES.map((cat) => (
+                      <optgroup key={cat.label} label={cat.label}>
+                        {PRESET_INGREDIENTS.filter((p) =>
+                          cat.names.includes(p.name),
+                        ).map((p) => (
+                          <option key={p.name} value={p.name}>
+                            {p.name}（{p.unit}）
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
                     <optgroup label="✏️ その他">
                       <option value="__custom__">自分で入力する</option>
                     </optgroup>
                   </select>
                 </div>
 
-                {/* カスタム食材名入力（「自分で入力する」選択時のみ） */}
+                {/* カスタム食材名入力 */}
                 {isCustom && (
                   <div className="animate-fade-in">
                     <label
@@ -529,19 +503,15 @@ export default function StockPage() {
                       value={customName}
                       onChange={(e) => setCustomName(e.target.value)}
                       placeholder="例：アボカド"
-                      className="w-full px-4 py-3 rounded-2xl border border-[var(--border)]
-                               bg-white/80 backdrop-blur-sm text-[var(--foreground)]
-                               focus:outline-none focus:ring-2 focus:ring-[var(--sage-400)] focus:border-transparent
-                               transition-all duration-300 placeholder:text-[var(--warm-gray-400)]"
+                      className={`${inputClassName} placeholder:text-[var(--warm-gray-400)]`}
                       style={{ fontFamily: "var(--font-body)" }}
                     />
                   </div>
                 )}
 
                 {/* 量と単位 */}
-                {selectedPreset && selectedPreset !== "" && (
+                {selectedPreset && (
                   <div className="grid grid-cols-2 gap-4 animate-fade-in">
-                    {/* 量 */}
                     <div>
                       <label
                         className="block text-sm font-medium text-[var(--warm-gray-600)] mb-2"
@@ -552,10 +522,7 @@ export default function StockPage() {
                       <select
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl border border-[var(--border)]
-                                 bg-white/80 backdrop-blur-sm text-[var(--foreground)]
-                                 focus:outline-none focus:ring-2 focus:ring-[var(--sage-400)] focus:border-transparent
-                                 transition-all duration-300"
+                        className={inputClassName}
                         style={{ fontFamily: "var(--font-body)" }}
                       >
                         <option value="">-- 量を選択 --</option>
@@ -567,7 +534,6 @@ export default function StockPage() {
                       </select>
                     </div>
 
-                    {/* 単位（カスタム時のみ編集可能） */}
                     <div>
                       <label
                         className="block text-sm font-medium text-[var(--warm-gray-600)] mb-2"
@@ -579,10 +545,7 @@ export default function StockPage() {
                         <select
                           value={unit}
                           onChange={(e) => setUnit(e.target.value)}
-                          className="w-full px-4 py-3 rounded-2xl border border-[var(--border)]
-                                   bg-white/80 backdrop-blur-sm text-[var(--foreground)]
-                                   focus:outline-none focus:ring-2 focus:ring-[var(--sage-400)] focus:border-transparent
-                                   transition-all duration-300"
+                          className={inputClassName}
                           style={{ fontFamily: "var(--font-body)" }}
                         >
                           <option value="">-- 単位を選択 --</option>
@@ -594,8 +557,7 @@ export default function StockPage() {
                         </select>
                       ) : (
                         <div
-                          className="w-full px-4 py-3 rounded-2xl border border-[var(--border)]
-                                   bg-[var(--cream-100)] text-[var(--foreground)] font-medium"
+                          className="w-full px-4 py-3 rounded-2xl border border-[var(--border)] bg-[var(--cream-100)] text-[var(--foreground)] font-medium"
                           style={{ fontFamily: "var(--font-body)" }}
                         >
                           {currentUnit}
@@ -615,7 +577,7 @@ export default function StockPage() {
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       追加中...
                     </span>
                   ) : (
@@ -637,7 +599,7 @@ export default function StockPage() {
 
             {loading ? (
               <div className="flex items-center justify-center py-16">
-                <div className="luxury-spinner"></div>
+                <div className="luxury-spinner" />
               </div>
             ) : stocks.length === 0 ? (
               <div className="text-center py-16">
@@ -750,7 +712,12 @@ export default function StockPage() {
                             ✏️ 数量変更
                           </button>
                           <button
-                            onClick={() => handleDelete(stock.id, stock.name)}
+                            onClick={() =>
+                              setDeleteTarget({
+                                id: stock.id,
+                                name: stock.name,
+                              })
+                            }
                             className="px-3 py-2 rounded-xl border border-[var(--terracotta-300)]
                                      text-[var(--terracotta-500)] text-sm font-medium
                                      hover:bg-[var(--terracotta-50)] transition-colors duration-200"
@@ -767,6 +734,31 @@ export default function StockPage() {
           </div>
         </div>
       </div>
+
+      {/* ─── 削除確認モーダル ─── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="luxury-card max-w-sm w-full space-y-4 animate-scale-in">
+            <p className="text-center text-[var(--foreground)] font-medium">
+              「{deleteTarget.name}」を削除しますか？
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="luxury-btn luxury-btn-ghost"
+                onClick={() => setDeleteTarget(null)}
+              >
+                キャンセル
+              </button>
+              <button
+                className="px-4 py-2 text-sm font-semibold text-white bg-[var(--terracotta-500)] hover:bg-[var(--terracotta-600)] rounded-xl transition-colors"
+                onClick={handleDelete}
+              >
+                削除する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
