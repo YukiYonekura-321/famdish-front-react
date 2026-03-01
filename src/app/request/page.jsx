@@ -293,42 +293,40 @@ export default function RequestPage() {
               ref={index === menuList.length - 1 ? menuListRef : null}
               className="luxury-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
             >
-              <Link href={`/menus/${m.id}`} className="flex-1 min-w-0">
-                <div className="cursor-pointer group">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span
-                      className="text-lg font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    >
-                      {m.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleToggleGood(m.id);
-                      }}
-                      className="focus:outline-none transition-transform hover:scale-110"
-                    >
-                      {goodStatus[m.id]?.exists ? (
-                        <span className="text-2xl">❤️</span>
-                      ) : (
-                        <span className="text-2xl opacity-40 hover:opacity-70 transition-opacity">
-                          🤍
-                        </span>
-                      )}
-                    </button>
-                    <span className="text-sm text-muted font-medium">
-                      {goodCount[m.id] ?? 0}
-                    </span>
-                  </div>
-                  {m.member && (
-                    <div className="text-sm text-muted">
-                      提案者: {m.member.name}
-                    </div>
-                  )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <span
+                    className="text-lg font-medium text-[var(--foreground)]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    {m.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleToggleGood(m.id);
+                    }}
+                    className="focus:outline-none transition-transform hover:scale-110"
+                  >
+                    {goodStatus[m.id]?.exists ? (
+                      <span className="text-2xl">❤️</span>
+                    ) : (
+                      <span className="text-2xl opacity-40 hover:opacity-70 transition-opacity">
+                        🤍
+                      </span>
+                    )}
+                  </button>
+                  <span className="text-sm text-muted font-medium">
+                    {goodCount[m.id] ?? 0}
+                  </span>
                 </div>
-              </Link>
+                {m.member && (
+                  <div className="text-sm text-muted">
+                    提案者: {m.member.name}
+                  </div>
+                )}
+              </div>
 
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <button
