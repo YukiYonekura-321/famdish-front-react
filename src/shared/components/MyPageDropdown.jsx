@@ -9,6 +9,8 @@ export default function MyPageDropdown({ onLogout }) {
   const [open, setOpen] = useState(false);
 
   const handleLogout = useCallback(() => {
+    const confirmed = confirm("ログアウトしますか？");
+    if (!confirmed) return;
     setOpen(false);
     onLogout();
   }, [onLogout]);
