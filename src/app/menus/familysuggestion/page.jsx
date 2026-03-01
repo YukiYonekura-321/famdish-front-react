@@ -202,6 +202,7 @@ export default function FamilySuggestionPage() {
         const res = await apiClient.post("/api/recipes/explain", {
           dish_name: dishName,
           servings: Number(numServings),
+          suggestion_id: recipeId,
         });
         setRecipeData(res.data?.recipe);
       } catch (error) {
