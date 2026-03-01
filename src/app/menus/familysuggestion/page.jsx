@@ -169,7 +169,7 @@ export default function FamilySuggestionPage() {
         reason: `${proposerName}が提案した料理です`,
       });
       /* eslint-enable camelcase */
-      alert("過去の献立一覧に追加しました！");
+      alert("献立一覧に追加しました！");
       setSelectedMenuId("");
       await fetchRecipes();
     } catch (error) {
