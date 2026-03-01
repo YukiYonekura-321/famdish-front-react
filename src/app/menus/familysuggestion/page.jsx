@@ -187,7 +187,7 @@ export default function FamilySuggestionPage() {
 
   // ── レシピ説明リクエスト（AIに作り方を聞く） ──
   const handleFetchRecipe = useCallback(
-    async (dishName, numServings = 4, recipeId = null) => {
+    async (dishName, numServings = 4, recipeId = null, suggestionId = null) => {
       if (!dishName) {
         alert("料理するメニューを選んでください");
         return;
@@ -202,7 +202,7 @@ export default function FamilySuggestionPage() {
         const res = await apiClient.post("/api/recipes/explain", {
           dish_name: dishName,
           servings: Number(numServings),
-          suggestion_id: recipeId,
+          suggestion_id: suggestionId,
         });
         setRecipeData(res.data?.recipe);
       } catch (error) {

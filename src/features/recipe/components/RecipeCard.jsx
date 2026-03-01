@@ -26,7 +26,7 @@ export function RecipeCard({
       alert(`この操作は調理者（${cookName}）のみ実行できます。`);
       return;
     }
-    onFetchRecipe(dishTitle, servings, recipe.id);
+    onFetchRecipe(dishTitle, servings, recipe.id, recipe.suggestion_id);
   };
 
   return (
