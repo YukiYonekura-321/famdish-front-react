@@ -166,7 +166,7 @@ export default function MenuPage() {
       try {
         /* eslint-disable camelcase */
         await apiClient.post("/api/recipes", {
-          suggestions_id: suggestions.id,
+          suggestion_id: suggestions.id,
           dish_name: item.title,
           reason: item.reason,
           proposer: todayCookId,
