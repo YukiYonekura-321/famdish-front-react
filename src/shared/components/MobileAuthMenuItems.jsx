@@ -17,6 +17,12 @@ export default function MobileAuthMenuItems({ onClick, onLogout }) {
     [onClick],
   );
 
+  const handleLogoutClick = useCallback(() => {
+    const confirmed = confirm("ログアウトしますか？");
+    if (!confirmed) return;
+    handleLinkClick(onLogout);
+  }, [handleLinkClick, onLogout]);
+
   return (
     <>
       {NAV_ITEMS.map((item) => (
@@ -60,7 +66,7 @@ export default function MobileAuthMenuItems({ onClick, onLogout }) {
             ))}
 
             <button
-              onClick={() => handleLinkClick(onLogout)}
+              onClick={handleLogoutClick}
               className="w-full text-left px-4 py-2 text-sm text-[var(--foreground)]
                        hover:bg-[var(--surface-hover)] transition-colors duration-300 rounded-md mx-1"
             >
