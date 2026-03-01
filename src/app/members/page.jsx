@@ -135,7 +135,7 @@ export default function CreateInvitePage() {
               家族への招待
             </h1>
             <p
-              className="max-w-2xl mx-auto text-xl text-[var(--warm-gray-500)] leading-relaxed"
+              className="max-w-2xl mx-auto text-xl text-[var(--warm-gray-500)] leading-relaxed text-center"
               style={{ fontFamily: "var(--font-body)" }}
             >
               大切な家族をFamDishに招待しましょう。
