@@ -135,14 +135,14 @@ export default function ContactPage() {
             {/* カテゴリ */}
             <div>
               <label
-                htmlFor="category"
+                htmlFor="subject"
                 className="block text-sm font-medium text-[var(--foreground)] mb-1.5"
               >
                 お問い合わせ種別 <span className="text-red-500">*</span>
               </label>
               <select
-                id="category"
-                name="category"
+                id="subject"
+                name="subject"
                 required
                 value={form.category}
                 onChange={handleChange}
