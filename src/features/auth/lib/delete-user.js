@@ -1,5 +1,6 @@
 import { getProvider } from "@/features/auth/lib/provider-utils";
 import { auth } from "@/shared/lib/firebase";
+import { apiClient } from "@/shared/lib/api";
 import { reauthenticateWithPopup } from "firebase/auth";
 
 export const deleteUser = async () => {
@@ -20,9 +21,12 @@ export const deleteUser = async () => {
       await reauthenticateWithPopup(user, provider);
     }
 
+    // Rails 側の Member + User レコードを削除
+    await apiClient.delete("/api/users/me");
+
+    // Firebase Auth のアカウントを削除
     await user.delete();
     alert("退会しました");
-    // コンポーネント側で router を使っている場合もあるが、ユーティリティ側で確実に遷移させる
     window.location.href = "/login";
   } catch (error) {
     if (error?.code === "auth/requires-recent-login") {
