@@ -8,7 +8,7 @@ export default function ContactPage() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    category: "",
+    subject: "",
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
