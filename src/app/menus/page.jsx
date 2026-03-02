@@ -28,7 +28,13 @@ export default function MenuPage() {
   const suggestionsRef = useRef(null);
 
   // ── hooks ──
-  const { loading, suggestions, fetchSuggestions } = useSuggestion();
+  const { loading, suggestions, fetchSuggestions, stopPolling } =
+    useSuggestion();
+
+  // ── ページ離脱時にポーリングを停止 ──
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
   const { saveFeedback } = useFeedback();
 
   // ── state ──
@@ -131,7 +137,7 @@ export default function MenuPage() {
       });
     }, 100);
     try {
-      await fetchSuggestions(undefined, undefined, getConstraints());
+      await fetchSuggestions(undefined, getConstraints());
     } catch (error) {
       if (error.status === 403) {
         alert("料理担当者ではありません。料理担当者を変更してください。");
@@ -186,7 +192,7 @@ export default function MenuPage() {
   const handleRetry = useCallback(async () => {
     await saveFeedback(suggestions.id, "alt", "");
     alert("別案を要求しました");
-    fetchSuggestions(undefined, suggestions.id, getConstraints());
+    fetchSuggestions(suggestions.id, getConstraints());
   }, [suggestions, saveFeedback, fetchSuggestions, getConstraints]);
 
   // ── NG送信 ──
@@ -194,7 +200,7 @@ export default function MenuPage() {
     const reason = prompt("NG 理由を入力してください（任意）:");
     await saveFeedback(suggestions.id, "ng", reason || "");
     alert("NG理由を送信しました");
-    fetchSuggestions(undefined, suggestions.id, getConstraints());
+    fetchSuggestions(suggestions.id, getConstraints());
   }, [suggestions, saveFeedback, fetchSuggestions, getConstraints]);
 
   return (
@@ -345,7 +351,14 @@ export default function MenuPage() {
           </button>
         </div>
 
-        {loading && <LoadingSpinner />}
+        {loading && (
+          <div className="flex flex-col items-center gap-4 my-8">
+            <LoadingSpinner />
+            <p className="text-sm text-muted animate-pulse">
+              AIが献立を考えています…（最大2分ほどかかる場合があります）
+            </p>
+          </div>
+        )}
 
         <div ref={suggestionsRef}>
           {suggestions && (
