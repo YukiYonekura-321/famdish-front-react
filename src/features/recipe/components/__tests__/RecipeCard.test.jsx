@@ -3,13 +3,6 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RecipeCard } from "../RecipeCard";
 
-// モック
-jest.mock("@/shared/components/LoadingSpinner", () => {
-  return function MockSpinner() {
-    return <div data-testid="loading-spinner" />;
-  };
-});
-
 const members = [
   { id: 1, name: "太郎" },
   { id: 2, name: "花子" },
