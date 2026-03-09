@@ -13,6 +13,26 @@ const config = {
   },
   transformIgnorePatterns: ["/node_modules/(?!(firebase|@firebase)/)"],
   testPathIgnorePatterns: ["/node_modules/", "/.next/"],
+
+  // ── カバレッジ設定 (npm test -- --coverage で実行) ──
+  collectCoverageFrom: [
+    "src/**/*.{js,jsx}",
+    "!src/**/__tests__/**",
+    "!src/**/__mocks__/**",
+    "!src/**/index.js", // 再エクスポートのみのバレルファイルを除外
+    "!src/app/layout.js", // Next.js レイアウト
+    "!src/app/globals.css",
+  ],
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "text-summary", "lcov", "html"],
+  coverageThreshold: {
+    global: {
+      statements: 15,
+      branches: 20,
+      functions: 25,
+      lines: 15,
+    },
+  },
 };
 
 module.exports = config;
