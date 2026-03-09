@@ -92,4 +92,66 @@ describe("EmailChangePage", () => {
       screen.getByPlaceholderText("example@email.com"),
     ).toBeInTheDocument();
   });
+
+  it("フォーム送信時に再認証が実行される", async () => {
+    const mockUser = { uid: "test-uid", email: "old@example.com" };
+    mockOnAuthStateChanged.mockImplementation((auth, cb) => {
+      cb(mockUser);
+      return jest.fn();
+    });
+    const { auth: authModule } = require("@/shared/lib/firebase");
+    authModule.currentUser = mockUser;
+    mockReauthenticateWithPopup.mockResolvedValue({});
+    mockVerifyBeforeUpdateEmail.mockResolvedValue({});
+
+    render(<EmailChangePage />);
+
+    const input = screen.getByPlaceholderText("example@email.com");
+    fireEvent.change(input, {
+      target: { value: "new@example.com" },
+    });
+    fireEvent.submit(input.closest("form"));
+
+    await waitFor(() => {
+      expect(mockReauthenticateWithPopup).toHaveBeenCalled();
+    });
+  });
+
+  it("フォーム送信時にメール確認が実行される", async () => {
+    const mockUser = { uid: "test-uid", email: "old@example.com" };
+    mockOnAuthStateChanged.mockImplementation((auth, cb) => {
+      cb(mockUser);
+      return jest.fn();
+    });
+    const { auth: authModule } = require("@/shared/lib/firebase");
+    authModule.currentUser = mockUser;
+    mockReauthenticateWithPopup.mockResolvedValue({});
+    mockVerifyBeforeUpdateEmail.mockResolvedValue({});
+
+    render(<EmailChangePage />);
+
+    const input = screen.getByPlaceholderText("example@email.com");
+    fireEvent.change(input, {
+      target: { value: "new@example.com" },
+    });
+    fireEvent.submit(input.closest("form"));
+
+    await waitFor(() => {
+      expect(mockVerifyBeforeUpdateEmail).toHaveBeenCalledWith(
+        expect.any(Object),
+        "new@example.com",
+        expect.any(Object),
+      );
+    });
+  });
+
+  it("AuthHeader がレンダリングされている", () => {
+    mockOnAuthStateChanged.mockImplementation((auth, cb) => {
+      cb({ uid: "test-uid", email: "old@example.com" });
+      return jest.fn();
+    });
+
+    render(<EmailChangePage />);
+    expect(screen.getByTestId("auth-header")).toBeInTheDocument();
+  });
 });
