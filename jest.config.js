@@ -24,7 +24,7 @@ const config = {
     "!src/app/globals.css",
   ],
   coverageDirectory: "coverage",
-  coverageReporters: ["text", "text-summary", "lcov", "html"],
+  coverageReporters: ["text", "text-summary", "lcov", "html", "json-summary"],
   coverageThreshold: {
     global: {
       statements: 15,
