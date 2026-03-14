@@ -8,7 +8,7 @@ import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   /* Firebaseの設定情報 */
-  apiKey: "AIzaSyAmSNvwCiw2fNXzH_yRzbxmb3bNpnHmeJQ",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain:
     process.env.NODE_ENV === "production"
       ? "famdish-6f806.web.app"
