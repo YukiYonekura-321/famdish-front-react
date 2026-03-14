@@ -44,17 +44,50 @@ jest.mock("@/shared/components/LoadingSpinner", () => {
 });
 
 jest.mock("@/features/recipe/components/RecipeModal", () => ({
-  RecipeModal: ({ show }) =>
-    show ? <div data-testid="recipe-modal">RecipeModal</div> : null,
+  RecipeModal: ({ show, onClose, onSave }) =>
+    show ? (
+      <div data-testid="recipe-modal">
+        RecipeModal
+        <button data-testid="modal-close" onClick={onClose}>
+          閉じる
+        </button>
+        <button data-testid="modal-save" onClick={onSave}>
+          保存
+        </button>
+      </div>
+    ) : null,
 }));
 
 jest.mock("@/features/recipe/components/RecipeCard", () => ({
-  RecipeCard: ({ recipe, onDelete }) => (
+  RecipeCard: ({
+    recipe,
+    onDelete,
+    onFetchRecipe,
+    onToggleDetail,
+    onServingsChange,
+    servings,
+  }) => (
     <div data-testid={`recipe-card-${recipe.id}`}>
       <span>{recipe.dish_name}</span>
       <button onClick={() => onDelete(recipe.id, recipe.dish_name)}>
         削除
       </button>
+      <button
+        onClick={() =>
+          onFetchRecipe(
+            recipe.dish_name,
+            servings || 4,
+            recipe.id,
+            recipe.suggestion_id,
+          )
+        }
+      >
+        レシピ説明
+      </button>
+      <button onClick={() => onToggleDetail(recipe.suggestion_id, recipe.id)}>
+        詳細
+      </button>
+      <button onClick={() => onServingsChange("2")}>人数変更</button>
     </div>
   ),
 }));
@@ -62,11 +95,13 @@ jest.mock("@/features/recipe/components/RecipeCard", () => ({
 const mockGet = jest.fn();
 const mockPost = jest.fn();
 const mockDelete = jest.fn();
+const mockPut = jest.fn();
 jest.mock("@/shared/lib/api", () => ({
   apiClient: {
     get: (...args) => mockGet(...args),
     post: (...args) => mockPost(...args),
     delete: (...args) => mockDelete(...args),
+    put: (...args) => mockPut(...args),
   },
 }));
 
@@ -116,6 +151,7 @@ describe("FamilySuggestionPage", () => {
 
     mockPost.mockResolvedValue({ data: {} });
     mockDelete.mockResolvedValue({ data: {} });
+    mockPut.mockResolvedValue({ data: {} });
   });
 
   afterEach(() => {
@@ -213,5 +249,277 @@ describe("FamilySuggestionPage", () => {
     render(<FamilySuggestionPage />);
     const link = screen.getByText("リクエスト管理ページ").closest("a");
     expect(link).toHaveAttribute("href", "/request");
+  });
+
+  // ── 献立追加（handleAddFromMenu） ──
+
+  it("メニュー未選択で追加ボタンを押すとアラートが表示される", async () => {
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("献立一覧に加える"));
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("メニューを選んでください");
+    });
+  });
+
+  it("料理担当者未設定でメニューを追加するとアラートが表示される", async () => {
+    // today_cook_id を null に
+    mockGet.mockImplementation((url) => {
+      if (url === "/api/members") return Promise.resolve({ data: MEMBERS });
+      if (url === "/api/members/me")
+        return Promise.resolve({ data: { member: { id: 1 } } });
+      if (url === "/api/families")
+        return Promise.resolve({ data: { today_cook_id: null } });
+      if (url === "/api/menus") return Promise.resolve({ data: MENUS });
+      if (url === "/api/recipes/family")
+        return Promise.resolve({ data: RECIPES });
+      if (url === "/api/goods/count")
+        return Promise.resolve({ data: { count: 0 } });
+      return Promise.resolve({ data: {} });
+    });
+
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    // メニュー選択
+    const selects = screen.getAllByRole("combobox");
+    fireEvent.change(selects[1], { target: { value: "10" } });
+
+    fireEvent.click(screen.getByText("献立一覧に加える"));
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        expect.stringContaining("料理担当者が設定されていません"),
+      );
+    });
+  });
+
+  it("他のメンバーが担当者の場合は献立追加できない", async () => {
+    // myMemberId=1, todayCookId=2
+    mockGet.mockImplementation((url) => {
+      if (url === "/api/members") return Promise.resolve({ data: MEMBERS });
+      if (url === "/api/members/me")
+        return Promise.resolve({ data: { member: { id: 1 } } });
+      if (url === "/api/families")
+        return Promise.resolve({ data: { today_cook_id: 2 } });
+      if (url === "/api/menus") return Promise.resolve({ data: MENUS });
+      if (url === "/api/recipes/family")
+        return Promise.resolve({ data: RECIPES });
+      if (url === "/api/goods/count")
+        return Promise.resolve({ data: { count: 0 } });
+      return Promise.resolve({ data: {} });
+    });
+
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const selects = screen.getAllByRole("combobox");
+    fireEvent.change(selects[1], { target: { value: "10" } });
+
+    fireEvent.click(screen.getByText("献立一覧に加える"));
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        expect.stringContaining("本日の料理担当者"),
+      );
+    });
+  });
+
+  it("メニューを選択して献立追加が成功する", async () => {
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    // メニュー選択（2つ目のcombobox）
+    const selects = screen.getAllByRole("combobox");
+    fireEvent.change(selects[1], { target: { value: "10" } });
+
+    fireEvent.click(screen.getByText("献立一覧に加える"));
+
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith(
+        "/api/recipes",
+        expect.objectContaining({ dish_name: "カレー" }),
+      );
+    });
+    expect(window.alert).toHaveBeenCalledWith("献立一覧に追加しました！");
+  });
+
+  it("献立追加のAPI失敗時にエラーアラートが表示される", async () => {
+    mockPost.mockImplementation((url) => {
+      if (url === "/api/families/assign_cook")
+        return Promise.resolve({ data: {} });
+      return Promise.reject(new Error("API error"));
+    });
+
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const selects = screen.getAllByRole("combobox");
+    fireEvent.change(selects[1], { target: { value: "10" } });
+
+    fireEvent.click(screen.getByText("献立一覧に加える"));
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith("献立の追加に失敗しました");
+    });
+  });
+
+  // ── レシピ削除（handleDeleteRecipe） ──
+
+  it("削除ボタンをクリックするとDELETE APIが呼ばれる", async () => {
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const deleteButtons = screen.getAllByText("削除");
+    fireEvent.click(deleteButtons[0]);
+
+    await waitFor(() => {
+      expect(mockDelete).toHaveBeenCalledWith("/api/recipes/100");
+    });
+  });
+
+  it("削除確認でキャンセルするとAPIは呼ばれない", async () => {
+    window.confirm.mockReturnValue(false);
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const deleteButtons = screen.getAllByText("削除");
+    fireEvent.click(deleteButtons[0]);
+
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  // ── レシピ説明リクエスト（handleFetchRecipe） ──
+
+  it("レシピ説明ボタンをクリックするとAPIが呼ばれモーダルが表示される", async () => {
+    mockPost.mockImplementation((url) => {
+      if (url === "/api/recipes/explain")
+        return Promise.resolve({
+          data: { recipe: { steps: "1. 切る 2. 焼く" } },
+        });
+      return Promise.resolve({ data: {} });
+    });
+
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const explainButtons = screen.getAllByText("レシピ説明");
+    fireEvent.click(explainButtons[0]);
+
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith(
+        "/api/recipes/explain",
+        expect.objectContaining({ dish_name: "唐揚げ" }),
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId("recipe-modal")).toBeInTheDocument();
+    });
+  });
+
+  it("レシピ説明取得失敗時にエラーアラートが表示される", async () => {
+    mockPost.mockImplementation((url) => {
+      if (url === "/api/recipes/explain")
+        return Promise.reject(new Error("API error"));
+      return Promise.resolve({ data: {} });
+    });
+
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const explainButtons = screen.getAllByText("レシピ説明");
+    fireEvent.click(explainButtons[0]);
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith(
+        "レシピ説明の取得に失敗しました",
+      );
+    });
+  });
+
+  // ── レシピ詳細アコーディオン（handleToggleRecipeDetail） ──
+
+  it("詳細ボタンをクリックするとレシピ詳細APIが呼ばれる", async () => {
+    mockGet.mockImplementation((url) => {
+      if (url === "/api/members") return Promise.resolve({ data: MEMBERS });
+      if (url === "/api/members/me")
+        return Promise.resolve({ data: { member: { id: 1 } } });
+      if (url === "/api/families")
+        return Promise.resolve({ data: { today_cook_id: 1 } });
+      if (url === "/api/menus") return Promise.resolve({ data: MENUS });
+      if (url === "/api/recipes/family")
+        return Promise.resolve({ data: RECIPES });
+      if (url === "/api/goods/count")
+        return Promise.resolve({ data: { count: 0 } });
+      if (url === "/api/recipes/100")
+        return Promise.resolve({ data: { steps: "手順" } });
+      return Promise.resolve({ data: {} });
+    });
+
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const detailButtons = screen.getAllByText("詳細");
+    fireEvent.click(detailButtons[0]);
+
+    await waitFor(() => {
+      expect(mockGet).toHaveBeenCalledWith("/api/recipes/100");
+    });
+  });
+
+  // ── 料理担当者選択エラー ──
+
+  it("料理担当者設定失敗時にエラーメッセージが表示される", async () => {
+    mockPost.mockRejectedValue(new Error("API error"));
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const selects = screen.getAllByRole("combobox");
+    fireEvent.change(selects[0], { target: { value: "2" } });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("料理担当者の設定に失敗しました"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  // ── 人数変更 ──
+
+  it("人数変更コールバックが動作する", async () => {
+    render(<FamilySuggestionPage />);
+    await waitFor(() => {
+      expect(screen.getByText("唐揚げ")).toBeInTheDocument();
+    });
+
+    const servingsButtons = screen.getAllByText("人数変更");
+    fireEvent.click(servingsButtons[0]);
+
+    // クラッシュしなければOK（state更新のみ）
+    expect(screen.getByText("唐揚げ")).toBeInTheDocument();
   });
 });
