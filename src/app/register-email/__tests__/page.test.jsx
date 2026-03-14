@@ -22,7 +22,13 @@ jest.mock("firebase/auth", () => ({
 }));
 
 jest.mock("@/shared/lib/firebase", () => ({
-  auth: { currentUser: { email: "test@example.com", uid: "test-uid" } },
+  auth: {
+    currentUser: {
+      email: "test@example.com",
+      uid: "test-uid",
+      delete: jest.fn().mockResolvedValue(),
+    },
+  },
 }));
 
 const mockPush = jest.fn();
@@ -132,5 +138,230 @@ describe("RegisterEmailPage", () => {
     await waitFor(() => {
       expect(mockSignOut).toHaveBeenCalled();
     });
+  });
+
+  // ── 同じメールで確認メール送信（sendEmailVerification） ──
+
+  it("同じメールアドレスでフォーム送信するとsendEmailVerificationが呼ばれる", async () => {
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    // メールが自動入力される（test@example.com）のでそのまま送信
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(mockSendEmailVerification).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByText((t) => t.includes("確認メールを送りました")),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("sendEmailVerification失敗時にエラーメッセージが表示される", async () => {
+    mockSendEmailVerification.mockRejectedValue({
+      message: "送信エラー",
+    });
+
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText((t) => t.includes("メールの送信に失敗しました")),
+      ).toBeInTheDocument();
+    });
+  });
+
+  // ── 異なるメールで確認メール送信（verifyBeforeUpdateEmail） ──
+
+  it("異なるメールアドレスで送信するとverifyBeforeUpdateEmailが呼ばれる", async () => {
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    const input = screen.getByLabelText("メールアドレス");
+    fireEvent.change(input, { target: { value: "new@example.com" } });
+
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(mockVerifyBeforeUpdateEmail).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByText((t) => t.includes("確認メールを送りました")),
+      ).toBeInTheDocument();
+    });
+  });
+
+  // ── email-already-in-use エラー → 確認ダイアログ ──
+
+  it("email-already-in-useエラーで確認ダイアログが表示される", async () => {
+    mockVerifyBeforeUpdateEmail.mockRejectedValue({
+      code: "auth/email-already-in-use",
+    });
+
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    const input = screen.getByLabelText("メールアドレス");
+    fireEvent.change(input, { target: { value: "existing@example.com" } });
+
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(screen.getByText("はい・ログインし直す")).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText((t) => t.includes("既存ユーザーで登録済みです")),
+    ).toBeInTheDocument();
+  });
+
+  it("確認ダイアログの「はい」でユーザー削除後ログインにリダイレクトされる", async () => {
+    mockVerifyBeforeUpdateEmail.mockRejectedValue({
+      code: "auth/email-already-in-use",
+    });
+
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    const input = screen.getByLabelText("メールアドレス");
+    fireEvent.change(input, { target: { value: "existing@example.com" } });
+
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(screen.getByText("はい・ログインし直す")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("はい・ログインし直す"));
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(
+        expect.stringContaining("/login"),
+      );
+    });
+  });
+
+  it("確認ダイアログの「キャンセル」でダイアログが閉じる", async () => {
+    mockVerifyBeforeUpdateEmail.mockRejectedValue({
+      code: "auth/email-already-in-use",
+    });
+
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    const input = screen.getByLabelText("メールアドレス");
+    fireEvent.change(input, { target: { value: "existing@example.com" } });
+
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(screen.getByText("キャンセル")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("キャンセル"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("はい・ログインし直す"),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  // ── requires-recent-login エラー ──
+
+  it("requires-recent-loginエラーで再ログインにリダイレクトされる", async () => {
+    mockVerifyBeforeUpdateEmail.mockRejectedValue({
+      code: "auth/requires-recent-login",
+    });
+
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    const input = screen.getByLabelText("メールアドレス");
+    fireEvent.change(input, { target: { value: "new@example.com" } });
+
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText((t) => t.includes("再ログインが必要です")),
+      ).toBeInTheDocument();
+    });
+    expect(mockSignOut).toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringContaining("/login"));
+  });
+
+  // ── その他のエラー ──
+
+  it("verifyBeforeUpdateEmailの一般エラーでメッセージが表示される", async () => {
+    mockVerifyBeforeUpdateEmail.mockRejectedValue({
+      code: "auth/unknown",
+      message: "unknown error",
+    });
+
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    const input = screen.getByLabelText("メールアドレス");
+    fireEvent.change(input, { target: { value: "new@example.com" } });
+
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText((t) => t.includes("メールの送信に失敗しました")),
+      ).toBeInTheDocument();
+    });
+  });
+
+  // ── redirect パラメータ付き ──
+
+  // ── currentUserがnullの場合のsubmit ──
+
+  it("currentUserがnull時にsubmitするとエラーメッセージが表示されリダイレクトされる", async () => {
+    // currentUser を null にする
+    const firebaseMock = require("@/shared/lib/firebase");
+    const origUser = firebaseMock.auth.currentUser;
+    firebaseMock.auth.currentUser = null;
+
+    render(<RegisterEmailPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
+    });
+
+    // メール入力して送信
+    const input = screen.getByLabelText("メールアドレス");
+    fireEvent.change(input, { target: { value: "test@example.com" } });
+    fireEvent.submit(screen.getByText("確認メールを送信").closest("form"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText((t) => t.includes("認証情報を取得できませんでした")),
+      ).toBeInTheDocument();
+    });
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringContaining("/login"));
+
+    firebaseMock.auth.currentUser = origUser;
   });
 });
