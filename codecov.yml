@@ -1,0 +1,56 @@
+codecov:
+  require_ci_to_pass: yes
+  precision: 2
+  round: down
+  layout: "reach,diff,files,footer"
+  notification:
+    require_changes: no
+    require_base: no
+    require_head: yes
+    wait_for_ci: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+comment:
+  layout: "reach, diff, flags, tree"
+  behavior: default
+  require_changes: no
+  require_base: no
+  require_head: yes
+  delete_outdated: yes
+  hiding_projects: []
+
+ignore:
+  - "node_modules"
+  - ".next"
+  - "coverage"
+  - "dist"
+  - "build"
+
+flags:
+  frontend:
+    carryforward: yes
+    paths:
+      - src/**
+
+status:
+  project:
+    default:
+      target: 70
+      threshold: 5
+      base: auto
+      branches:
+        - main
+        - develop
+  patch:
+    default:
+      target: 70
+      threshold: 5
+  changes:
+    default:
+      branches:
+        - main
+        - develop
