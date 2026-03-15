@@ -8,7 +8,7 @@ export function Footer() {
           <p className="mt-4 text-sm text-muted leading-relaxed">
             食卓で家族は繋がる。
             <br />
-            献立の悩みを解決するファミリーアプリ
+            献立の悩みを解決するファミリーアプリ。
           </p>
         </div>
 
