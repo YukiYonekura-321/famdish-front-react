@@ -231,7 +231,7 @@ export default function MenuPage() {
                 AI回答に関する重要なご注意
               </p>
               <p className="text-xs text-[var(--warm-gray-600)]">
-                AI回答は必ずしも正しいとは限りません。ハルシネーションを起こす場合があります。提案内容を参考にされる際は、ご自身の判断でご確認ください。
+                AI回答は必ずしも正しいとは限りません。ハルシネーションを起こす場合があります。
               </p>
             </div>
           </div>
