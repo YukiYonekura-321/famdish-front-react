@@ -18,11 +18,19 @@ const firebaseConfig = {
   messagingSenderId: "595471367531",
   appId: "1:595471367531:web:2f416bd203d20df01be02e",
 };
-// 上で用意した設定情報を使って、Firebaseアプリを初期化
-const app = initializeApp(firebaseConfig);
+
+// クライアントサイドのみで初期化（SSRでは実行されない）
+let app;
+let auth;
+
+if (typeof window !== "undefined") {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+}
+
 // 初期化したアプリから認証機能を取得して、auth という名前で外部に使えるようにしています。
 // 他のファイルで auth を使えば、ログイン・ログアウトなどの処理ができます
-export const auth = getAuth(app);
+export { auth };
 
 // setPersistence(auth, browserLocalPersistence)
 //   .then(() => {
