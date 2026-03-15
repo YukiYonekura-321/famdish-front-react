@@ -302,6 +302,22 @@ export default function FamilySuggestionPage() {
           <p className="text-sm text-muted text-center max-w-lg">
             料理するメニューを選択して、AIに作り方を提案してもらいましょう。
           </p>
+
+          {/* ─── AI免責事項 ─── */}
+          <div className="luxury-card max-w-lg mx-auto mb-6 border-2 border-[var(--primary)] opacity-90">
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">⚠️</span>
+              <div>
+                <p className="text-xs text-[var(--foreground)] font-medium mb-1">
+                  AI回答に関するご注意
+                </p>
+                <p className="text-xs text-[var(--warm-gray-600)]">
+                  AI回答は必ずしも正しいとは限りません。ハルシネーションを起こす場合があります。
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {FAMILY_NAV_LINKS.map(({ href, icon, label, variant }) => (
               <Link

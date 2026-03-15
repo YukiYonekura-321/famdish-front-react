@@ -222,6 +222,21 @@ export default function MenuPage() {
           ))}
         </div>
 
+        {/* ─── AI免責事項 ─── */}
+        <div className="luxury-card max-w-2xl mx-auto mb-8 border-2 border-[var(--primary)] opacity-90">
+          <div className="flex items-start gap-3">
+            <span className="text-xl mt-1">⚠️</span>
+            <div>
+              <p className="text-sm text-[var(--foreground)] font-medium mb-1">
+                AI回答に関する重要なご注意
+              </p>
+              <p className="text-xs text-[var(--warm-gray-600)]">
+                AI回答は必ずしも正しいとは限りません。ハルシネーションを起こす場合があります。提案内容を参考にされる際は、ご自身の判断でご確認ください。
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* ─── 制約条件設定 ─── */}
         <div className="luxury-card max-w-2xl mx-auto mb-12">
           <div className="flex items-center gap-3 mb-6">
