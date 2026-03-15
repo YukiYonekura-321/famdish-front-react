@@ -252,7 +252,7 @@ export default function MenuPage() {
           <div className="space-y-4 mb-6">
             <div>
               <label className="luxury-label text-sm block mb-3">
-                🎯 こだわり条件（どちらか一方を選択）
+                🎯 こだわり条件（どちらか一方を選択してください。）
               </label>
               <ConstraintToggle
                 constraintType={constraintType}
