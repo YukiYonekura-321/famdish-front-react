@@ -48,16 +48,17 @@ export default defineConfig({
   /* グローバルセットアップ / ティアダウン */
   globalSetup: "./e2e/global-setup.js",
 
-  /* Firebase Auth Emulator（常に自動起動） */
-  webServer: [
-    {
-      command: "firebase emulators:start --only auth",
-      url: `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST || "127.0.0.1:9099"}/`,
-      reuseExistingServer: true,
-      timeout: 30_000,
-    },
-  ],
-
+  /* Firebase Auth Emulator（smoke 以外） */
+  webServer: process.argv.includes("--project=smoke")
+    ? []
+    : [
+        {
+          command: "firebase emulators:start --only auth",
+          url: `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST || "127.0.0.1:9099"}/`,
+          reuseExistingServer: true,
+          timeout: 30_000,
+        },
+      ],
 
   /* ブラウザプロジェクト */
   projects: [
