@@ -3,7 +3,12 @@
 // Firebaseアプリを初期化するための関数 initializeApp をインポート
 import { initializeApp } from "firebase/app";
 // Firebaseの**認証機能（Authentication）**を使うための関数 getAuth をインポート
-import { getAuth } from "firebase/auth";
+import {
+  getAuth,
+  connectAuthEmulator,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 // import { setPersistence, browserLocalPersistence } from "firebase/auth";
 
 const firebaseConfig = {
@@ -31,62 +36,56 @@ if (typeof window !== "undefined") {
   // Playwright の addInitScript で window.__E2E_EMULATOR_URL__ が設定されている場合、
   // Firebase Auth Emulator に接続し、テスト用ヘルパーを window に公開する。
   // プロダクション環境では window.__E2E_EMULATOR_URL__ は undefined なので一切影響しない。
+  //
+  // ★ connectAuthEmulator は onAuthStateChanged より先に同期で呼ぶ必要がある。
+  //   動的 import() を使うと非同期になり、コンポーネントの onAuthStateChanged が
+  //   先に発火して未認証→リダイレクトが起きるため、静的 import を使う。
   if (window.__E2E_EMULATOR_URL__) {
-    import("firebase/auth").then((firebaseAuth) => {
+    try {
+      connectAuthEmulator(auth, window.__E2E_EMULATOR_URL__, {
+        disableWarnings: true,
+      });
+      console.log("[E2E] connectAuthEmulator succeeded");
+    } catch (e) {
+      console.warn("[E2E] connectAuthEmulator skipped:", e.message);
+    }
+
+    // テストから page.evaluate() 経由で呼び出すヘルパー
+    window.__FIREBASE_AUTH__ = auth;
+    window.__FIREBASE_SIGN_IN__ = (email, password) =>
+      signInWithEmailAndPassword(auth, email, password);
+    window.__FIREBASE_SIGN_OUT__ = () => signOut(auth);
+
+    // currentUser 偽装（useEffect の同期チェック回避）
+    if (window.__E2E_CREDENTIALS__) {
       try {
-        firebaseAuth.connectAuthEmulator(auth, window.__E2E_EMULATOR_URL__, {
-          disableWarnings: true,
-        });
-        console.log("[E2E] connectAuthEmulator succeeded");
-      } catch (e) {
-        console.warn("[E2E] connectAuthEmulator skipped:", e.message);
-      }
-
-      // テストから page.evaluate() 経由で呼び出すヘルパー
-      window.__FIREBASE_AUTH__ = auth;
-      window.__FIREBASE_SIGN_IN__ = (email, password) =>
-        firebaseAuth.signInWithEmailAndPassword(auth, email, password);
-      window.__FIREBASE_SIGN_OUT__ = () => firebaseAuth.signOut(auth);
-
-      // currentUser 偽装（useEffect の同期チェック回避）
-      if (window.__E2E_CREDENTIALS__) {
-        try {
-          Object.defineProperty(auth, "currentUser", {
-            value: {
-              uid: window.__E2E_CREDENTIALS__.uid || "e2e-uid",
-              email: window.__E2E_CREDENTIALS__.email,
-              emailVerified: true,
-              displayName: window.__E2E_CREDENTIALS__.displayName || "",
-              getIdToken: () => Promise.resolve("e2e-fake-token"),
-              getIdTokenResult: () =>
-                Promise.resolve({ token: "e2e-fake-token", claims: {} }),
-              _stopProactiveRefresh: () => {},
-              _startProactiveRefresh: () => {},
-              toJSON: function () {
-                return { uid: this.uid, email: this.email };
-              },
+        Object.defineProperty(auth, "currentUser", {
+          value: {
+            uid: window.__E2E_CREDENTIALS__.uid || "e2e-uid",
+            email: window.__E2E_CREDENTIALS__.email,
+            emailVerified: true,
+            displayName: window.__E2E_CREDENTIALS__.displayName || "",
+            getIdToken: () => Promise.resolve("e2e-fake-token"),
+            getIdTokenResult: () =>
+              Promise.resolve({ token: "e2e-fake-token", claims: {} }),
+            _stopProactiveRefresh: () => {},
+            _startProactiveRefresh: () => {},
+            toJSON: function () {
+              return { uid: this.uid, email: this.email };
             },
-            writable: true,
-            configurable: true,
-          });
-        } catch (e) {
-          console.warn("[E2E] currentUser override:", e);
-        }
+          },
+          writable: true,
+          configurable: true,
+        });
+      } catch (e) {
+        console.warn("[E2E] currentUser override:", e);
       }
+    }
 
-      console.log("[E2E] Firebase Emulator bridge ready");
-    });
+    console.log("[E2E] Firebase Emulator bridge ready");
   }
 }
 
 // 初期化したアプリから認証機能を取得して、auth という名前で外部に使えるようにしています。
 // 他のファイルで auth を使えば、ログイン・ログアウトなどの処理ができます
 export { auth };
-
-// setPersistence(auth, browserLocalPersistence)
-//   .then(() => {
-//     console.log("✅ Firebase persistence: local");
-//   })
-//   .catch((err) => {
-//     console.error("❌ persistence error", err);
-//   });

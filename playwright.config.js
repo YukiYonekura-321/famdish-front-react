@@ -67,17 +67,27 @@ export default defineConfig({
   /* グローバルセットアップ / ティアダウン */
   globalSetup: "./e2e/global-setup.js",
 
-  /* Firebase Auth Emulator（smoke のみ実行時はスキップ） */
-  webServer: isSmokeOnly
-    ? []
-    : [
-        {
-          command: "firebase emulators:start --only auth",
-          url: `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST || "127.0.0.1:9099"}/`,
-          reuseExistingServer: true,
-          timeout: 30_000,
-        },
-      ],
+  /* webServer: Next.js + Firebase Auth Emulator を自動起動 */
+  webServer: [
+    /* Next.js アプリ（未起動なら npm run dev で起動、既起動なら再利用） */
+    {
+      command: "npm run dev",
+      url: "http://localhost:3000",
+      reuseExistingServer: true,
+      timeout: 60_000,
+    },
+    /* Firebase Auth Emulator（smoke のみ実行時はスキップ） */
+    ...(!isSmokeOnly
+      ? [
+          {
+            command: "firebase emulators:start --only auth",
+            url: `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST || "127.0.0.1:9099"}/`,
+            reuseExistingServer: true,
+            timeout: 30_000,
+          },
+        ]
+      : []),
+  ],
 
   /* ブラウザプロジェクト */
   projects: [

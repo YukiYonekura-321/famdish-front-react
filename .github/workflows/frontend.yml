@@ -305,11 +305,15 @@ jobs:
   e2e-test:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: [preview-deploy]
+    needs: [build]
     if: github.event_name == 'pull_request'
     permissions:
       pull-requests: write
     timeout-minutes: 20
+    env:
+      FIREBASE_AUTH_EMULATOR_HOST: 127.0.0.1:9099
+      E2E_BASE_URL: http://localhost:3000
+      E2E_API_BASE_URL: ${{ secrets.E2E_API_BASE_URL }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -329,18 +333,27 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Run E2E tests (smoke against Preview)
-        env:
-          E2E_BASE_URL: ${{ needs.preview-deploy.outputs.preview-url }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      - name: Build Next.js application
+        run: npm run build
+
+      - name: Start Next.js application in background
+        run: |
+          npm run start > /tmp/server.log 2>&1 &
+          echo $! > /tmp/server.pid
+          sleep 3
+
+      - name: Run E2E tests (smoke against localhost)
         run: npx playwright test --project=smoke
 
-      - name: Run E2E tests (auth + CRUD + AI)
-        env:
-          E2E_BASE_URL: ${{ needs.preview-deploy.outputs.preview-url }}
-          E2E_API_BASE_URL: ${{ secrets.E2E_API_BASE_URL }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      - name: Run E2E tests (auth + CRUD + AI against localhost)
         run: npx playwright test --project=chromium --project=mobile-safari
+
+      - name: Cleanup server
+        if: always()
+        run: |
+          if [ -f /tmp/server.pid ]; then
+            kill $(cat /tmp/server.pid) || true
+          fi
 
       - name: Upload E2E report
         if: always()
@@ -350,6 +363,7 @@ jobs:
           path: |
             e2e-report/
             e2e-results/
+            /tmp/server.log
           retention-days: 14
 
       - name: Comment PR with E2E results
