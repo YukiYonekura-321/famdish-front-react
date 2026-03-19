@@ -9,6 +9,10 @@
     "lint": "eslint .",
     "test": "jest --verbose",
     "test:coverage": "jest --verbose --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --project=smoke",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report e2e-report",
     "prettier": "prettier --write src/app/lib/firebase.js"
   },
   "dependencies": {
@@ -27,6 +31,7 @@
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-react": "^7.27.1",
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -40,5 +45,8 @@
     "jest-environment-jsdom": "^30.2.0",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.11"
+  },
+  "optionalDependencies": {
+    "@playwright/test": "^1.52.0"
   }
 }
