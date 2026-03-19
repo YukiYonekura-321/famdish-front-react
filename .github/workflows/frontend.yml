@@ -329,6 +329,7 @@ jobs:
       - name: Run E2E tests (smoke against Preview)
         env:
           E2E_BASE_URL: ${{ needs.preview-deploy.outputs.preview-url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: npx playwright test --project=smoke
 
       - name: Run E2E tests (auth + CRUD + AI)
@@ -423,4 +424,5 @@ jobs:
       - name: Run smoke tests against production
         env:
           E2E_BASE_URL: ${{ needs.production-deploy.outputs.production-url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: npx playwright test --project=smoke
