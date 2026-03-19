@@ -132,17 +132,54 @@ export async function mockFirebaseAuth(page) {
   await connectBrowserToEmulator(page);
 
   // /sign-in へ遷移して Firebase チャンクを読み込み、実サインインを完了させる
-  // → IndexedDB にセッションが保存され、以降のページ遷移で
-  //   onAuthStateChanged がユーザーを正しく検出する
   await page.goto("/sign-in");
   await page.waitForLoadState("domcontentloaded");
 
-  // Firebase SDK が読み込まれるのを待つ
-  // (タイムアウト: 30秒 - Vercel Preview は遅い可能性がある)
-  await page.waitForFunction(
-    () => typeof window.__FIREBASE_SIGN_IN__ === "function",
-    { timeout: 30000 },
-  );
+  // 診断: ブラウザ側のコンソール出力
+  page.on("console", (msg) => {
+    if (msg.text().includes("[E2E]")) {
+      console.log("[Browser]", msg.text());
+    }
+  });
+
+  // Firebase SDK が読み込まれるのを待つ（ブラウザ側でのログも確認）
+  try {
+    await page.waitForFunction(
+      () => {
+        const has = typeof window.__FIREBASE_SIGN_IN__ === "function";
+        if (!has) {
+          console.log(
+            "[E2E Check]",
+            "Waiting for __FIREBASE_SIGN_IN__. hasFirebase:",
+            typeof window.firebase,
+            "hasAuth:",
+            typeof window.__FIREBASE_AUTH__,
+          );
+        }
+        return has;
+      },
+      { timeout: 60000 }, // 60秒に延長
+    );
+  } catch (e) {
+    // タイムアウト時のデバッグ情報を出力
+    const debugInfo = await page.evaluate(() => {
+      return {
+        hasSignIn: typeof window.__FIREBASE_SIGN_IN__ === "function",
+        hasAuth: typeof window.__FIREBASE_AUTH__ !== "undefined",
+        hasFirebase: typeof window.firebase !== "undefined",
+        windowFirebaseKeys: Object.keys(window)
+          .filter(
+            (k) =>
+              k.includes("FIREBASE") ||
+              k.includes("firebase") ||
+              k.includes("auth"),
+          )
+          .slice(0, 10),
+      };
+    });
+    console.error("[E2E Error] Firebase setup failed:", debugInfo);
+    throw e;
+  }
 
   // 実際にサインインを完了させる
   await page.evaluate(
@@ -152,15 +189,14 @@ export async function mockFirebaseAuth(page) {
     { email: TEST_USER.email, password: "Test1234!" },
   );
 
-  // サインイン後、onAuthStateChanged が /menus へリダイレクトする場合がある
-  // リダイレクトが完了するまで待機してから返す
+  // サインイン後のナビゲーション
   try {
     await page.waitForURL((url) => !url.pathname.includes("/sign-in"), {
       timeout: 5000,
     });
     await page.waitForLoadState("domcontentloaded");
   } catch {
-    // /sign-in に留まった場合（リダイレクトなし）は問題ない
+    // リダイレクトなし
   }
 }
 

@@ -219,6 +219,9 @@ export async function connectBrowserToEmulator(page) {
         }
 
         if (!hasFirebase && attempts < maxAttempts) {
+          if (attempts % 10 === 1) {
+            console.log(`[E2E] Polling Firebase SDK... attempt ${attempts}`);
+          }
           return; // 未ロード、次回ポーリング
         }
 
@@ -232,7 +235,9 @@ export async function connectBrowserToEmulator(page) {
         }
 
         try {
-          console.log("[E2E] Firebase SDK detected");
+          console.log(
+            `[E2E] Firebase SDK detected at attempt ${attempts}`,
+          );
 
           // connectAuthEmulator 関数を探す
           let connectAuthEmulator = null;
@@ -254,6 +259,10 @@ export async function connectBrowserToEmulator(page) {
           if (connectAuthEmulator && auth) {
             connectAuthEmulator(auth, emulatorUrl, { disableWarnings: true });
             console.log("[E2E] connectAuthEmulator succeeded");
+          } else {
+            console.warn(
+              "[E2E] connectAuthEmulator not available or auth missing",
+            );
           }
 
           // グローバルヘルパー関数を定義
@@ -262,6 +271,7 @@ export async function connectBrowserToEmulator(page) {
           // signInWithEmailAndPassword
           window.__FIREBASE_SIGN_IN__ = async function (email, password) {
             try {
+              console.log("[E2E] signInWithEmailAndPassword called");
               // compat API を優先
               if (
                 window.firebase &&

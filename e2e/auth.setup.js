@@ -25,6 +25,19 @@ setup("authenticate", async ({ page }) => {
   // Firebase Auth Emulator に接続
   await mockFirebaseAuth(page);
 
+  // 診断: Firebase グローバルが定義されているか確認
+  const firebaseGlobals = await page.evaluate(() => {
+    return {
+      hasSignIn: typeof window.__FIREBASE_SIGN_IN__ === "function",
+      hasAuth: typeof window.__FIREBASE_AUTH__ !== "undefined",
+      hasFirebase: typeof window.firebase !== "undefined",
+      windowKeys: Object.keys(window)
+        .filter((k) => k.includes("__FIREBASE") || k.includes("firebase"))
+        .slice(0, 10),
+    };
+  });
+  console.log("[E2E Diagnostic]", firebaseGlobals);
+
   // バックエンド API モック
   await mockBackendApi(page);
 
