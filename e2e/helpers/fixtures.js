@@ -138,9 +138,10 @@ export async function mockFirebaseAuth(page) {
   await page.waitForLoadState("domcontentloaded");
 
   // Firebase SDK が読み込まれるのを待つ
+  // (タイムアウト: 30秒 - Vercel Preview は遅い可能性がある)
   await page.waitForFunction(
     () => typeof window.__FIREBASE_SIGN_IN__ === "function",
-    { timeout: 10000 },
+    { timeout: 30000 },
   );
 
   // 実際にサインインを完了させる
