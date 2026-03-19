@@ -11,13 +11,15 @@ import { defineConfig, devices } from "@playwright/test";
  */
 const BASE_URL = process.env.E2E_BASE_URL || "http://localhost:3000";
 
-// webServer を起動するかどうかを判定
-// - smoke テストの場合: 不要（認証不要の公開ページ）
-// - 外部 URL への実行の場合: 不要（Vercel Preview / Production への実行）
-// - localhost への実行の場合: 必要（ローカル開発）
-const isExternalUrl =
-  process.env.E2E_BASE_URL &&
-  !process.env.E2E_BASE_URL.includes("localhost");
+// webServer（Firebase Auth Emulator）を起動するかどうかを判定
+// - smoke テストのみの場合: 不要（認証不要の公開ページ）
+// - chromium / mobile-safari: 必要（localhost でも Vercel Preview でも）
+//   → Playwright ブラウザは CI マシン上で動くため、
+//     localhost:9099 の Emulator に常にアクセスできる
+const isSmokeOnly =
+  process.argv.includes("--project=smoke") &&
+  !process.argv.includes("--project=chromium") &&
+  !process.argv.includes("--project=mobile-safari");
 
 export default defineConfig({
   testDir: "./e2e",
@@ -51,13 +53,22 @@ export default defineConfig({
     /* タイムアウト */
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
+    /* Vercel Preview Protection バイパス（全プロジェクト共通） */
+    ...(process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+      ? {
+          extraHTTPHeaders: {
+            "x-vercel-protection-bypass":
+              process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+          },
+        }
+      : {}),
   },
 
   /* グローバルセットアップ / ティアダウン */
   globalSetup: "./e2e/global-setup.js",
 
-  /* Firebase Auth Emulator（ローカル localhost への実行のみ） */
-  webServer: process.argv.includes("--project=smoke") || isExternalUrl
+  /* Firebase Auth Emulator（smoke のみ実行時はスキップ） */
+  webServer: isSmokeOnly
     ? []
     : [
         {
@@ -102,13 +113,6 @@ export default defineConfig({
       testMatch: /smoke\.spec\.js/,
       use: {
         ...devices["Desktop Chrome"],
-        // Vercel Preview Protection のバイパス
-        extraHTTPHeaders: process.env.VERCEL_AUTOMATION_BYPASS_SECRET
-          ? {
-              "x-vercel-protection-bypass":
-                process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
-            }
-          : {},
       },
     },
   ],

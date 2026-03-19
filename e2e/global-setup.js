@@ -15,11 +15,17 @@ export default async function globalSetup() {
 
   // フロントエンドの疎通チェック
   try {
-    const res = await fetch(baseUrl, { method: "HEAD" });
-    if (!res.ok) {
-      console.warn(`⚠️  Frontend returned status ${res.status}`);
-    } else {
+    const headers = {};
+    if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
+      headers["x-vercel-protection-bypass"] =
+        process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+    }
+    const res = await fetch(baseUrl, { method: "HEAD", headers });
+    if (res.ok || res.status === 401 || res.status === 308) {
+      // 401/308 = Vercel Preview Protection（サーバー自体は稼働中）
       console.log("✅ Frontend is reachable");
+    } else {
+      console.warn(`⚠️  Frontend returned status ${res.status}`);
     }
   } catch (err) {
     console.error(`❌ Frontend is unreachable at ${baseUrl}: ${err.message}`);
