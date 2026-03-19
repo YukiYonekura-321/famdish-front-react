@@ -162,7 +162,7 @@ export async function isEmulatorRunning() {
 /**
  * ブラウザ側で Firebase Auth を Emulator に接続する。
  *
- * Turbopack の共有チャンクをインターセプトし、getAuth() 直後に
+ * Turbopack/Webpack チャンクをインターセプトし、getAuth() 直後に
  * connectAuthEmulator() を呼び出すコードを注入する。
  * また signInWithEmailAndPassword / signOut をグローバルヘルパーとして公開し、
  * テストから page.evaluate() 経由で呼び出せるようにする。
@@ -170,80 +170,75 @@ export async function isEmulatorRunning() {
 export async function connectBrowserToEmulator(page) {
   const emulatorUrl = `http://${EMULATOR_HOST}`;
 
-  await page.route(
-    /\/_next\/static\/chunks\/src_[a-f0-9]+\._.js/,
-    async (route) => {
+  await page.route(/\/_next\/static\/chunks\/.*\.js$/, async (route) => {
+    try {
+      // ページが閉じられている可能性があるため確認
+      if (page.isClosed()) {
+        return;
+      }
+
+      let response;
       try {
-        // ページが閉じられている可能性があるため確認
-        if (page.isClosed()) {
+        response = await route.fetch();
+      } catch (e) {
+        // ページ/ブラウザが閉じられた場合はスキップ
+        if (
+          e.message.includes("Target page, context or browser has been closed")
+        ) {
           return;
         }
-
-        let response;
-        try {
-          response = await route.fetch();
-        } catch (e) {
-          // ページ/ブラウザが閉じられた場合はスキップ
-          if (
-            e.message.includes(
-              "Target page, context or browser has been closed",
-            )
-          ) {
-            return;
-          }
-          throw e;
-        }
-
-        let body = await response.text();
-
-        // firebase.js モジュールを含むチャンクのみ改変
-        if (body.includes("firebaseConfig") && body.includes('["getAuth"]')) {
-          body = body.replace(
-            /(auth\s*=\s*\(0,\s*([A-Za-z0-9_$]+)\["getAuth"\]\)\(app\))/,
-            (match, _full, mod) =>
-              `${match};` +
-              // connectAuthEmulator
-              `try{(0,${mod}["connectAuthEmulator"])(auth,"${emulatorUrl}",{disableWarnings:true})}` +
-              `catch(e){console.warn("Emulator connect skipped:",e.message)};` +
-              // signInWithEmailAndPassword をグローバルに公開
-              `window.__FIREBASE_SIGN_IN__=function(email,password){` +
-              `return (0,${mod}["signInWithEmailAndPassword"])(auth,email,password)};` +
-              // signOut をグローバルに公開
-              `window.__FIREBASE_SIGN_OUT__=function(){` +
-              `return (0,${mod}["signOut"])(auth)};` +
-              // auth オブジェクト参照をグローバルに公開
-              `window.__FIREBASE_AUTH__=auth;` +
-              // ── currentUser 偽装: useEffect の同期チェックを通す ──
-              // onAuthStateChanged は IndexedDB からセッションを復元後に発火するが、
-              // auth.currentUser の同期チェックは復元前に null になる。
-              // 偽ユーザーで上書きし、useEffect のバイルアウトを防ぐ。
-              `if(window.__E2E_CREDENTIALS__){` +
-              `try{Object.defineProperty(auth,"currentUser",{value:{` +
-              `uid:window.__E2E_CREDENTIALS__.uid||"e2e-uid",` +
-              `email:window.__E2E_CREDENTIALS__.email,` +
-              `emailVerified:true,` +
-              `displayName:window.__E2E_CREDENTIALS__.displayName||"",` +
-              `getIdToken:function(){return Promise.resolve("e2e-fake-token")},` +
-              `getIdTokenResult:function(){return Promise.resolve({token:"e2e-fake-token",claims:{}})},` +
-              `_stopProactiveRefresh:function(){},` +
-              `_startProactiveRefresh:function(){},` +
-              `toJSON:function(){return{uid:this.uid,email:this.email}}` +
-              `},writable:true,configurable:true})}catch(e){console.warn("currentUser override:",e)}` +
-              `}`,
-          );
-        }
-
-        await route.fulfill({ body, contentType: "application/javascript" });
-      } catch (e) {
-        // エラーが発生した場合のハンドリング
-        console.error("Route error:", e.message);
-        // route.abort() でリクエストをエラーとしてマーク
-        try {
-          await route.abort("failed");
-        } catch (_) {
-          // ページが閉じられている場合は無視
-        }
+        throw e;
       }
-    },
-  );
+
+      let body = await response.text();
+
+      // firebase.js モジュールを含むチャンクのみ改変
+      if (body.includes("firebaseConfig") && body.includes('["getAuth"]')) {
+        body = body.replace(
+          /(auth\s*=\s*\(0,\s*([A-Za-z0-9_$]+)\["getAuth"\]\)\(app\))/,
+          (match, _full, mod) =>
+            `${match};` +
+            // connectAuthEmulator
+            `try{(0,${mod}["connectAuthEmulator"])(auth,"${emulatorUrl}",{disableWarnings:true})}` +
+            `catch(e){console.warn("Emulator connect skipped:",e.message)};` +
+            // signInWithEmailAndPassword をグローバルに公開
+            `window.__FIREBASE_SIGN_IN__=function(email,password){` +
+            `return (0,${mod}["signInWithEmailAndPassword"])(auth,email,password)};` +
+            // signOut をグローバルに公開
+            `window.__FIREBASE_SIGN_OUT__=function(){` +
+            `return (0,${mod}["signOut"])(auth)};` +
+            // auth オブジェクト参照をグローバルに公開
+            `window.__FIREBASE_AUTH__=auth;` +
+            // ── currentUser 偽装: useEffect の同期チェックを通す ──
+            // onAuthStateChanged は IndexedDB からセッションを復元後に発火するが、
+            // auth.currentUser の同期チェックは復元前に null になる。
+            // 偽ユーザーで上書きし、useEffect のバイルアウトを防ぐ。
+            `if(window.__E2E_CREDENTIALS__){` +
+            `try{Object.defineProperty(auth,"currentUser",{value:{` +
+            `uid:window.__E2E_CREDENTIALS__.uid||"e2e-uid",` +
+            `email:window.__E2E_CREDENTIALS__.email,` +
+            `emailVerified:true,` +
+            `displayName:window.__E2E_CREDENTIALS__.displayName||"",` +
+            `getIdToken:function(){return Promise.resolve("e2e-fake-token")},` +
+            `getIdTokenResult:function(){return Promise.resolve({token:"e2e-fake-token",claims:{}})},` +
+            `_stopProactiveRefresh:function(){},` +
+            `_startProactiveRefresh:function(){},` +
+            `toJSON:function(){return{uid:this.uid,email:this.email}}` +
+            `},writable:true,configurable:true})}catch(e){console.warn("currentUser override:",e)}` +
+            `}`,
+        );
+      }
+
+      await route.fulfill({ body, contentType: "application/javascript" });
+    } catch (e) {
+      // エラーが発生した場合のハンドリング
+      console.error("Route error:", e.message);
+      // route.abort() でリクエストをエラーとしてマーク
+      try {
+        await route.abort("failed");
+      } catch (_) {
+        // ページが閉じられている場合は無視
+      }
+    }
+  });
 }
