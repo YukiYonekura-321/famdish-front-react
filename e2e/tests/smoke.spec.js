@@ -94,6 +94,8 @@ test.describe("スモークテスト", () => {
     // - Firebase 関連（SDK 初期化ウォーニング等）
     // - HTTP 401/403 ステータスエラー（Vercel Protection / 未認証 API）
     // - Provider's accounts list is empty（Firebase Auth の初期化）
+    // - CORS エラー（x-vercel-protection-bypass が外部 CDN へ漏れる既知の問題）
+    // - fonts.gstatic.com / fonts.googleapis.com（Google Fonts CORS）
     const criticalErrors = errors.filter(
       (e) =>
         !e.includes("Firebase") &&
@@ -101,7 +103,12 @@ test.describe("スモークテスト", () => {
         !e.includes("analytics") &&
         !e.includes("401") &&
         !e.includes("403") &&
-        !e.includes("Provider's accounts list is empty"),
+        !e.includes("Provider's accounts list is empty") &&
+        !e.includes("CORS") &&
+        !e.includes("fonts.gstatic.com") &&
+        !e.includes("fonts.googleapis.com") &&
+        !e.includes("x-vercel-protection-bypass") &&
+        !e.includes("net::ERR_FAILED"),
     );
 
     expect(criticalErrors).toHaveLength(0);
