@@ -1,0 +1,18 @@
+fix: E2E テストの包括的な改善と修正
+
+- fix(e2e/tests/auth.spec.js): メール未認証ユーザーテストのスキップを解除
+  test.skip → test に変更し、フローを再設計
+  /login で先にサインイン → /register-email でページに留まることを確認
+
+- feat(.github/workflows/frontend.yml): E2E テストで複数ブラウザを実行
+  chromium と mobile-safari（iPhone 14）の両方でテストを実行
+
+- fix(jest.config.js): Playwright テストが Jest で実行されるのを防止
+  e2e/ ディレクトリを testPathIgnorePatterns に追加
+
+- fix(playwright.config.js): smoke テスト実行時は Firebase Emulator を起動しない
+  --project=smoke 検出時に webServer を条件付けで無効化
+
+- fix(e2e/global-setup.js): smoke テスト用の Emulator チェックスキップ
+  isSmokeTest フラグで smoke テスト実行時は Emulator ヘルスチェックをスキップ
+  Vercel Preview での smoke テスト実行に対応
