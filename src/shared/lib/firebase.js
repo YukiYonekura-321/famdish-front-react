@@ -26,6 +26,57 @@ let auth;
 if (typeof window !== "undefined") {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
+
+  // ── E2E テスト用ブリッジ ──
+  // Playwright の addInitScript で window.__E2E_EMULATOR_URL__ が設定されている場合、
+  // Firebase Auth Emulator に接続し、テスト用ヘルパーを window に公開する。
+  // プロダクション環境では window.__E2E_EMULATOR_URL__ は undefined なので一切影響しない。
+  if (window.__E2E_EMULATOR_URL__) {
+    import("firebase/auth").then((firebaseAuth) => {
+      try {
+        firebaseAuth.connectAuthEmulator(auth, window.__E2E_EMULATOR_URL__, {
+          disableWarnings: true,
+        });
+        console.log("[E2E] connectAuthEmulator succeeded");
+      } catch (e) {
+        console.warn("[E2E] connectAuthEmulator skipped:", e.message);
+      }
+
+      // テストから page.evaluate() 経由で呼び出すヘルパー
+      window.__FIREBASE_AUTH__ = auth;
+      window.__FIREBASE_SIGN_IN__ = (email, password) =>
+        firebaseAuth.signInWithEmailAndPassword(auth, email, password);
+      window.__FIREBASE_SIGN_OUT__ = () => firebaseAuth.signOut(auth);
+
+      // currentUser 偽装（useEffect の同期チェック回避）
+      if (window.__E2E_CREDENTIALS__) {
+        try {
+          Object.defineProperty(auth, "currentUser", {
+            value: {
+              uid: window.__E2E_CREDENTIALS__.uid || "e2e-uid",
+              email: window.__E2E_CREDENTIALS__.email,
+              emailVerified: true,
+              displayName: window.__E2E_CREDENTIALS__.displayName || "",
+              getIdToken: () => Promise.resolve("e2e-fake-token"),
+              getIdTokenResult: () =>
+                Promise.resolve({ token: "e2e-fake-token", claims: {} }),
+              _stopProactiveRefresh: () => {},
+              _startProactiveRefresh: () => {},
+              toJSON: function () {
+                return { uid: this.uid, email: this.email };
+              },
+            },
+            writable: true,
+            configurable: true,
+          });
+        } catch (e) {
+          console.warn("[E2E] currentUser override:", e);
+        }
+      }
+
+      console.log("[E2E] Firebase Emulator bridge ready");
+    });
+  }
 }
 
 // 初期化したアプリから認証機能を取得して、auth という名前で外部に使えるようにしています。

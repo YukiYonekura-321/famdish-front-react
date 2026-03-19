@@ -128,76 +128,38 @@ export async function mockFirebaseAuth(page) {
     },
   );
 
-  // Turbopack チャンクインターセプトをセットアップ
+  // addInitScript で __E2E_EMULATOR_URL__ フラグを設定
+  // → firebase.js 内のブリッジコードが検知して自動的に
+  //   connectAuthEmulator() + window.__FIREBASE_SIGN_IN__ を公開する
   await connectBrowserToEmulator(page);
 
-  // /sign-in へ遷移して Firebase チャンクを読み込み
-  await page.goto("/sign-in");
-  await page.waitForLoadState("domcontentloaded");
-  await page.waitForLoadState("networkidle");
-
-  // 診断: ブラウザ側のコンソール出力
+  // ブラウザコンソールの [E2E] ログをキャプチャ
   page.on("console", (msg) => {
     if (msg.text().includes("[E2E]")) {
       console.log("[Browser]", msg.text());
     }
   });
 
-  // ページロード完了後、Firebase SDK が利用可能か直接チェック
-  const firebaseNowAvailable = await page.evaluate(() => {
-    let hasFirebase = false;
-    try {
-      if (
-        typeof window.firebase !== "undefined" &&
-        typeof window.firebase.auth === "function"
-      ) {
-        hasFirebase = true;
-      } else if (typeof window.__firebaseAuth__ !== "undefined") {
-        hasFirebase = true;
-      }
-    } catch (e) {}
+  // /sign-in へ遷移して Firebase SDK モジュールを読み込ませる
+  await page.goto("/sign-in");
+  await page.waitForLoadState("domcontentloaded");
 
-    console.log("[E2E] After page load, Firebase available:", hasFirebase);
-    return hasFirebase;
-  });
-
-  // Firebase SDK が読み込まれるのを待つ（主に addInitScript のポーリングを監視）
+  // firebase.js のブリッジコードが __FIREBASE_SIGN_IN__ を公開するのを待つ
   try {
     await page.waitForFunction(
-      () => {
-        const has = typeof window.__FIREBASE_SIGN_IN__ === "function";
-        if (!has && typeof window.__FIREBASE_SETUP_CHECKED__ === "undefined") {
-          console.log(
-            "[E2E Check]",
-            "Waiting for __FIREBASE_SIGN_IN__. hasFirebase:",
-            typeof window.firebase,
-            "hasAuth:",
-            typeof window.__FIREBASE_AUTH__,
-          );
-        }
-        window.__FIREBASE_SETUP_CHECKED__ = true;
-        return has;
-      },
-      { timeout: 60000 }, // 60秒
+      () => typeof window.__FIREBASE_SIGN_IN__ === "function",
+      { timeout: 30000 },
     );
   } catch (e) {
-    // タイムアウト時のデバッグ情報を出力
-    const debugInfo = await page.evaluate(() => {
-      return {
-        hasSignIn: typeof window.__FIREBASE_SIGN_IN__ === "function",
-        hasAuth: typeof window.__FIREBASE_AUTH__ !== "undefined",
-        hasFirebase: typeof window.firebase !== "undefined",
-        windowFirebaseKeys: Object.keys(window)
-          .filter(
-            (k) =>
-              k.includes("FIREBASE") ||
-              k.includes("firebase") ||
-              k.includes("auth"),
-          )
-          .slice(0, 10),
-      };
-    });
-    console.error("[E2E Error] Firebase setup failed:", debugInfo);
+    const debugInfo = await page.evaluate(() => ({
+      hasSignIn: typeof window.__FIREBASE_SIGN_IN__ === "function",
+      hasAuth: typeof window.__FIREBASE_AUTH__ !== "undefined",
+      hasEmulatorUrl: typeof window.__E2E_EMULATOR_URL__ !== "undefined",
+      e2eKeys: Object.keys(window)
+        .filter((k) => k.startsWith("__"))
+        .slice(0, 15),
+    }));
+    console.error("[E2E Error] Firebase bridge not ready:", debugInfo);
     throw e;
   }
 

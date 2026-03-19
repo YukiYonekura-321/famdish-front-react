@@ -162,166 +162,18 @@ export async function isEmulatorRunning() {
 /**
  * ブラウザ側で Firebase Auth を Emulator に接続する。
  *
- * シンプルな addInitScript アプローチ:
- * 1. Firebase SDK ロード完了を待つ
- * 2. connectAuthEmulator() を呼び出す
- * 3. グローバルヘルパー関数を定義
+ * アプリの firebase.js 内のブリッジコードを起動するために
+ * addInitScript で window.__E2E_EMULATOR_URL__ を設定する。
+ * firebase.js はこのフラグを検出すると、connectAuthEmulator() を呼び出し、
+ * window.__FIREBASE_SIGN_IN__ 等のヘルパーを自動公開する。
  */
 export async function connectBrowserToEmulator(page) {
   const emulatorUrl = `http://${EMULATOR_HOST}`;
 
-  // Firebase SDK ロード完了を待つ & Emulator 接続
+  // firebase.js 内のブリッジコードを起動するフラグを設定
   await page.addInitScript(
     ({ emulatorUrl }) => {
-      const maxAttempts = 200; // 20秒間ポーリング
-      let attempts = 0;
-
-      const waitForFirebase = setInterval(() => {
-        attempts++;
-
-        // Firebase SDK が利用可能か判定
-        let hasFirebase = false;
-        let auth = null;
-
-        try {
-          // パターン1: Next.js の firebase setup で getAuth() を使用
-          if (
-            typeof window !== "undefined" &&
-            window.firebase &&
-            typeof window.firebase.auth === "function"
-          ) {
-            // compat API
-            auth = window.firebase.auth();
-            hasFirebase = true;
-          }
-          // パターン2: モダン SDK (firebase/auth モジュール から)
-          else if (window.__firebaseAuth__) {
-            auth = window.__firebaseAuth__;
-            hasFirebase = true;
-          }
-          // パターン3: グローバル探索
-          else {
-            for (const key in window) {
-              const val = window[key];
-              if (
-                val &&
-                typeof val === "object" &&
-                typeof val.currentUser !== "undefined"
-              ) {
-                auth = val;
-                hasFirebase = true;
-                break;
-              }
-            }
-          }
-        } catch (e) {
-          // 無視
-        }
-
-        if (!hasFirebase && attempts < maxAttempts) {
-          if (attempts % 10 === 1) {
-            console.log(`[E2E] Polling Firebase SDK... attempt ${attempts}`);
-          }
-          return; // 未ロード、次回ポーリング
-        }
-
-        clearInterval(waitForFirebase);
-
-        if (!hasFirebase) {
-          console.warn(
-            `[E2E] Firebase SDK not detected after ${attempts} attempts`,
-          );
-          return;
-        }
-
-        try {
-          console.log(`[E2E] Firebase SDK detected at attempt ${attempts}`);
-
-          // connectAuthEmulator 関数を探す
-          let connectAuthEmulator = null;
-
-          // パターン1: firebase.auth API
-          if (
-            window.firebase &&
-            typeof window.firebase.auth === "object" &&
-            window.firebase.auth.connectAuthEmulator
-          ) {
-            connectAuthEmulator = window.firebase.auth.connectAuthEmulator;
-          }
-          // パターン2: 直接インポート (モダン SDK)
-          else if (window.__firebaseConnect__) {
-            connectAuthEmulator = window.__firebaseConnect__;
-          }
-
-          // Emulator 接続
-          if (connectAuthEmulator && auth) {
-            connectAuthEmulator(auth, emulatorUrl, { disableWarnings: true });
-            console.log("[E2E] connectAuthEmulator succeeded");
-          } else {
-            console.warn(
-              "[E2E] connectAuthEmulator not available or auth missing",
-            );
-          }
-
-          // グローバルヘルパー関数を定義
-          window.__FIREBASE_AUTH__ = auth;
-
-          // signInWithEmailAndPassword
-          window.__FIREBASE_SIGN_IN__ = async function (email, password) {
-            try {
-              console.log("[E2E] signInWithEmailAndPassword called");
-              // compat API を優先
-              if (
-                window.firebase &&
-                typeof window.firebase.auth === "function"
-              ) {
-                const authCompat = window.firebase.auth();
-                return await authCompat.signInWithEmailAndPassword(
-                  email,
-                  password,
-                );
-              }
-              // モダン API
-              else if (auth && auth.signInWithEmailAndPassword) {
-                return await auth.signInWithEmailAndPassword(email, password);
-              } else {
-                throw new Error("signInWithEmailAndPassword not available");
-              }
-            } catch (e) {
-              console.error("[E2E] signIn error:", e.message);
-              throw e;
-            }
-          };
-
-          // signOut
-          window.__FIREBASE_SIGN_OUT__ = async function () {
-            try {
-              if (
-                window.firebase &&
-                typeof window.firebase.auth === "function"
-              ) {
-                return await window.firebase.auth().signOut();
-              } else if (auth && auth.signOut) {
-                return await auth.signOut();
-              } else {
-                throw new Error("signOut not available");
-              }
-            } catch (e) {
-              console.error("[E2E] signOut error:", e.message);
-              throw e;
-            }
-          };
-
-          console.log("[E2E] Firebase Emulator bridge setup complete");
-        } catch (e) {
-          console.error("[E2E] Setup failed:", e.message);
-        }
-      }, 100);
-
-      // タイムアウト設定: 20秒間ポーリング継続
-      setTimeout(() => {
-        clearInterval(waitForFirebase);
-      }, 20000);
+      window.__E2E_EMULATOR_URL__ = emulatorUrl;
     },
     { emulatorUrl },
   );
