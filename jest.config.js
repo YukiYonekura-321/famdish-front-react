@@ -12,7 +12,7 @@ const config = {
     "^.+\\.(js|jsx)$": "babel-jest",
   },
   transformIgnorePatterns: ["/node_modules/(?!(firebase|@firebase)/)"],
-  testPathIgnorePatterns: ["/node_modules/", "/.next/"],
+  testPathIgnorePatterns: ["/node_modules/", "/.next/", "/e2e/"],
 
   // ── カバレッジ設定 (npm test -- --coverage で実行) ──
   collectCoverageFrom: [
