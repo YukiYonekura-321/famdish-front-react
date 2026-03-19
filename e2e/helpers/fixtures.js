@@ -131,9 +131,10 @@ export async function mockFirebaseAuth(page) {
   // Turbopack チャンクインターセプトをセットアップ
   await connectBrowserToEmulator(page);
 
-  // /sign-in へ遷移して Firebase チャンクを読み込み、実サインインを完了させる
+  // /sign-in へ遷移して Firebase チャンクを読み込み
   await page.goto("/sign-in");
   await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState("networkidle");
 
   // 診断: ブラウザ側のコンソール出力
   page.on("console", (msg) => {
@@ -142,12 +143,30 @@ export async function mockFirebaseAuth(page) {
     }
   });
 
-  // Firebase SDK が読み込まれるのを待つ（ブラウザ側でのログも確認）
+  // ページロード完了後、Firebase SDK が利用可能か直接チェック
+  const firebaseNowAvailable = await page.evaluate(() => {
+    let hasFirebase = false;
+    try {
+      if (
+        typeof window.firebase !== "undefined" &&
+        typeof window.firebase.auth === "function"
+      ) {
+        hasFirebase = true;
+      } else if (typeof window.__firebaseAuth__ !== "undefined") {
+        hasFirebase = true;
+      }
+    } catch (e) {}
+
+    console.log("[E2E] After page load, Firebase available:", hasFirebase);
+    return hasFirebase;
+  });
+
+  // Firebase SDK が読み込まれるのを待つ（主に addInitScript のポーリングを監視）
   try {
     await page.waitForFunction(
       () => {
         const has = typeof window.__FIREBASE_SIGN_IN__ === "function";
-        if (!has) {
+        if (!has && typeof window.__FIREBASE_SETUP_CHECKED__ === "undefined") {
           console.log(
             "[E2E Check]",
             "Waiting for __FIREBASE_SIGN_IN__. hasFirebase:",
@@ -156,9 +175,10 @@ export async function mockFirebaseAuth(page) {
             typeof window.__FIREBASE_AUTH__,
           );
         }
+        window.__FIREBASE_SETUP_CHECKED__ = true;
         return has;
       },
-      { timeout: 60000 }, // 60秒に延長
+      { timeout: 60000 }, // 60秒
     );
   } catch (e) {
     // タイムアウト時のデバッグ情報を出力

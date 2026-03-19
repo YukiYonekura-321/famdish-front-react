@@ -173,7 +173,7 @@ export async function connectBrowserToEmulator(page) {
   // Firebase SDK ロード完了を待つ & Emulator 接続
   await page.addInitScript(
     ({ emulatorUrl }) => {
-      const maxAttempts = 100;
+      const maxAttempts = 200; // 20秒間ポーリング
       let attempts = 0;
 
       const waitForFirebase = setInterval(() => {
@@ -235,9 +235,7 @@ export async function connectBrowserToEmulator(page) {
         }
 
         try {
-          console.log(
-            `[E2E] Firebase SDK detected at attempt ${attempts}`,
-          );
+          console.log(`[E2E] Firebase SDK detected at attempt ${attempts}`);
 
           // connectAuthEmulator 関数を探す
           let connectAuthEmulator = null;
@@ -320,10 +318,10 @@ export async function connectBrowserToEmulator(page) {
         }
       }, 100);
 
-      // タイムアウト設定（10秒以상 待たない）
+      // タイムアウト設定: 20秒間ポーリング継続
       setTimeout(() => {
         clearInterval(waitForFirebase);
-      }, 10000);
+      }, 20000);
     },
     { emulatorUrl },
   );
