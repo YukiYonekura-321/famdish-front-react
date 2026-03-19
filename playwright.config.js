@@ -11,6 +11,14 @@ import { defineConfig, devices } from "@playwright/test";
  */
 const BASE_URL = process.env.E2E_BASE_URL || "http://localhost:3000";
 
+// webServer を起動するかどうかを判定
+// - smoke テストの場合: 不要（認証不要の公開ページ）
+// - 外部 URL への実行の場合: 不要（Vercel Preview / Production への実行）
+// - localhost への実行の場合: 必要（ローカル開発）
+const isExternalUrl =
+  process.env.E2E_BASE_URL &&
+  !process.env.E2E_BASE_URL.includes("localhost");
+
 export default defineConfig({
   testDir: "./e2e",
   outputDir: "./e2e-results",
@@ -48,8 +56,8 @@ export default defineConfig({
   /* グローバルセットアップ / ティアダウン */
   globalSetup: "./e2e/global-setup.js",
 
-  /* Firebase Auth Emulator（smoke 以外） */
-  webServer: process.argv.includes("--project=smoke")
+  /* Firebase Auth Emulator（ローカル localhost への実行のみ） */
+  webServer: process.argv.includes("--project=smoke") || isExternalUrl
     ? []
     : [
         {
