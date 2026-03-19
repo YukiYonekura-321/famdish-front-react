@@ -139,7 +139,7 @@ export default function CreateInvitePage() {
                 className="text-xl text-[var(--warm-gray-500)] leading-relaxed"
                 style={{ fontFamily: "var(--font-body)" }}
               >
-                大切な家族をFamDishに招待しましょう。
+                家族をFamDishに招待しましょう。
                 <br />
                 家族への招待リンクを生成します。
               </p>
