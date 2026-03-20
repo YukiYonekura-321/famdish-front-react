@@ -34,12 +34,20 @@ const eslintConfig = [
     // ✅ ここにルールを記述！
     rules: {
       semi: ["error", "always"],
-      quotes: ["error", "double"],
+      // quotes: ["error", "double"],
       // "no-console": ["warn", { allow: ["warn", "error"] }],
       //indent: ["error", 2],
       "no-unused-vars": "warn",
       camelcase: "warn",
       "react/react-in-jsx-scope": "off", // Next.js では不要なので
+    },
+  },
+  {
+    // E2E テストファイル用の例外ルール
+    files: ["e2e/**/*.js", "playwright.config.js"],
+    rules: {
+      "import/no-unresolved": "off",
+      "react-hooks/rules-of-hooks": "off",
     },
   },
 ];
