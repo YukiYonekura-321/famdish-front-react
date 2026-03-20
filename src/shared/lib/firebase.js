@@ -29,8 +29,22 @@ let app;
 let auth;
 
 if (typeof window !== "undefined") {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
+  // E2E テスト時は window.__E2E_EMULATOR_URL__ が設定されている。
+  // 本番 API キーが CI に存在しない場合でもビルドが通るよう
+  // apiKey には必ずフォールバック値を設定する。
+  const isE2E = Boolean(window.__E2E_EMULATOR_URL__);
+  const config = {
+    ...firebaseConfig,
+    apiKey: firebaseConfig.apiKey || "e2e-test-api-key",
+    authDomain: isE2E ? "localhost" : firebaseConfig.authDomain,
+  };
+
+  try {
+    app = initializeApp(config);
+    auth = getAuth(app);
+  } catch (e) {
+    console.error("[Firebase] initializeApp failed:", e.message);
+  }
 
   // ── E2E テスト用ブリッジ ──
   // Playwright の addInitScript で window.__E2E_EMULATOR_URL__ が設定されている場合、
@@ -40,7 +54,7 @@ if (typeof window !== "undefined") {
   // ★ connectAuthEmulator は onAuthStateChanged より先に同期で呼ぶ必要がある。
   //   動的 import() を使うと非同期になり、コンポーネントの onAuthStateChanged が
   //   先に発火して未認証→リダイレクトが起きるため、静的 import を使う。
-  if (window.__E2E_EMULATOR_URL__) {
+  if (window.__E2E_EMULATOR_URL__ && auth) {
     try {
       connectAuthEmulator(auth, window.__E2E_EMULATOR_URL__, {
         disableWarnings: true,

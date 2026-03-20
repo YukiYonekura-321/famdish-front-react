@@ -104,6 +104,10 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         storageState: "./e2e/.auth/user.json",
       },
+      // smoke.spec.js は storageState なしの smoke プロジェクトで実行済み
+      // storageState 付きで動かすとエミュレータトークンを本番 Firebase で
+      // 検証しようとして 400 が発生するため除外する
+      testIgnore: /smoke\.spec\.js/,
       dependencies: ["auth-setup"],
     },
 
@@ -114,6 +118,8 @@ export default defineConfig({
         ...devices["iPhone 14"],
         storageState: "./e2e/.auth/user.json",
       },
+      // 同上
+      testIgnore: /smoke\.spec\.js/,
       dependencies: ["auth-setup"],
     },
 

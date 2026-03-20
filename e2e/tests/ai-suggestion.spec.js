@@ -30,7 +30,6 @@ test.describe("AI 献立提案フロー", () => {
   // ── 1. メニューページが表示される ──
   test("メニューページに提案フォームが表示される", async ({ page }) => {
     await page.goto("/menus");
-    await page.waitForLoadState("networkidle");
 
     // 制約条件の選択 UI が表示される
     await expect(page.getByText("AI提案の条件設定")).toBeVisible();
@@ -39,7 +38,7 @@ test.describe("AI 献立提案フロー", () => {
   // ── 2. 予算制約で AI 提案を実行 ──
   test("予算制約で献立提案を実行し結果が表示される", async ({ page }) => {
     await page.goto("/menus");
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("AI提案の条件設定")).toBeVisible();
 
     // 予算を選択
     const budgetSelect = page.locator("select, [role='listbox']").first();
@@ -63,7 +62,7 @@ test.describe("AI 献立提案フロー", () => {
   // ── 3. 調理時間制約で AI 提案を実行 ──
   test("調理時間制約で献立提案を実行できる", async ({ page }) => {
     await page.goto("/menus");
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("AI提案の条件設定")).toBeVisible();
 
     // 「調理時間」タブ/トグルに切替
     const timeToggle = page.getByText(/調理時間/);
@@ -86,7 +85,7 @@ test.describe("AI 献立提案フロー", () => {
   // ── 4. 提案を採用 → レシピ保存 ──
   test("提案を採用してレシピが保存される", async ({ page }) => {
     await page.goto("/menus");
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("AI提案の条件設定")).toBeVisible();
 
     // 提案を実行
     const suggestButton = page.getByRole("button", {
@@ -118,7 +117,7 @@ test.describe("AI 献立提案フロー", () => {
   // ── 5. 別案を要求 ──
   test("別案を要求できる", async ({ page }) => {
     await page.goto("/menus");
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("AI提案の条件設定")).toBeVisible();
 
     // 提案を実行
     const suggestButton = page.getByRole("button", {
@@ -151,7 +150,7 @@ test.describe("AI 献立提案フロー", () => {
   // ── 6. NG を送信 ──
   test("NG を送信できる", async ({ page }) => {
     await page.goto("/menus");
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("AI提案の条件設定")).toBeVisible();
 
     // 提案を実行
     const suggestButton = page.getByRole("button", {
@@ -181,7 +180,7 @@ test.describe("AI 献立提案フロー", () => {
   // ── 7. 完全フロー: 入力 → API 呼び出し → 結果表示 → 保存 ──
   test("E2E: 入力 → 提案 → 結果表示 → 採用保存", async ({ page }) => {
     await page.goto("/menus");
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("AI提案の条件設定")).toBeVisible();
 
     // ─ STEP 1: 制約入力 ─
     // 日数を選択（あれば）
