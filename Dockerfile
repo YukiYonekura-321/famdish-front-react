@@ -8,10 +8,10 @@ RUN npm ci
 
 COPY . .
 
-# Next.js SSRの場合
-RUN npm run build
+# ビルドしたい場合
+# RUN npm run build
 
 EXPOSE 3000
 
-# CMD ["npm", "run", "dev"]
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
+# CMD ["npm", "start"]
