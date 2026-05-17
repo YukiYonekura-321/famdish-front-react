@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Header } from "@/shared/components/header";
+import { apiClient } from "@/shared/lib/api";
+import { PublicSuggestionCard } from "@/features/menu/components/PublicSuggestionCard";
 
 const BG_IMAGES = [
   "/32997476_m.jpg",
@@ -14,6 +16,8 @@ const SLIDE_INTERVAL_MS = 5000;
 
 export default function HomePage() {
   const suggestionsRef = useRef(null);
+
+  const [suggestions, setSuggestions] = useState([]);
   const [bgIndex, setBgIndex] = useState(0);
 
   useEffect(() => {
@@ -31,6 +35,23 @@ export default function HomePage() {
       });
     }, 100);
   };
+
+  useEffect(() => {
+    const fetchDemoData = async () => {
+      try {
+        const [recipesRes] = await Promise.all([apiClient.get("/api/recipes")]);
+
+        const suggestionsData = Array.isArray(recipesRes.data)
+          ? recipesRes.data
+          : [];
+        setSuggestions(suggestionsData);
+      } catch (error) {
+        console.error("初期データ取得失敗:", error);
+        setSuggestions([]);
+      }
+    };
+    fetchDemoData();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -112,6 +133,19 @@ export default function HomePage() {
           >
             実際の生成例
           </p>
+
+          <div className="w-full max-w-2xl flex flex-col gap-4">
+            {suggestions.map((s) => (
+              <PublicSuggestionCard
+                key={s.id}
+                suggestion={s}
+                members={members}
+                goodStatus={goodStatus[s.id]}
+                goodCount={goodCount[s.id]}
+                onToggleGood={handleToggleGood}
+              />
+            ))}
+          </div>
 
           <p
             className="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mb-12 animate-fade-in-up stagger-3"
