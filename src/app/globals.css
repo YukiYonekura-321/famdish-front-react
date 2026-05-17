@@ -1363,3 +1363,29 @@ p {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   COLOR ALTERNATING ANIMATION WITH FADE EFFECT
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes colorAlternate {
+  0% {
+    color: rgba(242, 141, 95, 1);
+  }
+  45% {
+    color: rgba(242, 141, 95, 1);
+  }
+  60% {
+    color: rgba(212, 175, 55, 1);
+  }
+  95% {
+    color: rgba(212, 175, 55, 1);
+  }
+  100% {
+    color: rgba(242, 141, 95, 1);
+  }
+}
+
+.animate-color-alternate {
+  animation: colorAlternate 4s ease-in-out infinite;
+}

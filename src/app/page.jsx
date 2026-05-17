@@ -59,20 +59,46 @@ export default function HomePage() {
         {/* メインコンテンツ */}
         <div className="relative z-10 flex flex-col items-center text-center px-6 md:px-8 max-w-4xl mx-auto">
           <h1
-            className="text-4xl md:text-6xl lg:text-7xl font-medium !text-white mb-6 tracking-tight animate-fade-in-up drop-shadow-lg"
+            className="text-4xl md:text-6xl lg:text-7xl font-medium !text-red-500 mb-6 tracking-tight animate-fade-in-up drop-shadow-lg"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            食卓で家族は繋がる
+            30秒であなた向けの献立を提案
           </h1>
 
           <div className="w-20 h-1 bg-gradient-to-r from-transparent via-[var(--gold-400)] to-transparent mb-8 animate-fade-in stagger-1" />
 
           <h2
-            className="text-2xl md:text-4xl font-light !text-white mb-12 tracking-wide animate-fade-in-up stagger-2 drop-shadow-lg"
+            className="text-2xl md:text-4xl font-light !text-white mb-24 tracking-wide animate-fade-in-up stagger-2 drop-shadow-lg"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            FamDishとは
+            好きなものと嫌いなものを選んで、
+            <br />
+            冷蔵庫の在庫を登録するだけ
           </h2>
+
+          <h2
+            className="text-2xl md:text-4xl font-light mb-12 tracking-wide animate-fade-in-up stagger-2 animate-color-alternate drop-shadow-lg"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            AIがパーソナライズした献立を自動提案します
+          </h2>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+            <button className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl">
+              今すぐ無料で試す
+            </button>
+
+            <button className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl">
+              デモを見る
+            </button>
+          </div>
+
+          <p
+            className="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mb-12 animate-fade-in-up stagger-3"
+            style={{ fontFamily: "var(--font-body)" }}
+          >
+            実際の生成例
+          </p>
 
           <p
             className="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mb-12 animate-fade-in-up stagger-3"
