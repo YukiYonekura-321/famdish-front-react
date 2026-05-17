@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Header } from "@/shared/components/header";
 
@@ -13,6 +13,7 @@ const BG_IMAGES = [
 const SLIDE_INTERVAL_MS = 5000;
 
 export default function HomePage() {
+  const suggestionsRef = useRef(null);
   const [bgIndex, setBgIndex] = useState(0);
 
   useEffect(() => {
@@ -21,6 +22,15 @@ export default function HomePage() {
     }, SLIDE_INTERVAL_MS);
     return () => clearInterval(interval);
   }, []);
+
+  const handleTrialAiSuggesttion = () => {
+    setTimeout(() => {
+      suggestionsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 100);
+  };
 
   return (
     <div className="min-h-screen">
@@ -84,7 +94,10 @@ export default function HomePage() {
           </h2>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <button className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl">
+            <button
+              onClick={handleTrialAiSuggesttion}
+              className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl"
+            >
               今すぐ無料で試す
             </button>
 
@@ -118,6 +131,7 @@ export default function HomePage() {
           <Link
             href="/sign-in"
             className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl"
+            ref={suggestionsRef}
           >
             今すぐ無料で始める
           </Link>
