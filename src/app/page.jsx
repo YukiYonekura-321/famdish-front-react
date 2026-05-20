@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Header } from "@/shared/components/header";
 import { apiClient } from "@/shared/lib/api";
 import { PublicSuggestionCard } from "@/features/menu/components/PublicSuggestionCard";
+import LoadingSpinner from "@/shared/components/LoadingSpinner";
+import SuggestionCard from "@/features/menu/components/SuggestionCard";
 
 const BG_IMAGES = [
   "/32997476_m.jpg",
@@ -17,8 +19,13 @@ const SLIDE_INTERVAL_MS = 5000;
 export default function HomePage() {
   const suggestionsRef = useRef(null);
 
+  // ── state ──
   const [suggestions, setSuggestions] = useState([]);
   const [bgIndex, setBgIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [like, setLike] = useState("");
+  const [dislike, setDislike] = useState("");
+  const [aisuggestion, setAiSuggestion] = useState();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -34,6 +41,23 @@ export default function HomePage() {
         block: "center",
       });
     }, 100);
+  };
+
+  const trySuggestions = async () => {
+    setLoading(true);
+    // ToDo バックエンドにAI提案を試すAPIを実装する
+    try {
+      const res = await apiClient.post("/api/trial/aisuggestion", {
+        likes: like,
+        dislikes: dislike,
+      });
+      setAiSuggestion(res);
+    } catch {
+      console.error("AI提案取得失敗:", error);
+      alert("AI提案取得に失敗しました");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -161,6 +185,54 @@ export default function HomePage() {
               そんな悩みを解決。
             </span>
           </p>
+
+          {/* ─── 提案取得ボタン ─── */}
+          <div>
+            <label>好きなもの</label>
+            <input
+              type="text"
+              onChange={(e) => setLike(e.target.value)}
+              className="luxury-input"
+            />
+          </div>
+          <div>
+            <label>嫌いなもの</label>
+            <input
+              type="text"
+              onChange={(e) => setDislike(e.target.value)}
+              className="luxury-input"
+            />
+          </div>
+          <div className="luxury-card max-w-2xl mx-auto mb-12">
+            <button
+              onClick={trySuggestions}
+              className="luxury-btn luxury-btn-primary w-full"
+            >
+              献立提案を試してみる
+            </button>
+          </div>
+
+          {loading && (
+            <div className="flex flex-col items-center gap-4 my-8">
+              <LoadingSpinner />
+              <p className="text-sm text-muted animate-pulse">
+                AIが献立を考えています…（最大2分ほどかかる場合があります）
+              </p>
+            </div>
+          )}
+
+          <div>
+            {aisuggestion && (
+              <div className="mt-4 grid gap-4">
+                <SuggestionCard
+                  suggestion={aisuggestion}
+                  // onOk={handleAcceptSuggestion}
+                  // onRetry={handleRetry}
+                  // onNg={handleNg}
+                />
+              </div>
+            )}
+          </div>
 
           <Link
             href="/sign-in"
