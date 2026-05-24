@@ -6,7 +6,6 @@ import { Header } from "@/shared/components/header";
 import { apiClient } from "@/shared/lib/api";
 import { PublicSuggestionCard } from "@/features/menu/components/PublicSuggestionCard";
 import LoadingSpinner from "@/shared/components/LoadingSpinner";
-import SuggestionCard from "@/features/menu/components/SuggestionCard";
 
 const BG_IMAGES = [
   "/32997476_m.jpg",
@@ -15,6 +14,61 @@ const BG_IMAGES = [
 ];
 
 const SLIDE_INTERVAL_MS = 5000;
+
+function MenuContent({ item }) {
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-3xl">🍽️</span>
+        <h2
+          className="text-2xl font-medium text-[var(--foreground)]"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {item.title}
+        </h2>
+      </div>
+
+      <div className="space-y-4 mb-6">
+        <div>
+          <span className="luxury-label text-base block mb-2">選んだ理由</span>
+          <p className="text-muted leading-relaxed">{item.reason}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-6">
+          <div>
+            <span className="luxury-label text-base block mb-2">調理時間</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-medium text-[var(--primary)]">
+                {item.time}
+              </span>
+              <span className="text-muted">分</span>
+            </div>
+          </div>
+          <div>
+            <span className="luxury-label text-base block mb-2">予算</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-medium text-[var(--secondary)]">
+                {item.budget.toLocaleString()}
+              </span>
+              <span className="text-muted">円</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <span className="luxury-label text-base block mb-2">材料</span>
+          <div className="flex flex-wrap gap-2">
+            {item.ingredients.map((ingredient, i) => (
+              <span key={i} className="luxury-badge">
+                {ingredient}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const suggestionsRef = useRef(null);
@@ -51,8 +105,8 @@ export default function HomePage() {
         likes: like,
         dislikes: dislike,
       });
-      setAiSuggestion(res);
-    } catch {
+      setAiSuggestion(res.data?.sample);
+    } catch (error) {
       console.error("AI提案取得失敗:", error);
       alert("AI提案取得に失敗しました");
     } finally {
@@ -224,12 +278,7 @@ export default function HomePage() {
           <div>
             {aisuggestion && (
               <div className="mt-4 grid gap-4">
-                <SuggestionCard
-                  suggestion={aisuggestion}
-                  // onOk={handleAcceptSuggestion}
-                  // onRetry={handleRetry}
-                  // onNg={handleNg}
-                />
+                <MenuContent item={aisuggestion} />
               </div>
             )}
           </div>
