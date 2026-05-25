@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Header } from "@/shared/components/header";
 import { apiClient } from "@/shared/lib/api";
-import { PublicSuggestionCard } from "@/features/menu/components/PublicSuggestionCard";
+import { HeroSuggestionCard } from "@/features/menu/components/HeroSuggestionCard";
 import LoadingSpinner from "@/shared/components/LoadingSpinner";
 
 const BG_IMAGES = [
@@ -214,14 +214,7 @@ export default function HomePage() {
 
           <div className="w-full max-w-2xl flex flex-col gap-4">
             {suggestions.map((s) => (
-              <PublicSuggestionCard
-                key={s.id}
-                suggestion={s}
-                members={members}
-                goodStatus={goodStatus[s.id]}
-                goodCount={goodCount[s.id]}
-                onToggleGood={handleToggleGood}
-              />
+              <HeroSuggestionCard key={s.id} suggestion={s} />
             ))}
           </div>
 
