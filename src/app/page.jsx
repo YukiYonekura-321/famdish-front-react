@@ -6,6 +6,8 @@ import { Header } from "@/shared/components/header";
 import { apiClient } from "@/shared/lib/api";
 import { HeroSuggestionCard } from "@/features/menu/components/HeroSuggestionCard";
 import LoadingSpinner from "@/shared/components/LoadingSpinner";
+import { auth } from "@/shared/lib/firebase";
+import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
 const BG_IMAGES = [
   "/32997476_m.jpg",
@@ -70,6 +72,9 @@ function MenuContent({ item }) {
   );
 }
 
+const TRIAL_LIMIT = 2;
+const TRIAL_COUNT_KEY = "famdish_trial_count";
+
 export default function HomePage() {
   const suggestionsRef = useRef(null);
 
@@ -80,6 +85,33 @@ export default function HomePage() {
   const [like, setLike] = useState("");
   const [dislike, setDislike] = useState("");
   const [aisuggestion, setAiSuggestion] = useState();
+  const [trialCount, setTrialCount] = useState(0);
+  const [showLimitBanner, setShowLimitBanner] = useState(false);
+
+  // ── 匿名認証 & 試用回数の読み込み ──
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        try {
+          await signInAnonymously(auth);
+        } catch (e) {
+          console.error("[Anonymous Auth] サインイン失敗:", e);
+        }
+      } else {
+        // 匿名ユーザーかどうか（将来の昇格処理のために保持可能）
+        void user.isAnonymous;
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // ── localStorage から試用回数を初期化 ──
+  useEffect(() => {
+    const stored = parseInt(localStorage.getItem(TRIAL_COUNT_KEY) || "0", 10);
+    setTrialCount(stored);
+    if (stored >= TRIAL_LIMIT) setShowLimitBanner(true);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -98,6 +130,13 @@ export default function HomePage() {
   };
 
   const trySuggestions = async () => {
+    // 試用回数チェック
+    const current = parseInt(localStorage.getItem(TRIAL_COUNT_KEY) || "0", 10);
+    if (current >= TRIAL_LIMIT) {
+      setShowLimitBanner(true);
+      return;
+    }
+
     setLoading(true);
     // ToDo バックエンドにAI提案を試すAPIを実装する
     try {
@@ -106,6 +145,12 @@ export default function HomePage() {
         dislikes: dislike,
       });
       setAiSuggestion(res.data?.sample);
+
+      // 成功したら試用回数をインクリメント
+      const next = current + 1;
+      localStorage.setItem(TRIAL_COUNT_KEY, String(next));
+      setTrialCount(next);
+      if (next >= TRIAL_LIMIT) setShowLimitBanner(true);
     } catch (error) {
       console.error("AI提案取得失敗:", error);
       alert("AI提案取得に失敗しました");
@@ -250,14 +295,53 @@ export default function HomePage() {
               className="luxury-input"
             />
           </div>
+
+          {/* ─── 試用回数バッジ ─── */}
+          {trialCount < TRIAL_LIMIT && (
+            <p className="text-white/80 text-sm mb-2">
+              お試し残り{" "}
+              <span className="text-[var(--gold-400)] font-bold">
+                {TRIAL_LIMIT - trialCount}
+              </span>{" "}
+              回
+            </p>
+          )}
+
           <div className="luxury-card max-w-2xl mx-auto mb-12">
             <button
               onClick={trySuggestions}
-              className="luxury-btn luxury-btn-primary w-full"
+              disabled={trialCount >= TRIAL_LIMIT}
+              className="luxury-btn luxury-btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               献立提案を試してみる
             </button>
           </div>
+
+          {/* ─── 試用回数上限バナー ─── */}
+          {showLimitBanner && (
+            <div className="w-full max-w-2xl mb-8 rounded-2xl border border-[var(--gold-400)] bg-black/50 backdrop-blur-sm p-6 text-center animate-fade-in">
+              <p className="text-[var(--gold-400)] text-lg font-medium mb-2">
+                🎉 お試し提案を{TRIAL_LIMIT}回使い切りました！
+              </p>
+              <p className="text-white/80 text-sm mb-5">
+                本登録すると無制限で献立提案・在庫管理・家族共有が使えます。
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="/sign-in"
+                  className="luxury-btn luxury-btn-accent px-6 py-3"
+                >
+                  無料で本登録する
+                </Link>
+                <Link
+                  href="/login"
+                  className="luxury-btn luxury-btn-outline px-6 py-3 !text-white !border-white/50"
+                >
+                  ログイン
+                </Link>
+              </div>
+            </div>
+          )}
 
           {loading && (
             <div className="flex flex-col items-center gap-4 my-8">
