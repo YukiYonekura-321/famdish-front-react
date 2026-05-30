@@ -6,6 +6,7 @@ import {
   GithubAuthProvider,
   //   signInWithRedirect,
   signInWithPopup,
+  linkWithPopup,
   //   getRedirectResult,
   //   onAuthStateChanged,
   getAdditionalUserInfo,
@@ -37,7 +38,14 @@ export default function LoginPage() {
 
   const redirectTomyPageWhenLoginSuccess = async (provider) => {
     try {
-      const result = await signInWithPopup(auth, provider);
+      const currentUser = auth?.currentUser;
+      const isAnonymous = currentUser?.isAnonymous ?? false;
+
+      // 匿名ユーザーの場合は linkWithPopup で永久アカウントに昇格
+      const result = isAnonymous
+        ? await linkWithPopup(currentUser, provider)
+        : await signInWithPopup(auth, provider);
+
       const additional = getAdditionalUserInfo(result); // 正規の取得方法
       // console.log("additionalUserInfo:", additional);
       const isNewUser = additional?.isNewUser;
@@ -45,7 +53,7 @@ export default function LoginPage() {
       // リダイレクト先を決定（redirect param があれば優先）
       let targetPath = "/menus";
 
-      if (isNewUser) {
+      if (isNewUser || isAnonymous) {
         // 新規登録ユーザーはプロフィールステップへ
         targetPath = "/profile/step1";
       } else {
@@ -87,7 +95,12 @@ export default function LoginPage() {
       //   error.credential,
       //   error.customData,
       // );
-      alert(`エラー: ${error.code} ${error.message}`);
+      if (error.code === "auth/credential-already-in-use") {
+        alert(
+          "このSNSアカウントはすでに別のアカウントと連携されています。そのアカウントでログインしてください。",
+        );
+        return;
+      }
       if (error.code === "auth/account-exists-with-different-credential") {
         alert(
           `${error.customData.email}は他のSNSと連携した既存ユーザーが登録済みです。既存ユーザーでログイン後、こちらのSNSとの連携が可能です。`,

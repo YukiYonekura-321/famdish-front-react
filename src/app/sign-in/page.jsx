@@ -8,6 +8,7 @@ import {
   TwitterAuthProvider,
   GithubAuthProvider,
   signInWithPopup,
+  linkWithPopup,
   getAdditionalUserInfo,
   onAuthStateChanged,
 } from "firebase/auth";
@@ -29,7 +30,14 @@ export default function SignInPage() {
     async (provider) => {
       setError("");
       try {
-        const result = await signInWithPopup(auth, provider);
+        const currentUser = auth?.currentUser;
+        const isAnonymous = currentUser?.isAnonymous ?? false;
+
+        // 匿名ユーザーの場合は linkWithPopup で永久アカウントに昇格
+        const result = isAnonymous
+          ? await linkWithPopup(currentUser, provider)
+          : await signInWithPopup(auth, provider);
+
         const additional = getAdditionalUserInfo(result);
 
         if (!result.user.emailVerified) {
@@ -37,12 +45,20 @@ export default function SignInPage() {
           return;
         }
 
-        if (additional?.isNewUser) {
+        if (additional?.isNewUser || isAnonymous) {
+          // 匿名から昇格した場合も新規扱いでプロフィール設定へ
           router.replace("/profile/step1");
         } else {
           router.replace("/menus");
         }
       } catch (err) {
+        if (err.code === "auth/credential-already-in-use") {
+          // そのSNSアカウントがすでに別のFirebaseアカウントと紐付いている
+          setError(
+            "このSNSアカウントはすでに別のアカウントと連携されています。ログインページからログインしてください。",
+          );
+          return;
+        }
         if (err.code === "auth/account-exists-with-different-credential") {
           setError(
             `${err.customData?.email}は他のSNSと連携した既存ユーザーが登録済みです。既存ユーザーでログイン後、こちらのSNSとの連携が可能です。`,
