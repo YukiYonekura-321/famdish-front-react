@@ -8,6 +8,7 @@ import { HeroSuggestionCard } from "@/features/menu/components/HeroSuggestionCar
 import LoadingSpinner from "@/shared/components/LoadingSpinner";
 import { auth } from "@/shared/lib/firebase";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import Image from "next/image";
 
 const BG_IMAGES = [
   "/32997476_m.jpg",
@@ -17,7 +18,7 @@ const BG_IMAGES = [
 
 const SLIDE_INTERVAL_MS = 5000;
 
-function MenuContent({ item }) {
+function MenuContent({ item, pictureUrl }) {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
@@ -29,6 +30,8 @@ function MenuContent({ item }) {
           {item.title}
         </h2>
       </div>
+
+      <Image src={pictureUrl} alt="generated image" width={200} height={200} />
 
       <div className="space-y-4 mb-6">
         <div>
@@ -72,7 +75,7 @@ function MenuContent({ item }) {
   );
 }
 
-const TRIAL_LIMIT = 2;
+const TRIAL_LIMIT = 20;
 const TRIAL_COUNT_KEY = "famdish_trial_count";
 
 export default function HomePage() {
@@ -85,6 +88,7 @@ export default function HomePage() {
   const [like, setLike] = useState("");
   const [dislike, setDislike] = useState("");
   const [aisuggestion, setAiSuggestion] = useState();
+  const [aipictureurl, setAiPictureUrl] = useState();
   const [trialCount, setTrialCount] = useState(0);
   const [showLimitBanner, setShowLimitBanner] = useState(false);
 
@@ -145,12 +149,10 @@ export default function HomePage() {
         dislikes: dislike,
       });
       setAiSuggestion(res.data?.sample);
-
-      // 成功したら試用回数をインクリメント
-      const next = current + 1;
-      localStorage.setItem(TRIAL_COUNT_KEY, String(next));
-      setTrialCount(next);
-      if (next >= TRIAL_LIMIT) setShowLimitBanner(true);
+      setAiPictureUrl(res.data?.image_url);
+      setTrialCount(res.data?.usage_count);
+      localStorage.setItem(TRIAL_COUNT_KEY, String(trialCount));
+      if (trialCount >= TRIAL_LIMIT) setShowLimitBanner(true);
     } catch (error) {
       console.error("AI提案取得失敗:", error);
       alert("AI提案取得に失敗しました");
@@ -355,7 +357,7 @@ export default function HomePage() {
           <div>
             {aisuggestion && (
               <div className="mt-4 grid gap-4">
-                <MenuContent item={aisuggestion} />
+                <MenuContent item={aisuggestion} pictureUrl={aipictureurl} />
               </div>
             )}
           </div>
