@@ -20,7 +20,7 @@ const SLIDE_INTERVAL_MS = 5000;
 
 function MenuContent({ item, pictureUrl }) {
   return (
-    <div>
+    <div className="bg-amber-200/70 rounded-lg p-6 m-6">
       <div className="flex items-center gap-3 mb-6">
         <span className="text-3xl">🍽️</span>
         <h2
@@ -31,33 +31,39 @@ function MenuContent({ item, pictureUrl }) {
         </h2>
       </div>
 
-      <Image src={pictureUrl} alt="generated image" width={200} height={200} />
+      <div className="flex flex-wrap gap-6">
+        <Image
+          src={pictureUrl}
+          alt="generated image"
+          width={200}
+          height={200}
+        />
+        <div>
+          <span className="luxury-label text-base block mb-2">調理時間</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-medium text-[var(--primary)]">
+              {item.time}
+            </span>
+            <span className="text-muted">分</span>
+          </div>
+        </div>
+        <div>
+          <span className="luxury-label text-base block mb-2">予算</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-medium text-[var(--secondary)]">
+              {item.budget.toLocaleString()}
+            </span>
+            <span className="text-muted">円</span>
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-4 mb-6">
         <div>
-          <span className="luxury-label text-base block mb-2">選んだ理由</span>
+          <span className="luxury-label text-base block mt-2 mb-2">
+            選んだ理由
+          </span>
           <p className="text-muted leading-relaxed">{item.reason}</p>
-        </div>
-
-        <div className="flex flex-wrap gap-6">
-          <div>
-            <span className="luxury-label text-base block mb-2">調理時間</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-medium text-[var(--primary)]">
-                {item.time}
-              </span>
-              <span className="text-muted">分</span>
-            </div>
-          </div>
-          <div>
-            <span className="luxury-label text-base block mb-2">予算</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-medium text-[var(--secondary)]">
-                {item.budget.toLocaleString()}
-              </span>
-              <span className="text-muted">円</span>
-            </div>
-          </div>
         </div>
 
         <div>
@@ -155,7 +161,9 @@ export default function HomePage() {
       if (trialCount >= TRIAL_LIMIT) setShowLimitBanner(true);
     } catch (error) {
       console.error("AI提案取得失敗:", error);
-      alert("AI提案取得に失敗しました");
+      alert(
+        "AI提案取得に失敗しました。好きなものと嫌いなものを入力してください",
+      );
     } finally {
       setLoading(false);
     }
@@ -215,7 +223,7 @@ export default function HomePage() {
         {/* メインコンテンツ */}
         <div className="relative z-10 flex flex-col items-center text-center px-6 md:px-8 max-w-4xl mx-auto">
           <h1
-            className="text-4xl md:text-6xl lg:text-7xl font-medium !text-red-500 mb-6 tracking-tight animate-fade-in-up drop-shadow-lg"
+            className="!text-4xl !md:text-6xl !lg:text-7xl !font-bold !text-red-500 mb-6 mt-24 pt-24 tracking-tight animate-fade-in-up drop-shadow-lg"
             style={{ fontFamily: "var(--font-display)" }}
           >
             30秒であなた向けの献立を提案
@@ -239,25 +247,25 @@ export default function HomePage() {
             AIがパーソナライズした献立を自動提案します
           </h2>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={handleTrialAiSuggesttion}
-              className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl"
+              className="luxury-btn luxury-btn-accent text-lg px-8 py-4 m-8 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl"
             >
               今すぐ無料で試す
-            </button>
-
-            <button className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl">
-              デモを見る
             </button>
           </div>
 
           <p
-            className="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mb-12 animate-fade-in-up stagger-3"
+            className="!text-xl !md:text-lg text-white/90 leading-relaxed max-w-2xl animate-fade-in-up stagger-3"
             style={{ fontFamily: "var(--font-body)" }}
           >
             実際の生成例
           </p>
+
+          <h1 className="text-2xl text-white p-6">
+            こんな献立をご提案できます
+          </h1>
 
           <div className="w-full max-w-2xl flex flex-col gap-4">
             {suggestions.map((s) => (
@@ -266,42 +274,30 @@ export default function HomePage() {
           </div>
 
           <p
-            className="text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mb-12 animate-fade-in-up stagger-3"
+            className="!text-xl !md:text-lg text-white/90 leading-relaxed max-w-2xl mb-12 p-12 animate-fade-in-up stagger-3"
             style={{ fontFamily: "var(--font-body)" }}
           >
             献立を考える手間をなくしたい。
             <br />
-            食べたいものが食卓に出てくると嬉しい。
-            <br />
             食材の無駄やマンネリ化をなくしたい。
             <br />
-            <span className="text-[var(--gold-400)] font-medium">
-              そんな悩みを解決。
+            <span className="text-[var(--gold-400)] !text-4xl font-bold">
+              そんな悩みを解決します
             </span>
+            <br />
+            あなたも今すぐ献立提案機能を体験してみよう！
           </p>
 
-          {/* ─── 提案取得ボタン ─── */}
-          <div>
-            <label>好きなもの</label>
-            <input
-              type="text"
-              onChange={(e) => setLike(e.target.value)}
-              className="luxury-input"
-            />
-          </div>
-          <div>
-            <label>嫌いなもの</label>
-            <input
-              type="text"
-              onChange={(e) => setDislike(e.target.value)}
-              className="luxury-input"
-            />
-          </div>
+          <h3 className="text-white">
+            好きなものと嫌いなものを入力して、
+            <br />
+            献立提案してもらおう
+          </h3>
 
           {/* ─── 試用回数バッジ ─── */}
           {trialCount < TRIAL_LIMIT && (
-            <p className="text-white/80 text-sm mb-2">
-              お試し残り{" "}
+            <p className="text-white/80 text-2xl mb-2">
+              無料トライアル 残り回数{" "}
               <span className="text-[var(--gold-400)] font-bold">
                 {TRIAL_LIMIT - trialCount}
               </span>{" "}
@@ -309,15 +305,32 @@ export default function HomePage() {
             </p>
           )}
 
-          <div className="luxury-card max-w-2xl mx-auto mb-12">
-            <button
-              onClick={trySuggestions}
-              disabled={trialCount >= TRIAL_LIMIT}
-              className="luxury-btn luxury-btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              献立提案を試してみる
-            </button>
+          {/* ─── 提案取得ボタン ─── */}
+          <div>
+            <label className="text-xl text-white">好きなもの</label>
+            <input
+              type="text"
+              onChange={(e) => setLike(e.target.value)}
+              ref={suggestionsRef}
+              className="luxury-input"
+            />
           </div>
+          <div>
+            <label className="text-xl text-white">嫌いなもの</label>
+            <input
+              type="text"
+              onChange={(e) => setDislike(e.target.value)}
+              className="luxury-input"
+            />
+          </div>
+
+          <button
+            onClick={trySuggestions}
+            disabled={trialCount >= TRIAL_LIMIT}
+            className="!font-bold luxury-btn luxury-btn-primary mt-6 mb-12 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            献立提案を試してみる
+          </button>
 
           {/* ─── 試用回数上限バナー ─── */}
           {showLimitBanner && (
@@ -365,7 +378,6 @@ export default function HomePage() {
           <Link
             href="/sign-in"
             className="luxury-btn luxury-btn-accent text-lg px-8 py-4 animate-fade-in-up stagger-4 shadow-xl hover:shadow-2xl"
-            ref={suggestionsRef}
           >
             今すぐ無料で始める
           </Link>
