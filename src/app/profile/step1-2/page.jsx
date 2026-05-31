@@ -27,7 +27,7 @@ export default function ProfileStep1Part2() {
   // ── 認証 & 登録済みチェック ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+      if (!user || user.isAnonymous) {
         router.replace("/login");
         return;
       }

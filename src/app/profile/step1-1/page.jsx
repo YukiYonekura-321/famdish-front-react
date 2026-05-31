@@ -6,7 +6,10 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/shared/lib/firebase";
 import { apiClient } from "@/shared/lib/api";
 import { ProgressBar } from "@/features/profile/components/ProgressBar";
-import { BackArrow, ForwardArrow } from "@/features/profile/components/ProfileNavArrows";
+import {
+  BackArrow,
+  ForwardArrow,
+} from "@/features/profile/components/ProfileNavArrows";
 
 // ── 定数 ──
 
@@ -21,7 +24,7 @@ export default function ProfileStep1Part1() {
   // ── 認証 & 登録済みチェック ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+      if (!user || user.isAnonymous) {
         router.replace("/login");
         return;
       }

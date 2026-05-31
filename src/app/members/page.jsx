@@ -32,7 +32,7 @@ export default function CreateInvitePage() {
   // ── 認証 & メンバー情報取得 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) {
+      if (!currentUser || currentUser.isAnonymous) {
         router.replace("/login");
         return;
       }

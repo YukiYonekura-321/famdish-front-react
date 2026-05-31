@@ -42,7 +42,7 @@ export default function MemberForm() {
   // ── 認証監視 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+      if (user && !user.isAnonymous) {
         setCurrentUid(user.uid);
       } else {
         setCurrentUid(null);

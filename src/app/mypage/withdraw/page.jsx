@@ -13,7 +13,7 @@ export default function WithdrawPage() {
   // ── 認証 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
+      if (!user || user.isAnonymous) {
         router.replace("/login");
       }
     });

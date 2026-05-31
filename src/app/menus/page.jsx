@@ -61,7 +61,7 @@ export default function MenuPage() {
         return;
       }
       unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (!user) router.replace("/login");
+        if (!user || user.isAnonymous) router.replace("/login");
       });
     };
     runEmailSignIn();

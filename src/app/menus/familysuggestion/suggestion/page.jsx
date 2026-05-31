@@ -25,7 +25,7 @@ export default function AllSuggestionsPage() {
   // ── 認証 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
+      if (user && !user.isAnonymous) {
         setAuthenticated(true);
       } else {
         setAuthenticated(false);

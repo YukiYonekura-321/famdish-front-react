@@ -48,7 +48,7 @@ export default function RequestPage() {
       }
 
       unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (!user) router.replace("/login");
+        if (!user || user.isAnonymous) router.replace("/login");
       });
     };
 

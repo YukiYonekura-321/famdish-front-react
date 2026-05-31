@@ -17,7 +17,7 @@ export default function ProfileStep3Part2() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+      if (!user || user.isAnonymous) {
         router.replace("/login");
         return;
       }

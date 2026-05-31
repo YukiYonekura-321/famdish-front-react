@@ -14,7 +14,7 @@ export default function SocialPage() {
   // ── 認証 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
+      if (!user || user.isAnonymous) {
         router.replace("/login");
       } else {
         setAuthUser(user);

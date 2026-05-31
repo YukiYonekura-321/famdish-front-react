@@ -26,7 +26,7 @@ export default function InviteMemberPage() {
   // ── 認証 & family_id 取得 ──
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+      if (!user || user.isAnonymous) {
         router.replace("/login");
         return;
       }
