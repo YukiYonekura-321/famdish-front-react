@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 // ── 制約不足で料理が作れない場合のカード ──
 function ErrorContent({ item }) {
   return (
@@ -43,7 +45,7 @@ function ErrorContent({ item }) {
 }
 
 // ── 正常な献立表示カード ──
-function MenuContent({ item, isMultiDay }) {
+function MenuContent({ item, image_url, isMultiDay }) {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
@@ -69,12 +71,13 @@ function MenuContent({ item, isMultiDay }) {
           </div>
         )}
 
-        <div>
-          <span className="luxury-label text-base block mb-2">選んだ理由</span>
-          <p className="text-muted leading-relaxed">{item.reason}</p>
-        </div>
-
         <div className="flex flex-wrap gap-6">
+          <Image
+            src={image_url}
+            alt="generated image"
+            width={200}
+            height={200}
+          />
           <div>
             <span className="luxury-label text-base block mb-2">調理時間</span>
             <div className="flex items-baseline gap-2">
@@ -93,6 +96,11 @@ function MenuContent({ item, isMultiDay }) {
               <span className="text-muted">円</span>
             </div>
           </div>
+        </div>
+
+        <div>
+          <span className="luxury-label text-base block mb-2">選んだ理由</span>
+          <p className="text-muted leading-relaxed">{item.reason}</p>
         </div>
 
         <div>
@@ -148,7 +156,13 @@ function SuggestionActions({ onOk, onRetry, onNg }) {
 // ── メイン ──
 const isError = (item) => item.title === "料理は作れません";
 
-export default function SuggestionCard({ suggestion, onOk, onRetry, onNg }) {
+export default function SuggestionCard({
+  suggestion,
+  onOk,
+  onRetry,
+  onNg,
+  image_url,
+}) {
   const isMultiDay = Array.isArray(suggestion);
   const items = isMultiDay ? suggestion : [suggestion];
 
@@ -176,7 +190,11 @@ export default function SuggestionCard({ suggestion, onOk, onRetry, onNg }) {
           {isError(item) ? (
             <ErrorContent item={item} />
           ) : (
-            <MenuContent item={item} isMultiDay={isMultiDay} />
+            <MenuContent
+              item={item}
+              image_url={image_url}
+              isMultiDay={isMultiDay}
+            />
           )}
         </div>
       ))}
