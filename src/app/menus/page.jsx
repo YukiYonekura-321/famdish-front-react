@@ -176,6 +176,7 @@ export default function MenuPage() {
           dish_name: item.title,
           reason: item.reason,
           proposer: todayCookId,
+          image_url: item.image_url,
         });
         /* eslint-enable camelcase */
       } catch (err) {
