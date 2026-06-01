@@ -182,6 +182,7 @@ export default function AllSuggestionsPage() {
                 goodStatus={goodStatus[s.id]}
                 goodCount={goodCount[s.id]}
                 onToggleGood={handleToggleGood}
+                image_url={s.image_url}
               />
             ))}
           </div>
