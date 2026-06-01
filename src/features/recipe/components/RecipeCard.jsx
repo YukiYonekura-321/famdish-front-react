@@ -1,5 +1,6 @@
 import { SERVINGS_OPTIONS } from "@/features/recipe/constants";
 import { RecipeAccordion } from "./RecipeAccordion";
+import Image from "next/image";
 
 /** 献立カード1枚分 */
 export function RecipeCard({
@@ -14,6 +15,7 @@ export function RecipeCard({
   recipeDetailMap,
   recipeDetailLoading,
   onToggleDetail,
+  image_url,
 }) {
   const dishTitle = recipe.dish_name || "タイトルなし";
   const isCook =
@@ -52,38 +54,50 @@ export function RecipeCard({
         </div>
       </div>
 
-      {/* メタ情報 */}
-      <p className="text-sm text-muted me-3">💡 {recipe.reason || ""}</p>
-      <p className="text-sm text-muted me-3">
-        👨‍🍳 調理者:{" "}
-        {recipe.proposer_id
-          ? members.find((m) => m.id === recipe.proposer_id)?.name || "不明"
-          : "未設定"}
-      </p>
+      <div className="flex flex-wrap gap-6 mt-4">
+        {image_url && (
+          <Image
+            src={image_url}
+            alt="generated image"
+            width={300}
+            height={300}
+            className="rounded-xl object-cover"
+          />
+        )}
 
-      {/* 操作 */}
-      <div className="flex flex-col gap-3 mt-4">
-        <select
-          value={servings}
-          onChange={(e) => onServingsChange(e.target.value)}
-          className="luxury-select text-sm w-full"
-        >
-          {SERVINGS_OPTIONS.map((n) => (
-            <option key={n} value={n}>
-              {n}人分
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={handleAiClick}
-          className={`w-full text-sm ${
-            isCook
-              ? "luxury-btn luxury-btn-primary"
-              : "luxury-btn luxury-btn-outline opacity-50 cursor-not-allowed"
-          }`}
-        >
-          このメニューの作り方をAIに提案してもらう
-        </button>
+        {/* 画像の右側 */}
+        <div className="flex flex-col gap-3 flex-1 min-w-[180px]">
+          <p className="text-sm text-muted">💡 {recipe.reason || ""}</p>
+          <p className="text-sm text-muted">
+            👨‍🍳 調理者:{" "}
+            {recipe.proposer_id
+              ? members.find((m) => m.id === recipe.proposer_id)?.name || "不明"
+              : "未設定"}
+          </p>
+
+          <select
+            value={servings}
+            onChange={(e) => onServingsChange(e.target.value)}
+            className="luxury-select text-sm w-full"
+          >
+            {SERVINGS_OPTIONS.map((n) => (
+              <option key={n} value={n}>
+                {n}人分
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={handleAiClick}
+            className={`w-full text-sm ${
+              isCook
+                ? "luxury-btn luxury-btn-primary"
+                : "luxury-btn luxury-btn-outline opacity-50 cursor-not-allowed"
+            }`}
+          >
+            このメニューの作り方をAIに提案してもらう
+          </button>
+        </div>
       </div>
 
       {/* アコーディオン */}

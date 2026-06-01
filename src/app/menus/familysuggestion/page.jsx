@@ -443,6 +443,7 @@ export default function FamilySuggestionPage() {
                 recipeDetailMap={recipeDetailMap}
                 recipeDetailLoading={recipeDetailLoading}
                 onToggleDetail={handleToggleRecipeDetail}
+                image_url={r.image_url}
               />
             ))}
           </div>
