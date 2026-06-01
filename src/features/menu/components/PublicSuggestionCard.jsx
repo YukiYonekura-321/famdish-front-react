@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 /** みんなの献立カード（公開献立用） */
 export function PublicSuggestionCard({
   suggestion,
@@ -5,6 +7,7 @@ export function PublicSuggestionCard({
   goodStatus,
   goodCount,
   onToggleGood,
+  image_url,
 }) {
   const isLiked = goodStatus?.exists;
   const proposerName = suggestion.proposer_id
@@ -45,14 +48,29 @@ export function PublicSuggestionCard({
         </div>
       </div>
 
-      {suggestion.reason && (
-        <p className="text-sm text-muted mt-3">💡 {suggestion.reason}</p>
-      )}
-      <p className="text-sm text-muted mt-1">👨‍🍳 調理者: {proposerName}</p>
+      <div className="flex gap-2">
+        {image_url && (
+          <Image
+            src={image_url}
+            alt="generated image"
+            width={300}
+            height={300}
+            className="rounded-xl object-cover"
+          />
+        )}
+        <div>
+          {suggestion.reason && (
+            <p className="text-sm text-muted mt-3">💡 {suggestion.reason}</p>
+          )}
+          <p className="text-sm text-muted mt-1">👨‍🍳 調理者: {proposerName}</p>
 
-      <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted">
-        {suggestion.cooking_time && <span>⏱️ {suggestion.cooking_time}分</span>}
-        {suggestion.servings && <span>👥 {suggestion.servings}人分</span>}
+          <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted">
+            {suggestion.cooking_time && (
+              <span>⏱️ {suggestion.cooking_time}分</span>
+            )}
+            {suggestion.servings && <span>👥 {suggestion.servings}人分</span>}
+          </div>
+        </div>
       </div>
     </div>
   );
