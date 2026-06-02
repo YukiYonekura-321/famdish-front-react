@@ -45,7 +45,7 @@ function ErrorContent({ item }) {
 }
 
 // ── 正常な献立表示カード ──
-function MenuContent({ item, image_url, isMultiDay }) {
+function MenuContent({ item, isMultiDay }) {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
@@ -73,10 +73,10 @@ function MenuContent({ item, image_url, isMultiDay }) {
 
         <div className="flex flex-wrap gap-6">
           <Image
-            src={image_url}
+            src={item.image_url}
             alt="generated image"
-            width={200}
-            height={200}
+            width={300}
+            height={300}
           />
           <div>
             <span className="luxury-label text-base block mb-2">調理時間</span>
@@ -156,13 +156,7 @@ function SuggestionActions({ onOk, onRetry, onNg }) {
 // ── メイン ──
 const isError = (item) => item.title === "料理は作れません";
 
-export default function SuggestionCard({
-  suggestion,
-  onOk,
-  onRetry,
-  onNg,
-  image_url,
-}) {
+export default function SuggestionCard({ suggestion, onOk, onRetry, onNg }) {
   const isMultiDay = Array.isArray(suggestion);
   const items = isMultiDay ? suggestion : [suggestion];
 
@@ -190,11 +184,7 @@ export default function SuggestionCard({
           {isError(item) ? (
             <ErrorContent item={item} />
           ) : (
-            <MenuContent
-              item={item}
-              image_url={image_url}
-              isMultiDay={isMultiDay}
-            />
+            <MenuContent item={item} isMultiDay={isMultiDay} />
           )}
         </div>
       ))}
